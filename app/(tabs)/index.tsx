@@ -1,70 +1,125 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+/* eslint-disable react-native/no-inline-styles */
+import * as React from 'react';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { StyleSheet, View, Image } from 'react-native';
+import { ResponsiveGrid } from 'react-native-flexible-grid';
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Bem vindo!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+export default function ProfileScreen() {
+    let idCounter = React.useRef(0);
+    interface DataProp {
+        id: number;
+        widthRatio?: number;
+        heightRatio?: number;
+        imageUrl: string;
+    }
+
+    const getData = () => {
+        const originalData = [
+            {
+                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg',
+                heightRatio: 3/2
+            },
+            {
+                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/1OsQJEoSXBjduuCvDOlRhoEUaHu.jpg',
+                heightRatio: 3/2
+            },
+            {
+                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/9e3Dz7aCANy5aRUQF745IlNloJ1.jpg',
+                heightRatio: 3/2
+            },
+            {
+                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/589uhtJOujc72fgNl6HcMYJS64D.jpg',
+                heightRatio: 3/2
+            },
+            {
+                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg',
+                heightRatio: 3/2
+            },
+            {
+                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/1OsQJEoSXBjduuCvDOlRhoEUaHu.jpg',
+                heightRatio: 3/2
+            },
+            {
+                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/9e3Dz7aCANy5aRUQF745IlNloJ1.jpg',
+                heightRatio: 3/2
+            },
+            {
+                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/589uhtJOujc72fgNl6HcMYJS64D.jpg',
+                heightRatio: 3/2
+            },
+        ];
+
+        let clonedData: DataProp[] = [];
+
+        for (let i = 0; i < 5; i++) {
+            const newData = originalData.map((item) => ({
+                ...item,
+                id: ++idCounter.current,
+            }));
+            clonedData = [...clonedData, ...newData];
+        }
+
+        return clonedData;
+    };
+
+    const renderItem = ({ item }: { item: DataProp }) => {
+        return (
+            <View style={styles.boxContainer}>
+                <Image
+                    source={{ uri: item.imageUrl }}
+                    style={styles.box}
+                    resizeMode="center"
+                />
+            </View>
+        );
+    };
+
+    return (
+        <View
+            style={{
+                flex: 1,
+            }}
+        >
+            <ResponsiveGrid
+                maxItemsPerColumn={2}
+                data={getData()}
+                renderItem={renderItem}
+                showScrollIndicator={false}
+                keyExtractor={(item: DataProp) => item.id.toString()}
+            />
+
+            <View
+                style={{
+                    position: 'absolute',
+                    width: '100%',
+                    bottom: 0,
+                }}
+            >
+
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    boxContainer: {
+        flex: 1,
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+    },
+    box: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor:'transparent'
+    },
+    text: {
+        color: 'white',
+        fontSize: 10,
+        position: 'absolute',
+        bottom: 10,
+    },
 });
