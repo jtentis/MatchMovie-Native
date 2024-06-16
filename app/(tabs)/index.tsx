@@ -13,29 +13,29 @@ export default function ProfileScreen() {
         imageUrl: string;
     }
 
-    async function getMovieByFilter(words: string) {
-        try {
-            let response = await fetch(`http://127.0.0.1:3000/movies/movies?search=${words}`, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                }
-            });
-
-            let data = await response.json();
-            return data;
-
-        } catch (error) {
-            console.error('Houve um problema com a operação fetch:', error);
-            return undefined;
-        }
-    }
-
-    getMovieByFilter('interestelar').then(data => {
-        console.log('Dados finais:', data.results[0]);
-    }).catch(error => {
-        console.error( error);
-    });
+    // async function getMovieByFilter(words: string) {
+    //     try {
+    //         let response = await fetch(`http://127.0.0.1:3000/movies/movies?search=${words}`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 Accept: 'application/json',
+    //             }
+    //         });
+    //
+    //         let data = await response.json();
+    //         return data;
+    //
+    //     } catch (error) {
+    //         console.error('Houve um problema com a operação fetch:', error);
+    //         return undefined;
+    //     }
+    // }
+    //
+    // getMovieByFilter('interestelar').then(data => {
+    //     console.log('Dados finais:', data.results[0]);
+    // }).catch(error => {
+    //     console.error( error);
+    // });
 
 
     const getData = () => {
@@ -129,10 +129,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     boxContainer: {
         flex: 1,
-    },
-    image: {
-        width: '100%',
-        height: '100%',
     },
     box: {
         width: '100%',
