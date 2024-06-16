@@ -13,39 +13,64 @@ export default function ProfileScreen() {
         imageUrl: string;
     }
 
+    async function getMovieByFilter(words: string) {
+        try {
+            let response = await fetch(`http://127.0.0.1:3000/movies/movies?search=${words}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                }
+            });
+
+            let data = await response.json();
+            return data;
+
+        } catch (error) {
+            console.error('Houve um problema com a operação fetch:', error);
+            return undefined;
+        }
+    }
+
+    getMovieByFilter('interestelar').then(data => {
+        console.log('Dados finais:', data.results[0]);
+    }).catch(error => {
+        console.error( error);
+    });
+
+
     const getData = () => {
         const originalData = [
             {
                 imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg',
-                heightRatio: 3/2
+                heightRatio: 3 / 2
             },
             {
                 imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/1OsQJEoSXBjduuCvDOlRhoEUaHu.jpg',
-                heightRatio: 3/2
+                heightRatio: 3 / 2
             },
             {
                 imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/9e3Dz7aCANy5aRUQF745IlNloJ1.jpg',
-                heightRatio: 3/2
+                heightRatio: 3 / 2
             },
             {
                 imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/589uhtJOujc72fgNl6HcMYJS64D.jpg',
-                heightRatio: 3/2
+                heightRatio: 3 / 2
             },
             {
                 imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg',
-                heightRatio: 3/2
+                heightRatio: 3 / 2
             },
             {
                 imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/1OsQJEoSXBjduuCvDOlRhoEUaHu.jpg',
-                heightRatio: 3/2
+                heightRatio: 3 / 2
             },
             {
                 imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/9e3Dz7aCANy5aRUQF745IlNloJ1.jpg',
-                heightRatio: 3/2
+                heightRatio: 3 / 2
             },
             {
                 imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/589uhtJOujc72fgNl6HcMYJS64D.jpg',
-                heightRatio: 3/2
+                heightRatio: 3 / 2
             },
         ];
 
@@ -114,7 +139,7 @@ const styles = StyleSheet.create({
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor:'transparent'
+        backgroundColor: 'transparent'
     },
     text: {
         color: 'white',
