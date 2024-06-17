@@ -1,138 +1,101 @@
-/* eslint-disable react-native/no-inline-styles */
-import * as React from 'react';
+// App.tsx
+import React, {useState} from 'react';
+import {
+    SafeAreaView,
+    TextInput,
+    Button,
+    FlatList,
+    Image,
+    StyleSheet,
+    View,
+    Dimensions,
+    ListRenderItem
+} from 'react-native';
+import {ResponsiveGrid} from "react-native-flexible-grid";
+import {Colors} from "@/constants/Colors";
+import {ThemedText} from "@/components/ThemedText";
+import { Icon } from 'react-native-elements'
 
-import { StyleSheet, View, Image } from 'react-native';
-import { ResponsiveGrid } from 'react-native-flexible-grid';
+const API_KEY = '2017240ed8d4e61fbe9ed801fe5da25a';
+const SEARCH_MOVIE_URL = 'http://10.0.2.2:3000/movies/movies';
 
-export default function ProfileScreen() {
-    let idCounter = React.useRef(0);
-    interface DataProp {
-        id: number;
-        widthRatio?: number;
-        heightRatio?: number;
-        imageUrl: string;
-    }
+interface Movie {
+    id: number;
+    poster_path: string | null;
+}
 
-    // async function getMovieByFilter(words: string) {
-    //     try {
-    //         let response = await fetch(`http://127.0.0.1:3000/movies/movies?search=${words}`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 Accept: 'application/json',
-    //             }
-    //         });
-    //
-    //         let data = await response.json();
-    //         return data;
-    //
-    //     } catch (error) {
-    //         console.error('Houve um problema com a operação fetch:', error);
-    //         return undefined;
-    //     }
-    // }
-    //
-    // getMovieByFilter('interestelar').then(data => {
-    //     console.log('Dados finais:', data.results[0]);
-    // }).catch(error => {
-    //     console.error( error);
-    // });
+export default function IndexScreen() {
+    const [query, setQuery] = useState<string>('');
+    const [movies, setMovies] = useState<Movie[]>([]);
 
-
-    const getData = () => {
-        const originalData = [
-            {
-                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg',
-                heightRatio: 3 / 2
-            },
-            {
-                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/1OsQJEoSXBjduuCvDOlRhoEUaHu.jpg',
-                heightRatio: 3 / 2
-            },
-            {
-                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/9e3Dz7aCANy5aRUQF745IlNloJ1.jpg',
-                heightRatio: 3 / 2
-            },
-            {
-                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/589uhtJOujc72fgNl6HcMYJS64D.jpg',
-                heightRatio: 3 / 2
-            },
-            {
-                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg',
-                heightRatio: 3 / 2
-            },
-            {
-                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/1OsQJEoSXBjduuCvDOlRhoEUaHu.jpg',
-                heightRatio: 3 / 2
-            },
-            {
-                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/9e3Dz7aCANy5aRUQF745IlNloJ1.jpg',
-                heightRatio: 3 / 2
-            },
-            {
-                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/589uhtJOujc72fgNl6HcMYJS64D.jpg',
-                heightRatio: 3 / 2
-            },
-        ];
-
-        let clonedData: DataProp[] = [];
-
-        for (let i = 0; i < 5; i++) {
-            const newData = originalData.map((item) => ({
-                ...item,
-                id: ++idCounter.current,
-            }));
-            clonedData = [...clonedData, ...newData];
+    const searchMovies = async () => {
+        if (query.length < 1) return;
+        const url = `${SEARCH_MOVIE_URL}?search=${query}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            console.log(response)
+            setMovies(data.results);
+        } catch (error) {
+            console.error(error);
         }
-
-        return clonedData;
     };
 
-    const renderItem = ({ item }: { item: DataProp }) => {
+    const renderItem = ({ item }: { item: Movie }) => {
+        const posterUrl = item.poster_path = `https://image.tmdb.org/t/p/w500${item.poster_path}`
         return (
             <View style={styles.boxContainer}>
                 <Image
-                    source={{ uri: item.imageUrl }}
+                    source={{ uri: posterUrl }}
                     style={styles.box}
-                    resizeMode="center"
+                    resizeMode="cover"
                 />
             </View>
         );
     };
 
+
     return (
-        <View
-            style={{
-                flex: 1,
-            }}
-        >
-            <ResponsiveGrid
-                maxItemsPerColumn={2}
-                data={getData()}
-                renderItem={renderItem}
-                showScrollIndicator={false}
-                keyExtractor={(item: DataProp) => item.id.toString()}
+        <><View style={styles.searchDiv}>
+            <Image source={require('@/assets/images/logo-clean.png')} style={styles.logo}>
+            </Image>
+            <TextInput
+                style={styles.input}
+                placeholder="Procurando algum filme?"
+                value={query}
+                onChangeText={setQuery}
             />
-
-            <View
-                style={{
-                    position: 'absolute',
-                    width: '100%',
-                    bottom: 0,
-                }}
-            >
-
-            </View>
+            <Icon style={{
+                position: 'absolute',
+                marginTop: 100,
+                marginRight: 10,
+            }} onPress={searchMovies} name="search" size={30} color="white" />
+            {/*<Button title="Buscar" onPress={searchMovies} />*/}
         </View>
+            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-around', backgroundColor: Colors.dark.background}}>
+                <ThemedText type="default" style={{fontSize: 12, marginTop:10}}>Populares</ThemedText>
+                <ThemedText type="default" style={{fontSize: 12, marginTop:10}}>Em Breve</ThemedText>
+                <ThemedText type="default" style={{fontSize: 12, marginTop:10}}>Nos Cinemas</ThemedText>
+                <ThemedText type="default" style={{fontSize: 12, marginTop:10}}>Mais Votados</ThemedText>
+            </View>
+            <View style={{flex: 15}}>
+                <ResponsiveGrid
+                    data={movies}
+                    renderItem={renderItem}
+                    showScrollIndicator={false}
+                    keyExtractor={(item: Movie) => item.id.toString()}
+                    maxItemsPerColumn={2}/>
+            </View></>
     );
-}
+};
 
 const styles = StyleSheet.create({
     boxContainer: {
         flex: 1,
     },
     box: {
-        width: '100%',
-        height: '100%',
+        width: (Dimensions.get('window').width / 2) , // Responsivo baseado na largura da tela
+        height: ((Dimensions.get('window').width / 2) - 15) * 1.5, // Aspect ratio 2:3
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'transparent'
@@ -142,5 +105,30 @@ const styles = StyleSheet.create({
         fontSize: 10,
         position: 'absolute',
         bottom: 10,
+    },
+    input: {
+        width: 250,
+        height: 50,
+        backgroundColor: Colors.dark.input,
+        padding: 15,
+        marginTop: 30,
+        borderRadius: 8,
+        elevation: 10,
+    },
+    searchDiv: {
+        paddingLeft: 30,
+        paddingRight: 30,
+        paddingTop: 30,
+        flex: 3,
+        gap: 10,
+        flexDirection: 'row',
+        alignItems: "center",
+        justifyContent: 'space-between',
+        backgroundColor: Colors.dark.background,
+    },
+    logo: {
+        marginTop: 35,
+        width: 40,
+        height: 70,
     },
 });

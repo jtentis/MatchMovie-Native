@@ -34,12 +34,12 @@ export default function MatchScreen() {
                 justifyContent: 'space-around',
                 gap: 10,
             }}>
-                <FontAwesome size={22} name="arrow-left" color={'#FFFFFF'} style={{
-                    marginTop: '10%',
-                    backgroundColor: Colors.dark.tabIconSelected,
-                    padding: 15,
-                    borderRadius: 100,
-                }}/>
+                {/*<FontAwesome size={22} name="arrow-left" color={'#FFFFFF'} style={{*/}
+                {/*    marginTop: '10%',*/}
+                {/*    backgroundColor: Colors.dark.tabIconSelected,*/}
+                {/*    padding: 15,*/}
+                {/*    borderRadius: 100,*/}
+                {/*}}/>*/}
                 <ThemedText type="title" style={{marginTop: '10%'}}>Minhas Sessões</ThemedText>
             </View>
             <View style={{

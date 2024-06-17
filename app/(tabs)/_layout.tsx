@@ -8,6 +8,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {xml} from '@/assets/images/logo';
 import { SvgXml } from 'react-native-svg';
 
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -29,7 +30,7 @@ export default function TabLayout() {
         name="match"
         options={{
             title: 'Match',
-            tabBarIcon: ({ color }) => <FontAwesome size={28} name="compress" color={color} />,
+            tabBarIcon: ({ color }) => <FontAwesome size={28} name="slideshare" color={color} />,
         }}
       />
         <Tabs.Screen
@@ -40,10 +41,10 @@ export default function TabLayout() {
             }}
         />
         <Tabs.Screen
-            name="test"
+            name="login"
             options={{
-                title: 'Teste',
-                tabBarIcon: ({ color }) => <FontAwesome size={28} name="cube" color={color} />,
+                title: 'Login',
+                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />
             }}
         />
     </Tabs>

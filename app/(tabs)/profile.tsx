@@ -1,102 +1,115 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform } from 'react-native';
+import {StyleSheet, Image, Platform, View, TextInput, Button, Text} from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import {Link} from "expo-router";
+import React, { useState } from 'react';
+import {Colors} from "@/constants/Colors";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {Pressable} from "expo-router/build/views/Pressable";
+import MatchScreen from "@/app/(tabs)/match";
 
-export default function TabTwoScreen() {
+export default function ProfileScreen({navigation}: {navigation: any}) {
     return (
-        <ParallaxScrollView
-            headerBackgroundColor={{ light: '#D0D0D0', dark: '#343637' }}
-            headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
-            <ThemedView style={styles.titleContainer}>
-                <ThemedText type="title">Explore</ThemedText>
-            </ThemedView>
-            <ThemedText>This app includes example code to help you get started.</ThemedText>
-            <Collapsible title="File-based routing">
-                <ThemedText>
-                    This app has two screens:{' '}
-                    <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-                    <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-                </ThemedText>
-                <ThemedText>
-                    The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-                    sets up the tab navigator.
-                </ThemedText>
-                <ExternalLink href="https://docs.expo.dev/router/introduction">
-                    <ThemedText type="link">Learn more</ThemedText>
-                </ExternalLink>
-            </Collapsible>
-            <Collapsible title="Android, iOS, and web support">
-                <ThemedText>
-                    You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-                    <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-                </ThemedText>
-            </Collapsible>
-            <Collapsible title="Images">
-                <ThemedText>
-                    For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-                    <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-                    different screen densities
-                </ThemedText>
-                <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-                <ExternalLink href="https://reactnative.dev/docs/images">
-                    <ThemedText type="link">Learn more</ThemedText>
-                </ExternalLink>
-            </Collapsible>
-            <Collapsible title="Custom fonts">
-                <ThemedText>
-                    Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-                    <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-                        custom fonts such as this one.
-                    </ThemedText>
-                </ThemedText>
-                <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-                    <ThemedText type="link">Learn more</ThemedText>
-                </ExternalLink>
-            </Collapsible>
-            <Collapsible title="Light and dark mode components">
-                <ThemedText>
-                    This template has light and dark mode support. The{' '}
-                    <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-                    what the user's current color scheme is, and so you can adjust UI colors accordingly.
-                </ThemedText>
-                <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-                    <ThemedText type="link">Learn more</ThemedText>
-                </ExternalLink>
-            </Collapsible>
-            <Collapsible title="Animations">
-                <ThemedText>
-                    This template includes an example of an animated component. The{' '}
-                    <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-                    the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText> library
-                    to create a waving hand animation.
-                </ThemedText>
-                {Platform.select({
-                    ios: (
-                        <ThemedText>
-                            The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-                            component provides a parallax effect for the header image.
-                        </ThemedText>
-                    ),
-                })}
-            </Collapsible>
-        </ParallaxScrollView>
+        <View style={{flex:1, backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'center'}}>
+            <View style={{
+                flex: 2,
+                backgroundColor: Colors.dark.background,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-around',
+                gap: 200,
+                marginTop: 20
+            }}>
+                {/*<FontAwesome size={22} name="arrow-left" color={'#FFFFFF'} style={{*/}
+                {/*    marginTop: '10%',*/}
+                {/*    backgroundColor: Colors.dark.tabIconSelected,*/}
+                {/*    padding: 15,*/}
+                {/*    borderRadius: 100,*/}
+                {/*}}/>*/}
+                <ThemedText type="title" style={{marginTop: '10%'}}>Perfil</ThemedText>
+                <FontAwesome size={22} name="pencil" color={'#FFFFFF'} style={{
+                    marginTop: '10%',
+                    backgroundColor: 'transparent',
+                    padding: 15,
+                    borderRadius: 100,
+                }}/>
+            </View>
+            <View style={{flex:2, flexDirection:'row', backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'center'}}>
+                <View style={{flex:2, flexDirection:'row', marginTop:80, backgroundColor: Colors.dark.background,justifyContent:'space-around', alignItems:'center'}}>
+                    <Image source={require('@/assets/images/foto_perfil.png')}></Image>
+                </View>
+            </View>
+            <View style={{flex:2, backgroundColor: 'transparent',justifyContent:'flex-start', alignItems:'center'}}>
+                <ThemedText type="defaultSemiBold" style={{marginTop: '20%'}}>Little Cachorrinho</ThemedText>
+            </View>
+            <View style={{flex:4, backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'flex-start', marginBottom: 30}}>
+                <View style={{flex:1,flexDirection:'column', backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'flex-start'}}>
+                    <ThemedText type="defaultSemiBold" style={{color:'white'}}>Nome</ThemedText>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Little Cachorrinho"
+                    />
+                </View>
+                <View style={{flex:1,flexDirection:'column', backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'flex-start'}}>
+                    <ThemedText type="defaultSemiBold" style={{color:'white'}}>Usuário</ThemedText>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="little.cachorrinho"
+                    />
+                </View>
+                <View style={{flex:1,flexDirection:'column', backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'flex-start'}}>
+                    <ThemedText type="defaultSemiBold" style={{color:'white'}}>E-mail</ThemedText>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="little.cachorrinho@gmail.com"
+                    />
+                </View>
+            </View>
+            <View style={{flex:1/2, flexDirection:'row', backgroundColor: Colors.dark.background,justifyContent:'space-around', alignItems:'center', marginBottom: 40,paddingLeft:60, paddingRight:60, gap: 10}}>
+                <Pressable style={styles.button}>
+                    <ThemedText type="defaultSemiBold" style={{color:'white'}}>Salvar Perfil</ThemedText>
+                </Pressable>
+                <Pressable style={styles.button2} onPress={() => navigation.navigate(MatchScreen())}>
+                    <ThemedText type="defaultSemiBold" style={{color:'white'}}>Sair</ThemedText>
+                </Pressable>
+            </View>
+        </View>
+
     );
 }
 
 const styles = StyleSheet.create({
-    headerImage: {
-        color: '#808080',
-        bottom: -90,
-        left: -35,
-        position: 'absolute',
+    input: {
+        width: 360,
+        height: 50,
+        backgroundColor: Colors.dark.input,
+        padding: 15,
+        borderRadius: 8,
+        elevation: 10,
     },
-    titleContainer: {
-        flexDirection: 'row',
-        gap: 8,
+    button:{
+        flex:1,
+        justifyContent:'center',
+        alignItems:'center',
+        width: 100,
+        height: 50,
+        backgroundColor: Colors.dark.tabIconSelected,
+        padding: 0,
+        borderRadius: 8,
+        elevation: 10,
     },
+    button2:{
+        flex:1/2,
+        justifyContent:'center',
+        alignItems:'center',
+        height: 50,
+        backgroundColor: Colors.dark.input,
+        padding: 15,
+        borderRadius: 8,
+        elevation: 10,
+    }
 });
