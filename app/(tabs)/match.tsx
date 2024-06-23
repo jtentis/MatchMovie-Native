@@ -115,8 +115,7 @@ export default function MatchScreen() {
                 }}>Criar nova sessão</ThemedText>
                 <TextInput
                     style={styles.input}
-                    value='Nome da Sessão'
-                    placeholder="useless placeholder"
+                    placeholder="Nome da Sessão"
                     keyboardType="default"
                 />
             </View>
@@ -138,8 +137,7 @@ export default function MatchScreen() {
                 }}>Entrar em sessão existente</ThemedText>
                 <TextInput
                     style={styles.input}
-                    value='Endereço da Sessão'
-                    placeholder="useless placeholder"
+                    placeholder="Endereço da Sessão"
                     keyboardType="default"
                 />
             </View>
