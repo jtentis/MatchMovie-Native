@@ -10,12 +10,15 @@ import {
     Dimensions,
     TouchableOpacity,
     Text,
-    FlatList, ActivityIndicator
+    FlatList, ActivityIndicator, TouchableWithoutFeedback, ImageSourcePropType
 } from 'react-native';
 import {Icon} from "react-native-elements";
 import {Colors} from "@/constants/Colors";
 import {ThemedText} from "@/components/ThemedText";
 import {Pressable} from "expo-router/build/views/Pressable";
+import {createStackNavigator} from "@react-navigation/stack";
+import {NavigationContainer} from "@react-navigation/native";
+import MovieDetailsScreen from "@/components/MovieDetailsScreen";
 
 const API_KEY = '2017240ed8d4e61fbe9ed801fe5da25a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -30,7 +33,9 @@ interface Movie {
     poster_path: string | null;
 }
 
-const App = () => {
+const Stack = createStackNavigator();
+
+const App = ({navigation}:{navigation: any}) => {
     const [query, setQuery] = useState<string>('');
     const [movies, setMovies] = useState<Movie[]>([]);
     const [filter, setFilter] = useState<string>('popular');
@@ -121,16 +126,17 @@ const App = () => {
         fetchMovies(url, true);
     };
 
-    const renderMovie = ({item}: { item: Movie }) => {
-        const posterUrl = item.poster_path
-            ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-            : null;
+    const renderMovie = ({ item }: { item: Movie }) => {
+        const posterUrl: ImageSourcePropType = item.poster_path
+            ? { uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }
+            : require('@/assets/images/No-Image-Placeholder.png');
+
         return (
-            <View key={item.id} style={styles.gridItem}>
-                {posterUrl && (
-                    <Image source={{uri: posterUrl}} style={styles.posterImage}/>
-                )}
-            </View>
+            <TouchableWithoutFeedback onPress={() => navigation.navigate('MovieDetails', { movieId: item.id })}>
+                <View key={item.id} style={styles.gridItem}>
+                    <Image source={posterUrl} style={styles.posterImage} />
+                </View>
+            </TouchableWithoutFeedback>
         );
     };
 
@@ -257,5 +263,4 @@ const styles = StyleSheet.create({
         color: Colors.dark.tabIconSelected,
     }
 });
-
 export default App;

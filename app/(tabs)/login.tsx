@@ -31,6 +31,7 @@ const Login = ({navigation}: { navigation: any }) => {
                 // navigation.navigate("Home", { token: token });
             } else {
                 Alert.alert('Erro de Login', 'Senha incorreta!');
+                console.log(response)
             }
             return response;
         } catch (error) {
