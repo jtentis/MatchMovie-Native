@@ -22,11 +22,12 @@ import MovieDetailsScreen from "@/components/MovieDetailsScreen";
 
 const API_KEY = '2017240ed8d4e61fbe9ed801fe5da25a';
 const BASE_URL = 'https://api.themoviedb.org/3';
-const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}`;
-const NOW_PLAYING_MOVIES_URL = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}`;
-const TOP_RATED_MOVIES_URL = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}`;
-const UPCOMING_MOVIES_URL = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}`;
-const SEARCH_MOVIE_URL = `${BASE_URL}/search/movie?api_key=${API_KEY}`;
+const POPULAR_MOVIES_URL_API = 'http://10.0.2.2:3000/movies/popular';
+const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`;
+const NOW_PLAYING_MOVIES_URL = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=pt-BR`;
+const TOP_RATED_MOVIES_URL = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=pt-BR`;
+const UPCOMING_MOVIES_URL = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=pt-BR`;
+const SEARCH_MOVIE_URL = `${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-BR`;
 
 interface Movie {
     id: number;
