@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, ImageSourcePropType } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text } from 'react-native';
 
 const API_KEY = '2017240ed8d4e61fbe9ed801fe5da25a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -50,7 +50,7 @@ const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
     useEffect(() => {
         const fetchMovieDetails = async () => {
             try {
-                const response = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits`);
+                const response = await fetch(`${BASE_URL}/movie/5532?api_key=${API_KEY}&append_to_response=credits`);
                 const data: MovieDetails = await response.json();
                 setMovieDetails(data);
             } catch (error) {

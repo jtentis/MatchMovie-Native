@@ -1,19 +1,13 @@
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
 import React from 'react';
 import {
-    Button,
     Image,
-    ImageBackground,
     ScrollView,
     StyleSheet,
-    Text,
     TextInput,
-    TouchableOpacity,
     View
 } from 'react-native';
-import {ThemedText} from "@/components/ThemedText";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import {Colors} from "@/constants/Colors";
-import Carousel from 'react-native-reanimated-carousel';
 
 export default function MatchScreen() {
 
@@ -31,7 +25,8 @@ export default function MatchScreen() {
                 backgroundColor: Colors.dark.background,
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'space-around',
+                justifyContent: 'flex-start',
+                paddingLeft: 30,
                 gap: 10,
             }}>
                 {/*<FontAwesome size={22} name="arrow-left" color={'#FFFFFF'} style={{*/}
@@ -98,7 +93,7 @@ export default function MatchScreen() {
                 </ScrollView>
             </View>
             <View style={{
-                flex: 1,
+                flex: 3/4,
                 backgroundColor: Colors.dark.background,
                 paddingLeft: 27,
                 paddingTop: 20,

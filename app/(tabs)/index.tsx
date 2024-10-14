@@ -1,27 +1,26 @@
 // App.tsx
-import React, {useEffect, useState, useRef} from 'react';
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
+import { createStackNavigator } from "@react-navigation/stack";
+import { Pressable } from "expo-router/build/views/Pressable";
+import React, { useEffect, useRef, useState } from 'react';
 import {
-    SafeAreaView,
-    TextInput,
-    Button,
-    Image,
-    StyleSheet,
-    View,
+    ActivityIndicator,
     Dimensions,
-    TouchableOpacity,
+    FlatList,
+    Image,
+    ImageSourcePropType,
+    SafeAreaView,
+    StyleSheet,
     Text,
-    FlatList, ActivityIndicator, TouchableWithoutFeedback, ImageSourcePropType
+    TextInput,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
-import {Icon} from "react-native-elements";
-import {Colors} from "@/constants/Colors";
-import {ThemedText} from "@/components/ThemedText";
-import {Pressable} from "expo-router/build/views/Pressable";
-import {createStackNavigator} from "@react-navigation/stack";
-import {NavigationContainer} from "@react-navigation/native";
-import MovieDetailsScreen from "@/components/MovieDetailsScreen";
 
 const API_KEY = '2017240ed8d4e61fbe9ed801fe5da25a';
 const BASE_URL = 'https://api.themoviedb.org/3';
+const BASE_URL_API = 'http://10.0.2.2:3000/movies';
 const POPULAR_MOVIES_URL_API = 'http://10.0.2.2:3000/movies/popular';
 const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`;
 const NOW_PLAYING_MOVIES_URL = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=pt-BR`;
@@ -133,7 +132,7 @@ const App = ({navigation}:{navigation: any}) => {
             : require('@/assets/images/No-Image-Placeholder.png');
 
         return (
-            <TouchableWithoutFeedback onPress={() => navigation.navigate('MovieDetails', { movieId: item.id })}>
+            <TouchableWithoutFeedback onPress={() => navigation.navigate('MovieDetailsScreen', { movieId: item.id })}>
                 <View key={item.id} style={styles.gridItem}>
                     <Image source={posterUrl} style={styles.posterImage} />
                 </View>

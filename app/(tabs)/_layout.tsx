@@ -1,12 +1,9 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import {xml} from '@/assets/images/logo';
-import { SvgXml } from 'react-native-svg';
 
 
 export default function TabLayout() {
@@ -45,6 +42,20 @@ export default function TabLayout() {
             options={{
                 title: 'Login',
                 tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />
+            }}
+        />
+        <Tabs.Screen
+            name="details"
+            options={{
+                title: 'Detalhes de filmes',
+                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />
+            }}
+        />
+        <Tabs.Screen
+            name="register"
+            options={{
+                title: 'Registro',
+                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />,
             }}
         />
     </Tabs>
