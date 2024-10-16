@@ -96,6 +96,7 @@ export default function MatchScreen() {
                 flex: 3/4,
                 backgroundColor: Colors.dark.background,
                 paddingLeft: 27,
+                paddingRight: 27,
                 paddingTop: 20,
                 flexDirection: 'column',
                 alignItems: 'flex-start',
@@ -105,7 +106,7 @@ export default function MatchScreen() {
                 <ThemedText type="subtitle" style={{
                     position: 'absolute',
                     paddingTop: 10,
-                    paddingLeft: 30
+                    paddingLeft: 30,
 
                 }}>Criar nova sessão</ThemedText>
                 <TextInput
@@ -118,6 +119,7 @@ export default function MatchScreen() {
                 flex: 1,
                 backgroundColor: Colors.dark.background,
                 paddingLeft: 27,
+                paddingRight: 27,
                 paddingTop: 20,
                 flexDirection: 'column',
                 alignItems: 'flex-start',
@@ -168,7 +170,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
     },
     input: {
-        width: 360,
+        width: 340,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
