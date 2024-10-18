@@ -136,9 +136,13 @@ export const DetailsComponent: React.FC = () => {
         .slice()
         .map((member) => member.name)
         .join(", ");
-    const streaming = results.BR.flatrate
+    const streamingPlatforms = results.BR.flatrate
         .slice()
         .map((member) => member.provider_name)
+        .join(", ");
+    const streamingPlatformsPosters = results.BR.flatrate
+        .slice()
+        .map((member) => member.logo_path)
         .join(", ");
 
     //ajeitando para retornar bonitinho
@@ -152,7 +156,7 @@ export const DetailsComponent: React.FC = () => {
         ? { uri: `https://image.tmdb.org/t/p/w500${poster_path}` }
         : require("@/assets/images/No-Image-Placeholder.png");
 
-    // console.log(streaming, cast);
+    // console.log(streamingPlatformsPosters);
     return (
         <>
             <View
