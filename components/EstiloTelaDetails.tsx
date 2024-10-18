@@ -44,6 +44,7 @@ interface Genre {
 interface CastMember {
     cast_id: number;
     name: string;
+    profile_path: string;
 }
 
 interface MovieDetails {
@@ -132,10 +133,16 @@ export const DetailsComponent: React.FC = () => {
     } = movieWatchProviders;
 
     const genresText = genres.map((genre) => genre.name).join(" • ");
-    const cast = credits.cast
+
+    const castNames = credits.cast
         .slice()
         .map((member) => member.name)
         .join(", ");
+    const castPictures = credits.cast
+        .slice()
+        .map((member) => member.profile_path)
+        .join(", ");
+
     const streamingPlatforms = results.BR.flatrate
         .slice()
         .map((member) => member.provider_name)
@@ -156,7 +163,7 @@ export const DetailsComponent: React.FC = () => {
         ? { uri: `https://image.tmdb.org/t/p/w500${poster_path}` }
         : require("@/assets/images/No-Image-Placeholder.png");
 
-    // console.log(streamingPlatformsPosters);
+    // console.log(castPictures, cast);
     return (
         <>
             <View
