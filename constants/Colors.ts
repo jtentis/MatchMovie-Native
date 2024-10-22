@@ -22,6 +22,7 @@ export const Colors = {
     icon: '#FFFFFF',
     tabIconDefault: '#ECEDEE',
     tabIconSelected: '#D46162',
-    input: '#707374'
+    input: '#707374',
+    light: '#5B5B57'
   },
 };

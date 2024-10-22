@@ -45,6 +45,7 @@ interface CastMember {
     cast_id: number;
     name: string;
     profile_path: string;
+    character: string;
 }
 
 interface MovieDetails {
@@ -75,7 +76,7 @@ interface FlatRate{
 }
 
 export const DetailsComponent: React.FC = () => {
-    const movieId = "157336"; //581734, 414906, 157336
+    const movieId = "155"; //581734, 414906, 157336, 389, 240, 278, 155
     const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(true);
     const [movieWatchProviders, setWatchProvider] = useState<WatchProvider | null>(null);
@@ -132,25 +133,27 @@ export const DetailsComponent: React.FC = () => {
         results
     } = movieWatchProviders;
 
-    const genresText = genres.map((genre) => genre.name).join(" • ");
+    const genresText = genres.map((genre) => genre.name).slice(0,3).join(" • ");
 
     const castNames = credits.cast
-        .slice()
+        .slice(0,10)
         .map((member) => member.name)
-        .join(", ");
+
+    const castCharacters = credits.cast
+        .slice(0,10)
+        .map((member) => member.character)
+    
     const castPictures = credits.cast
-        .slice()
+        .slice(0,10)
         .map((member) => member.profile_path)
-        .join(", ");
 
     const streamingPlatforms = results.BR.flatrate
-        .slice()
+        .slice(0, 3)
         .map((member) => member.provider_name)
-        .join(", ");
+        
     const streamingPlatformsPosters = results.BR.flatrate
         .slice()
         .map((member) => member.logo_path)
-        .join(", ");
 
     //ajeitando para retornar bonitinho
     const vote_average_divided = (vote_average / 2).toFixed(2);
@@ -163,7 +166,30 @@ export const DetailsComponent: React.FC = () => {
         ? { uri: `https://image.tmdb.org/t/p/w500${poster_path}` }
         : require("@/assets/images/No-Image-Placeholder.png");
 
-    // console.log(castPictures, cast);
+    const castPicturesUrl = castPictures.map((path) =>
+        path
+            ? { uri: `https://image.tmdb.org/t/p/w500${path}` }
+            : require("@/assets/images/no-image.png")
+    );
+
+    const streamingPlatformsPostersUrl = streamingPlatformsPosters.map((path) =>
+        path
+            ? { uri: `https://image.tmdb.org/t/p/w500${path}` }
+            : require("@/assets/images/no-image.png")
+    );
+
+    const platforms: any = {
+        'Max': require('@/assets/images/max.png'),
+        'Max Amazon Channel': require('@/assets/images/max.png'),
+        'Netflix': require('@/assets/images/netflix.png'),
+        'Amazon Prime Video': require('@/assets/images/prime.png'),
+        'Claro tv+': require('@/assets/images/claro-tv.png'),
+        'Globoplay': require('@/assets/images/globoplay.png'),
+        'Disney Plus': require('@/assets/images/disneyplus.png'),
+    };
+
+    // console.log(streamingPlatforms);
+
     return (
         <>
             <View
@@ -177,7 +203,6 @@ export const DetailsComponent: React.FC = () => {
                 <ImageBackground
                     style={styles.Image}
                     source={posterUrl}
-                    loadingIndicatorSource={require("@/assets/images/No-Image-Placeholder.png")}
                 ></ImageBackground>
                 <ThemedText type="defaultSemiBold" style={styles.title}>
                     {title}
@@ -252,7 +277,7 @@ export const DetailsComponent: React.FC = () => {
                         style={{
                             position: "relative",
                             right: 0,
-                            top: 10,
+                            top: 7,
                             fontSize: 26,
                         }}
                     >
@@ -281,24 +306,22 @@ export const DetailsComponent: React.FC = () => {
                             gap: 1.2,
                         }}
                     >
-                        <View style={styles.streamings}>
-                            <Image
-                                style={styles.streamingImages}
-                                source={require("@/assets/images/netflix.png")}
-                            ></Image>
+                        {streamingPlatforms.map((name, index)=>(
+                            <View key={index} style={styles.streamings}>
+                                {platforms[name] ? (
+                                    <Image
+                                    style={styles.streamingImages}
+                                    source={platforms[name]}
+                                    ></Image>
+                                ):(
+                                    <Image
+                                    style={styles.streamingImages}
+                                    source={streamingPlatformsPostersUrl[index]}
+                                    ></Image>
+                                )}
+                            
                         </View>
-                        <View style={styles.streamings}>
-                            <Image
-                                style={styles.streamingImages}
-                                source={require("@/assets/images/prime.png")}
-                            ></Image>
-                        </View>
-                        <View style={styles.streamings}>
-                            <Image
-                                style={{ width: 35, height: 6 }}
-                                source={require("@/assets/images/globoplay.png")}
-                            ></Image>
-                        </View>
+                        ))}
                     </View>
                 </View>
                 <View
@@ -307,68 +330,32 @@ export const DetailsComponent: React.FC = () => {
                         backgroundColor: Colors.dark.background,
                         justifyContent: "space-around",
                         alignItems: "center",
+                        paddingVertical: 10,
                     }}
                 >
-                    <ThemedText style={{ fontSize: 19 }}>{overview}</ThemedText>
-                    <ThemedText type="subtitle" style={{}}>
+                    <ScrollView style={{maxHeight: 160, backgroundColor: Colors.dark.background, width:'100%'}}>
+                        <ThemedText style={{ fontSize: 19}}>{overview}</ThemedText>
+                    </ScrollView>
+                    <ThemedText type="subtitle" style={{paddingVertical: 20}}>
                         ELENCO
                     </ThemedText>
-                    <View style={{ flex: 1 / 2, flexDirection: "row" }}>
+                    <View style={{ flex: 3 / 5, flexDirection: "row", marginHorizontal: 5}}>
                         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-                            <View style={styles.elenco}>
-                                <Image
-                                    style={{ width: 55, height: 53 }}
-                                    source={require("@/assets/images/cast-image-example.png")}
-                                ></Image>
-                                <ThemedText textBreakStrategy={'highQuality'} type="default" style={{}}>
-                                    Ke Huy Quan
+                            {castNames.map((item, index)=>(
+                                <View key={index} style={styles.elenco}>
+                                <ImageBackground
+                                    imageStyle={{ borderRadius: 8}}
+                                    style={{ width: 90, height: '100%', borderRadius: 8}}
+                                    source={castPicturesUrl[index]}
+                                ></ImageBackground>
+                                <ThemedText numberOfLines={1} ellipsizeMode="tail" type="default" style={styles.castNames}>
+                                    {item}
+                                </ThemedText>
+                                <ThemedText numberOfLines={1} ellipsizeMode="tail" type="default" style={styles.castNamesCaracters}>
+                                    {castCharacters[index]}
                                 </ThemedText>
                             </View>
-                            <View style={styles.elenco}>
-                                <Image
-                                    style={{ width: 55, height: 53 }}
-                                    source={require("@/assets/images/cast-image-example.png")}
-                                ></Image>
-                                <ThemedText type="default" style={{}}>
-                                    Ke Huy Quan
-                                </ThemedText>
-                            </View>
-                            <View style={styles.elenco}>
-                                <Image
-                                    style={{ width: 55, height: 53 }}
-                                    source={require("@/assets/images/cast-image-example.png")}
-                                ></Image>
-                                <ThemedText type="default" style={{}}>
-                                    Ke Huy Quan
-                                </ThemedText>
-                            </View>
-                            <View style={styles.elenco}>
-                                <Image
-                                    style={{ width: 55, height: 53 }}
-                                    source={require("@/assets/images/cast-image-example.png")}
-                                ></Image>
-                                <ThemedText type="default" style={{}}>
-                                    Ke Huy Quan
-                                </ThemedText>
-                            </View>
-                            <View style={styles.elenco}>
-                                <Image
-                                    style={{ width: 55, height: 53 }}
-                                    source={require("@/assets/images/cast-image-example.png")}
-                                ></Image>
-                                <ThemedText type="default" style={{}}>
-                                    Ke Huy Quan
-                                </ThemedText>
-                            </View>
-                            <View style={styles.elenco}>
-                                <Image
-                                    style={{ width: 55, height: 53 }}
-                                    source={require("@/assets/images/cast-image-example.png")}
-                                ></Image>
-                                <ThemedText type="default" style={{}}>
-                                    Ke Huy Quan
-                                </ThemedText>
-                            </View>
+                            ))}
                         </ScrollView>
                     </View>
                 </View>
@@ -401,8 +388,8 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     streamings: {
-        height: 25,
-        width: 45,
+        height: 22,
+        width: 48,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 1,
@@ -410,11 +397,37 @@ const styles = StyleSheet.create({
         borderRadius: 5,
     },
     streamingImages: {
-        width: 30,
-        height: 10,
+        width: 32,
+        height: '40%',
     },
     elenco: {
-        flex: 1 / 5,
-        alignItems: "center",
+        alignItems: 'center',
+        marginRight: 10, // Adds space between each item
+        backgroundColor: Colors.dark.background,
+        borderRadius: 8,
+        minHeight: 110,
+        maxHeight: 150
     },
+    castNames:{
+        fontSize: 12,
+        position:'absolute',
+        color: Colors.dark.text,
+        backgroundColor: Colors.dark.light,
+        maxWidth: 90,
+        minWidth: 90,
+        paddingHorizontal:5,
+        bottom: 19,
+    },
+    castNamesCaracters:{
+        fontSize: 12,
+        position:'absolute',
+        color: Colors.dark.text,
+        backgroundColor: Colors.dark.tabIconSelected,
+        maxWidth: 90,
+        minWidth: 90,
+        paddingHorizontal:5,
+        bottom: 0,
+        borderBottomRightRadius: 8,
+        borderBottomLeftRadius: 8
+    }
 });
