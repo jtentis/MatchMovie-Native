@@ -61,25 +61,26 @@ interface MovieDetails {
     poster_path: string | null;
 }
 
-interface WatchProvider{
+interface WatchProvider {
     results: {
-        BR : {
+        BR: {
             flatrate: FlatRate[];
-        }
-    }
+        };
+    };
 }
 
-interface FlatRate{
+interface FlatRate {
     logo_path: string | null;
     provider_id: number;
     provider_name: string;
 }
 
 export const DetailsComponent: React.FC = () => {
-    const movieId = "155"; //581734, 414906, 157336, 389, 240, 278, 155
+    const movieId = "157336"; //581734, 414906, 157336, 389, 240, 278, 155
     const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(true);
-    const [movieWatchProviders, setWatchProvider] = useState<WatchProvider | null>(null);
+    const [movieWatchProviders, setWatchProvider] =
+        useState<WatchProvider | null>(null);
     const [isLoadingProviders, setIsLoadingProviders] = useState<boolean>(true);
 
     useEffect(() => {
@@ -88,12 +89,14 @@ export const DetailsComponent: React.FC = () => {
                 const responseMovieDetails = await fetch(
                     `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits&language=pt-BR`
                 );
-                const dataMovieDetails: MovieDetails = await responseMovieDetails.json();
+                const dataMovieDetails: MovieDetails =
+                    await responseMovieDetails.json();
                 setMovieDetails(dataMovieDetails);
                 const responseWatchProviders = await fetch(
                     `${BASE_URL}/movie/${movieId}/watch/providers?api_key=${API_KEY}`
                 );
-                const dataWatchProviders: WatchProvider = await responseWatchProviders.json();
+                const dataWatchProviders: WatchProvider =
+                    await responseWatchProviders.json();
                 setWatchProvider(dataWatchProviders);
             } catch (error) {
                 console.error(error);
@@ -115,7 +118,11 @@ export const DetailsComponent: React.FC = () => {
     }
 
     if (!movieDetails) {
-        return <Text>Erro ao carregar plataformas onde o filme esta disponivel.</Text>;
+        return (
+            <Text>
+                Erro ao carregar plataformas onde o filme esta disponivel.
+            </Text>
+        );
     }
 
     const {
@@ -129,31 +136,30 @@ export const DetailsComponent: React.FC = () => {
         poster_path,
     } = movieDetails;
 
-    const {
-        results
-    } = movieWatchProviders;
+    const { results } = movieWatchProviders;
 
-    const genresText = genres.map((genre) => genre.name).slice(0,3).join(" • ");
+    const genresText = genres
+        .map((genre) => genre.name)
+        .slice(0, 3)
+        .join(" • ");
 
-    const castNames = credits.cast
-        .slice(0,10)
-        .map((member) => member.name)
+    const castNames = credits.cast.slice(0, 20).map((member) => member.name);
 
     const castCharacters = credits.cast
-        .slice(0,10)
-        .map((member) => member.character)
-    
+        .slice(0, 20)
+        .map((member) => member.character);
+
     const castPictures = credits.cast
-        .slice(0,10)
-        .map((member) => member.profile_path)
+        .slice(0, 20)
+        .map((member) => member.profile_path);
 
     const streamingPlatforms = results.BR.flatrate
-        .slice(0, 3)
-        .map((member) => member.provider_name)
-        
+        .slice(0, 4)
+        .map((member) => member.provider_name);
+
     const streamingPlatformsPosters = results.BR.flatrate
-        .slice()
-        .map((member) => member.logo_path)
+        .slice(0, 4)
+        .map((member) => member.logo_path);
 
     //ajeitando para retornar bonitinho
     const vote_average_divided = (vote_average / 2).toFixed(2);
@@ -179,13 +185,13 @@ export const DetailsComponent: React.FC = () => {
     );
 
     const platforms: any = {
-        'Max': require('@/assets/images/max.png'),
-        'Max Amazon Channel': require('@/assets/images/max.png'),
-        'Netflix': require('@/assets/images/netflix.png'),
-        'Amazon Prime Video': require('@/assets/images/prime.png'),
-        'Claro tv+': require('@/assets/images/claro-tv.png'),
-        'Globoplay': require('@/assets/images/globoplay.png'),
-        'Disney Plus': require('@/assets/images/disneyplus.png'),
+        "Max": require("@/assets/images/max.png"),
+        "Max Amazon Channel": require("@/assets/images/max.png"),
+        "Netflix": require("@/assets/images/netflix.png"),
+        "Amazon Prime Video": require("@/assets/images/prime.png"),
+        "Claro tv+": require("@/assets/images/claro-tv.png"),
+        "Globoplay": require("@/assets/images/globoplay.png"),
+        "Disney Plus": require("@/assets/images/disneyplus.png"),
     };
 
     // console.log(streamingPlatforms);
@@ -256,6 +262,8 @@ export const DetailsComponent: React.FC = () => {
                     backgroundColor: Colors.dark.background,
                     padding: 15,
                     paddingTop: 5,
+                    borderTopWidth: 1,
+                    borderColor: Colors.dark.tabIconSelected,
                 }}
             >
                 <View
@@ -306,21 +314,13 @@ export const DetailsComponent: React.FC = () => {
                             gap: 1.2,
                         }}
                     >
-                        {streamingPlatforms.map((name, index)=>(
+                        {streamingPlatforms.map((name, index) => (
                             <View key={index} style={styles.streamings}>
-                                {platforms[name] ? (
-                                    <Image
-                                    style={styles.streamingImages}
-                                    source={platforms[name]}
-                                    ></Image>
-                                ):(
-                                    <Image
+                                <Image
                                     style={styles.streamingImages}
                                     source={streamingPlatformsPostersUrl[index]}
-                                    ></Image>
-                                )}
-                            
-                        </View>
+                                ></Image>
+                            </View>
                         ))}
                     </View>
                 </View>
@@ -333,28 +333,59 @@ export const DetailsComponent: React.FC = () => {
                         paddingVertical: 10,
                     }}
                 >
-                    <ScrollView style={{maxHeight: 160, backgroundColor: Colors.dark.background, width:'100%'}}>
-                        <ThemedText style={{ fontSize: 19}}>{overview}</ThemedText>
+                    <ScrollView
+                        style={{
+                            maxHeight: 160,
+                            backgroundColor: Colors.dark.background,
+                            width: "100%",
+                        }}
+                    >
+                        <ThemedText style={{ fontSize: 18 }}>
+                            {overview}
+                        </ThemedText>
                     </ScrollView>
-                    <ThemedText type="subtitle" style={{paddingVertical: 20}}>
+                    <ThemedText type="subtitle" style={{ paddingVertical: 20 }}>
                         ELENCO
                     </ThemedText>
-                    <View style={{ flex: 3 / 5, flexDirection: "row", marginHorizontal: 5}}>
-                        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-                            {castNames.map((item, index)=>(
+                    <View
+                        style={{
+                            flex: 3 / 5,
+                            flexDirection: "row",
+                            marginHorizontal: 5,
+                        }}
+                    >
+                        <ScrollView
+                            horizontal={true}
+                            showsHorizontalScrollIndicator={false}
+                        >
+                            {castNames.map((item, index) => (
                                 <View key={index} style={styles.elenco}>
-                                <ImageBackground
-                                    imageStyle={{ borderRadius: 8}}
-                                    style={{ width: 90, height: '100%', borderRadius: 8}}
-                                    source={castPicturesUrl[index]}
-                                ></ImageBackground>
-                                <ThemedText numberOfLines={1} ellipsizeMode="tail" type="default" style={styles.castNames}>
-                                    {item}
-                                </ThemedText>
-                                <ThemedText numberOfLines={1} ellipsizeMode="tail" type="default" style={styles.castNamesCaracters}>
-                                    {castCharacters[index]}
-                                </ThemedText>
-                            </View>
+                                    <ImageBackground
+                                        imageStyle={{ borderRadius: 8 }}
+                                        style={{
+                                            width: 90,
+                                            height: "99%",
+                                            borderRadius: 8,
+                                        }}
+                                        source={castPicturesUrl[index]}
+                                    ></ImageBackground>
+                                    <ThemedText
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail"
+                                        type="default"
+                                        style={styles.castNames}
+                                    >
+                                        {item}
+                                    </ThemedText>
+                                    <ThemedText
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail"
+                                        type="default"
+                                        style={styles.castNamesCaracters}
+                                    >
+                                        {castCharacters[index]}
+                                    </ThemedText>
+                                </View>
                             ))}
                         </ScrollView>
                     </View>
@@ -375,11 +406,12 @@ const styles = StyleSheet.create({
         color: "white",
         position: "absolute",
         marginTop: 270,
-        padding: 15,
+        padding: 14,
         backgroundColor: Colors.dark.background,
         borderBottomRightRadius: 5,
         borderTopRightRadius: 5,
         shadowOpacity: 4,
+        elevation: 5,
     },
     details: {
         fontSize: 12,
@@ -389,7 +421,7 @@ const styles = StyleSheet.create({
     },
     streamings: {
         height: 22,
-        width: 48,
+        width: 22,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 1,
@@ -397,37 +429,38 @@ const styles = StyleSheet.create({
         borderRadius: 5,
     },
     streamingImages: {
-        width: 32,
-        height: '40%',
+        width: 16,
+        height: 16,
+        borderRadius: 3
     },
     elenco: {
-        alignItems: 'center',
+        alignItems: "center",
         marginRight: 10, // Adds space between each item
         backgroundColor: Colors.dark.background,
         borderRadius: 8,
         minHeight: 110,
-        maxHeight: 150
+        maxHeight: 150,
     },
-    castNames:{
+    castNames: {
         fontSize: 12,
-        position:'absolute',
+        position: "absolute",
         color: Colors.dark.text,
         backgroundColor: Colors.dark.light,
         maxWidth: 90,
         minWidth: 90,
-        paddingHorizontal:5,
+        paddingHorizontal: 5,
         bottom: 19,
     },
-    castNamesCaracters:{
+    castNamesCaracters: {
         fontSize: 12,
-        position:'absolute',
+        position: "absolute",
         color: Colors.dark.text,
         backgroundColor: Colors.dark.tabIconSelected,
         maxWidth: 90,
         minWidth: 90,
-        paddingHorizontal:5,
+        paddingHorizontal: 5,
         bottom: 0,
         borderBottomRightRadius: 8,
-        borderBottomLeftRadius: 8
-    }
+        borderBottomLeftRadius: 8,
+    },
 });

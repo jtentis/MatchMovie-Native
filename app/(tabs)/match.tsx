@@ -1,7 +1,9 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
+import { Pressable } from "expo-router/build/views/Pressable";
 import React from 'react';
 import {
+    Alert,
     Image,
     ScrollView,
     StyleSheet,
@@ -10,6 +12,9 @@ import {
 } from 'react-native';
 
 export default function MatchScreen() {
+    function buttonPressed(){
+        return Alert.alert('Botão pressionado!');
+    }
 
     return (
         <View
@@ -114,6 +119,9 @@ export default function MatchScreen() {
                     placeholder="Nome da Sessão"
                     keyboardType="default"
                 />
+                <Pressable style={styles.button}>
+                    <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: 16}}>Criar</ThemedText>
+                </Pressable>
             </View>
             <View style={{
                 flex: 1,
@@ -137,6 +145,9 @@ export default function MatchScreen() {
                     placeholder="Endereço da Sessão"
                     keyboardType="default"
                 />
+                <Pressable style={styles.button}>
+                    <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: 16}}>Entrar</ThemedText>
+                </Pressable>
             </View>
         </View>
     );
@@ -174,8 +185,22 @@ const styles = StyleSheet.create({
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
-        marginTop: 30,
+        marginTop: 20,
         borderRadius: 8,
         elevation: 10,
+    },
+    button:{
+        position: 'absolute',
+        right: 25,
+        flex:1,
+        justifyContent:'center',
+        alignItems:'center',
+        width: 100,
+        height: 50,
+        backgroundColor: Colors.dark.tabIconSelected,
+        padding: 0,
+        borderRadius: 8,
+        elevation: 10,
+        marginTop:40
     }
 });
