@@ -1,10 +1,10 @@
 import React from 'react';
 import { GroupsScreen } from '../../components/Groups';
 
-const MovieDetailsScreen= () => {
+const GroupsComponent = () => {
     return (
         <GroupsScreen />
     )
 };
 
-export default MovieDetailsScreen;
+export default GroupsComponent;

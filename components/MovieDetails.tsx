@@ -213,7 +213,7 @@ export const DetailsComponent: React.FC = () => {
                 <ThemedText type="defaultSemiBold" style={styles.title}>
                     {title}
                 </ThemedText>
-                <View style={styles.backButton}><FontAwesome size={25}name="chevron-left" color="white"/></View>
+                <View style={styles.backButton}><FontAwesome size={35}name="chevron-left" color="black"/></View>
                 <View style={styles.likeButton}><FontAwesome size={25}name="heart" color="white"/></View>
                 <View style={styles.watchedButton}><FontAwesome size={25}name="eye" color="#D46162"/></View>
             </View>
@@ -432,8 +432,6 @@ const styles = StyleSheet.create({
         position: "absolute",
         left: 20,
         top: 60,
-        borderRadius: 10000,
-        backgroundColor: "#D46162",
         opacity: 0.8,
     },
     likeButton:{

@@ -22,7 +22,7 @@ export const GroupsScreen: React.FC = () => {
         <ThemedText type="defaultSemiBold" style={styles.title}>
             Escola
         </ThemedText>
-        <View style={styles.backButton}><FontAwesome size={25}name="chevron-left"color="white"/></View>
+        <View style={styles.backButton}><FontAwesome size={35} name="chevron-left" color={'black'}/></View>
         <FontAwesome style={{position: "absolute",right: 30,top: 70,opacity: 0.7,color:'white',elevation:10}}size={25}name="pencil"/>
       </View>
       <View style={styles.mainContainer}>
@@ -151,8 +151,8 @@ const styles = StyleSheet.create({
       position: "absolute",
       left: 20,
       top: 60,
-      borderRadius: 10000,
-      backgroundColor: "#D46162",
       opacity: 0.8,
+      elevation:5,
+      color: 'Colors.dark.tabIconSelected'
     }
 });
