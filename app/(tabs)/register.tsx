@@ -2,14 +2,16 @@ import { ThemedText } from '@/components/ThemedText';
 import { Colors } from "@/constants/Colors";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React from 'react';
-import { Image, ScrollView, StyleSheet, TextInput, View, } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Icon } from '../../components/MatchLogo';
 
 
 export default function RegisterScreen({navigation}: {navigation: any}) {
     return (
-        <><><View style={{ flex: 2/2, flexDirection: 'row', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{marginTop: 50}}>
-                <Image source={require('@/assets/images/Logo.png')}></Image>
+        <><><View style={{ flex: 2/3, flexDirection: 'row', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{alignContent:'center', justifyContent:'center', marginTop:'10%'}}>
+                <Icon width={130} height={130} fill={Colors.dark.tabIconSelected} style={{alignSelf:'center', marginRight:5}}/>
+                <ThemedText type="defaultSemiBold" style={{color:'white'}}>Preencha com suas informações e faça registro!</ThemedText>
             </View>
         </View><ScrollView style={{ flex: 1 }}>
                 <View style={{ flex: 5, flexDirection: 'column', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center', gap: 20 }}>
@@ -99,5 +101,16 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         elevation: 10,
+    },
+    textLogo:{
+        color:'white',
+        alignSelf:'center',
+        justifyContent:'center',
+        width: 130,
+        textAlign:'center',
+        backgroundColor:Colors.dark.background,
+        fontFamily:'Coiny-Regular',
+        fontWeight: 400,
+        fontSize: 38
     }
 });

@@ -1,11 +1,10 @@
-import React, {useState} from 'react';
-import {View, Text, TextInput, Button, StyleSheet, Alert, Image} from 'react-native';
-import axios from 'axios';
-import {useNavigation} from "expo-router";
-import {Color} from "ansi-fragments/build/fragments/Color";
-import {Colors} from "@/constants/Colors";
-import {Pressable} from "expo-router/build/views/Pressable";
-import {ThemedText} from "@/components/ThemedText";
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
+import { useFonts } from 'expo-font';
+import { Pressable } from "expo-router/build/views/Pressable";
+import React, { useState } from 'react';
+import { Alert, StyleSheet, TextInput, View } from 'react-native';
+import { Icon } from '../../components/MatchLogo';
 
 const Login = ({navigation}: { navigation: any }) => {
     // const navigation = useNavigation();
@@ -39,6 +38,14 @@ const Login = ({navigation}: { navigation: any }) => {
         }
     };
 
+    let [fontsLoaded] = useFonts({
+        'Coiny-Regular': require('../../assets/fonts/Coiny-Regular.ttf'),
+    });
+
+    if (!fontsLoaded) {
+        return null;
+    }
+
     return (
         <View style={{
             flex: 1,
@@ -53,7 +60,8 @@ const Login = ({navigation}: { navigation: any }) => {
                 padding: 16,
                 marginTop: 100,
                 backgroundColor: Colors.dark.background,}}>
-                <Image source={require('@/assets/images/Logo.png')}></Image>
+                <Icon width={150} height={150} fill={Colors.dark.tabIconSelected} />
+                <ThemedText type="title" style={styles.textLogo}>Match Movie</ThemedText>
             </View>
             <View style={styles.container}>
                 <ThemedText type="defaultSemiBold" style={{color:'white', alignSelf:'flex-start'}}>E-mail</ThemedText>
@@ -71,7 +79,7 @@ const Login = ({navigation}: { navigation: any }) => {
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry/>
-                <ThemedText type={'default'} style={{fontSize: 12}}>Não possui login? Clique aqui para se registrar!</ThemedText>
+                <ThemedText type={'default'} style={{fontSize: 12}}>Não possui conta?<ThemedText type={'default'} style={{fontSize: 12, color:Colors.dark.tabIconSelected}}> Registre-se!</ThemedText></ThemedText>
                 <View style={{flex:1/2, flexDirection:'row', backgroundColor: Colors.dark.background,justifyContent:'space-around', alignItems:'center', marginBottom: 40,paddingLeft:60, paddingRight:60, gap: 10}}>
                     <Pressable onPress={handleLogin} style={styles.button}>
                         <ThemedText type={'defaultSemiBold'} style={{fontSize: 16}}>Login</ThemedText>
@@ -97,7 +105,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     input: {
-        width: 360,
+        width: 340,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -116,6 +124,17 @@ const styles = StyleSheet.create({
         elevation: 10,
         marginTop:50
     },
+    textLogo:{
+        color:'white',
+        alignSelf:'center',
+        justifyContent:'center',
+        width: 130,
+        textAlign:'center',
+        backgroundColor:Colors.dark.background,
+        fontFamily:'Coiny-Regular',
+        fontWeight: 400,
+        fontSize: 46
+    }
 });
 
 export default Login;
