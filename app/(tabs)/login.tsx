@@ -72,14 +72,14 @@ const Login = ({navigation}: { navigation: any }) => {
                     onChangeText={setEmail}
                     keyboardType="email-address"
                     autoCapitalize="none"/>
-                <ThemedText type="defaultSemiBold" style={{color:'white', alignSelf:'flex-start'}}>Senha</ThemedText>
+                <ThemedText type="defaultSemiBold" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Senha</ThemedText>
                 <TextInput
                     style={styles.input}
                     placeholder="Senha"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry/>
-                <ThemedText type={'default'} style={{fontSize: 12}}>Não possui conta?<ThemedText type={'default'} style={{fontSize: 12, color:Colors.dark.tabIconSelected}}> Registre-se!</ThemedText></ThemedText>
+                <ThemedText type={'default'} style={{fontSize: 12}}>Ainda não possui conta?<ThemedText type={'default'} style={{fontSize: 12, color:Colors.dark.tabIconSelected}}> Registre-se!</ThemedText></ThemedText>
                 <View style={{flex:1/2, flexDirection:'row', backgroundColor: Colors.dark.background,justifyContent:'space-around', alignItems:'center', marginBottom: 40,paddingLeft:60, paddingRight:60, gap: 10}}>
                     <Pressable onPress={handleLogin} style={styles.button}>
                         <ThemedText type={'defaultSemiBold'} style={{fontSize: 16}}>Login</ThemedText>
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     input: {
-        width: 340,
+        width: 360,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
         padding: 0,
         borderRadius: 8,
         elevation: 10,
-        marginTop:50
+        marginTop:150
     },
     textLogo:{
         color:'white',

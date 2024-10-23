@@ -60,6 +60,13 @@ export default function TabLayout() {
                 tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />,
             }}
         />
+        <Tabs.Screen
+            name="groups"
+            options={{
+                title: 'Grupos',
+                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />,
+            }}
+        />
     </Tabs>
 
   );

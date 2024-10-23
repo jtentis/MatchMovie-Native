@@ -1,5 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Fonts";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React from 'react';
 import {
@@ -28,19 +30,14 @@ export default function MatchScreen() {
             <View style={{
                 flex: 1,
                 backgroundColor: Colors.dark.background,
-                flexDirection: 'row',
+                flexDirection: 'row-reverse',
                 alignItems: 'center',
-                justifyContent: 'flex-start',
-                paddingLeft: 30,
+                justifyContent: 'space-between',
+                paddingHorizontal: 15,
                 gap: 10,
             }}>
-                {/*<FontAwesome size={22} name="arrow-left" color={'#FFFFFF'} style={{*/}
-                {/*    marginTop: '10%',*/}
-                {/*    backgroundColor: Colors.dark.tabIconSelected,*/}
-                {/*    padding: 15,*/}
-                {/*    borderRadius: 100,*/}
-                {/*}}/>*/}
                 <ThemedText type="title" style={{marginTop: '10%'}}>Minhas Sessões</ThemedText>
+                <View style={styles.backButton}><FontAwesome size={25}name="chevron-left" color="white"/></View>
             </View>
             <View style={{
                 flex: 4 / 2,
@@ -49,7 +46,7 @@ export default function MatchScreen() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
             }}>
-                <ScrollView horizontal={true} style={{marginLeft: 20}} showsHorizontalScrollIndicator={false}>
+                <ScrollView horizontal={true} style={{marginLeft: 10}} showsHorizontalScrollIndicator={false}>
                     <View style={[styles.card, styles.elevated]}>
                         <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
                                style={styles.images}></Image>
@@ -100,8 +97,7 @@ export default function MatchScreen() {
             <View style={{
                 flex: 3/4,
                 backgroundColor: Colors.dark.background,
-                paddingLeft: 27,
-                paddingRight: 27,
+                paddingLeft: 20,
                 paddingTop: 20,
                 flexDirection: 'column',
                 alignItems: 'flex-start',
@@ -110,8 +106,8 @@ export default function MatchScreen() {
             }}>
                 <ThemedText type="subtitle" style={{
                     position: 'absolute',
-                    paddingTop: 10,
-                    paddingLeft: 30,
+                    marginTop: 10,
+                    marginLeft: 20,
 
                 }}>Criar nova sessão</ThemedText>
                 <TextInput
@@ -120,14 +116,13 @@ export default function MatchScreen() {
                     keyboardType="default"
                 />
                 <Pressable style={styles.button}>
-                    <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: 16}}>Criar</ThemedText>
+                    <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: Fonts.dark.buttonText}}>Criar</ThemedText>
                 </Pressable>
             </View>
             <View style={{
                 flex: 1,
                 backgroundColor: Colors.dark.background,
-                paddingLeft: 27,
-                paddingRight: 27,
+                paddingLeft: 20,
                 paddingTop: 20,
                 flexDirection: 'column',
                 alignItems: 'flex-start',
@@ -136,8 +131,8 @@ export default function MatchScreen() {
             }}>
                 <ThemedText type="subtitle" style={{
                     position: 'absolute',
-                    paddingTop: 10,
-                    paddingLeft: 30
+                    marginTop: 10,
+                    marginLeft: 20,
 
                 }}>Entrar em sessão existente</ThemedText>
                 <TextInput
@@ -146,7 +141,7 @@ export default function MatchScreen() {
                     keyboardType="default"
                 />
                 <Pressable style={styles.button}>
-                    <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: 16}}>Entrar</ThemedText>
+                    <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: Fonts.dark.buttonText}}>Entrar</ThemedText>
                 </Pressable>
             </View>
         </View>
@@ -181,7 +176,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
     },
     input: {
-        width: 340,
+        width: 360,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -191,7 +186,7 @@ const styles = StyleSheet.create({
     },
     button:{
         position: 'absolute',
-        right: 25,
+        right: 12,
         flex:1,
         justifyContent:'center',
         alignItems:'center',
@@ -201,6 +196,15 @@ const styles = StyleSheet.create({
         padding: 0,
         borderRadius: 8,
         elevation: 10,
-        marginTop:40
+        marginTop:40,
+        fontSize: Fonts.dark.buttonText
+    },
+    backButton:{
+        width: 55,
+        height: 55,
+        alignItems:'center',
+        justifyContent:'center',
+        opacity: 0.8,
+        marginTop:32
     }
 });
