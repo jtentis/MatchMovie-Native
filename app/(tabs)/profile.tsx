@@ -38,28 +38,34 @@ export default function ProfileScreen({navigation}: {navigation: any}) {
             </View>
             <View style={{flex:4, backgroundColor: Colors.dark.background, justifyContent:'center', alignItems:'flex-start', marginBottom: 30}}>
                 <View style={{flex:1,flexDirection:'column', backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'flex-start'}}>
-                    <ThemedText type="defaultSemiBold" style={{color:'white'}}>Nome</ThemedText>
+                    <ThemedText type="default" style={{color:'white'}}>Nome</ThemedText>
                     <TextInput
                         style={styles.input}
                         placeholder="Little Cachorrinho"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
                     />
                 </View>
                 <View style={{flex:1,flexDirection:'column', backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'flex-start'}}>
-                    <ThemedText type="defaultSemiBold" style={{color:'white'}}>Usuário</ThemedText>
+                    <ThemedText type="default" style={{color:'white'}}>Usuário</ThemedText>
                     <TextInput
                         style={styles.input}
                         placeholder="little.cachorrinho"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
                     />
                 </View>
                 <View style={{flex:1, flexDirection:'column', backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'flex-start'}}>
-                    <ThemedText type="defaultSemiBold" style={{color:'white'}}>E-mail</ThemedText>
+                    <ThemedText type="default" style={{color:'white'}}>E-mail</ThemedText>
                     <TextInput
                         style={styles.input}
                         placeholder="little.cachorrinho@gmail.com"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
                     />
                 </View>
             </View>
-            <View style={{flex:1/2, flexDirection:'row', backgroundColor: Colors.dark.background,justifyContent:'space-around', alignItems:'center', marginBottom: 40,paddingLeft:60, paddingRight:60, gap: 10}}>
+            <View style={{flex:1/2, flexDirection:'row', backgroundColor: Colors.dark.background,justifyContent:'space-around', alignItems:'center', marginBottom: 40, gap: 10}}>
                 <Pressable style={styles.button}>
                     <ThemedText type="defaultSemiBold" style={{color:'white'}}>Salvar Perfil</ThemedText>
                 </Pressable>
@@ -79,29 +85,30 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.input,
         padding: 15,
         borderRadius: 8,
-        elevation: 10,
-        marginTop:5
+        elevation: 2,
+        marginTop:5,
+        color:Colors.dark.text
     },
     button:{
-        flex:1,
         justifyContent:'center',
         alignItems:'center',
-        width: 100,
+        width: 175,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
         borderRadius: 8,
-        elevation: 10,
+        elevation: 2,
     },
     button2:{
-        flex:1/2,
         justifyContent:'center',
         alignItems:'center',
+        width: 175,
         height: 50,
-        backgroundColor: Colors.dark.input,
-        padding: 15,
+        backgroundColor: Colors.dark.background,
+        padding: 0,
         borderRadius: 8,
-        elevation: 10,
+        borderWidth:1,
+        borderColor: Colors.dark.tabIconSelected,
     },
     backButton:{
         width: 55,

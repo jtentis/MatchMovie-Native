@@ -8,59 +8,84 @@ import { Icon } from '../../components/MatchLogo';
 
 export default function RegisterScreen({navigation}: {navigation: any}) {
     return (
-        <><><View style={{ flex: 2/3, flexDirection: 'row', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{alignContent:'center', justifyContent:'center', marginTop:'10%'}}>
-                <Icon width={130} height={130} fill={Colors.dark.tabIconSelected} style={{alignSelf:'center', marginRight:5}}/>
-                <ThemedText type="defaultSemiBold" style={{color:'white'}}>Preencha com suas informações e faça registro!</ThemedText>
+        <><><View style={{ flex: 2/4, flexDirection: 'row', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{height: '100%',width:'100%', alignItems:'center', justifyContent:'center', marginTop:'10%'}}>
+                <Icon width={130} height={130} fill={Colors.dark.tabIconSelected} style={{alignSelf:'center', marginRight:0}}/>
+                <ThemedText type="default" style={{fontFamily:'Coiny-Regular', fontWeight:400, fontSize: 32, padding: 20}}>Registre-se!</ThemedText>
             </View>
-        </View><ScrollView style={{ flex: 1 }}>
-                <View style={{ flex: 5, flexDirection: 'column', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center', gap: 20 }}>
+        </View>
+            <ScrollView style={{ flex: 1, backgroundColor: Colors.dark.background}}>
+                <View style={{ flex: 5, flexDirection: 'column', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center', gap:2, marginBottom:30,  marginHorizontal: 16}}>
+                    <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Nome</ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="Nome"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        placeholder="Digite seu nome"
                         keyboardType="default" />
+                    <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Sobrenome</ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="Sobrenome"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        placeholder="Digite seu sobrenome"
                         keyboardType="default" />
+                    <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Usuário</ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="Usuário"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        placeholder="Digite seu usuário"
                         keyboardType="default" />
+                    <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>E-mail</ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="E-mail"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        placeholder="Digite seu e-mail"
                         keyboardType="default" />
+                    <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Senha</ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="Senha"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        placeholder="Digite sua senha"
                         keyboardType="default" />
+                    <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Confirmação de Senha</ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="Confirmação de senha"
-                        keyboardType="default" />
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        placeholder="Confirme sua senha"
+                        keyboardType="numeric" />
+                    <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>CPF</ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="CPF"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        placeholder="Digite seu CPF"
                         keyboardType="default" />
+                    <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Endereço</ThemedText>
                     <View style={{flexDirection: 'row', gap: 10}}>
                         <TextInput
-                        style={styles.inputSmall}
-                        placeholder="Endereço"
+                        style={[styles.inputSmall, styles.size]}
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        placeholder="Digite seu Endereço"
                         keyboardType="default" />
                         <TextInput
-                        style={styles.inputSmall}
+                        style={[styles.inputSmall, styles.size2]}
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
                         placeholder="Número"
                         keyboardType="default" />
                     </View>
-                </View>
-            </ScrollView></><View style={{ flex: 1/3, flexDirection: 'row', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{flex:1, flexDirection:'row', backgroundColor: Colors.dark.background,justifyContent:'space-around', alignItems:'center', marginBottom: 0,paddingLeft:60, paddingRight:60, gap: 10}}>
                     <Pressable style={styles.button}>
                         <ThemedText type="defaultSemiBold" style={{color:'white'}}>Registrar</ThemedText>
                     </Pressable>
                 </View>
-            </View></>
+            </ScrollView></>
+        </>
     );
 }
 
@@ -71,26 +96,32 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.input,
         padding: 15,
         borderRadius: 8,
-        elevation: 10,
+        elevation: 2,
     },
     inputSmall: {
-        width: 175,
-        height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
         borderRadius: 8,
         elevation: 10,
     },
+    size:{
+        width: 240,
+        height: 50,
+    },
+    size2:{
+        width: 110,
+        height: 50,
+    },
     button:{
-        flex:1,
         justifyContent:'center',
         alignItems:'center',
-        width: 80,
+        width: 360,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
         borderRadius: 8,
         elevation: 10,
+        marginTop:20
     },
     button2:{
         flex:1/2,

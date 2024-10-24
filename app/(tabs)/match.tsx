@@ -50,7 +50,7 @@ export default function MatchScreen() {
                     <View style={[styles.card, styles.elevated]}>
                         <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
                                style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
+                        <ThemedText type="default" style={{
                             position: 'absolute',
                             paddingTop: '170%',
                             paddingRight: '70%'
@@ -59,7 +59,7 @@ export default function MatchScreen() {
                     <View style={[styles.card, styles.elevated]}>
                         <Image source={require('@/assets/images/random2.jpg')} resizeMode={"stretch"}
                                style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
+                        <ThemedText type="default" style={{
                             position: 'absolute',
                             paddingTop: '170%',
                             paddingRight: '60%'
@@ -68,7 +68,7 @@ export default function MatchScreen() {
                     <View style={[styles.card, styles.elevated]}>
                         <Image source={require('@/assets/images/random3.jpg')} resizeMode={"stretch"}
                                style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
+                        <ThemedText type="default" style={{
                             position: 'absolute',
                             paddingTop: '170%',
                             paddingRight: '60%'
@@ -77,7 +77,7 @@ export default function MatchScreen() {
                     <View style={[styles.card, styles.elevated]}>
                         <Image source={require('@/assets/images/random 4.jpg')} resizeMode={"stretch"}
                                style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
+                        <ThemedText type="default" style={{
                             position: 'absolute',
                             paddingTop: '170%',
                             paddingRight: '60%'
@@ -86,7 +86,7 @@ export default function MatchScreen() {
                     <View style={[styles.card, styles.elevated]}>
                         <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
                                style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
+                        <ThemedText type="default" style={{
                             position: 'absolute',
                             paddingTop: '170%',
                             paddingRight: '60%'
@@ -114,6 +114,8 @@ export default function MatchScreen() {
                     style={styles.input}
                     placeholder="Nome da Sessão"
                     keyboardType="default"
+                    selectionColor={Colors.dark.tabIconSelected}
+                    placeholderTextColor={Colors.dark.textPlaceHolder}
                 />
                 <Pressable style={styles.button}>
                     <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: Fonts.dark.buttonText}}>Criar</ThemedText>
@@ -139,6 +141,8 @@ export default function MatchScreen() {
                     style={styles.input}
                     placeholder="Endereço da Sessão"
                     keyboardType="default"
+                    selectionColor={Colors.dark.tabIconSelected}
+                    placeholderTextColor={Colors.dark.textPlaceHolder}
                 />
                 <Pressable style={styles.button}>
                     <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: Fonts.dark.buttonText}}>Entrar</ThemedText>
@@ -182,7 +186,8 @@ const styles = StyleSheet.create({
         padding: 15,
         marginTop: 20,
         borderRadius: 8,
-        elevation: 10,
+        elevation: 2,
+        color:Colors.dark.text
     },
     button:{
         position: 'absolute',
@@ -195,13 +200,13 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
         borderRadius: 8,
-        elevation: 10,
+        elevation: 2,
         marginTop:40,
         fontSize: Fonts.dark.buttonText
     },
     backButton:{
-        width: 55,
-        height: 55,
+        width: 30,
+        height: 30,
         alignItems:'center',
         justifyContent:'center',
         opacity: 0.8,

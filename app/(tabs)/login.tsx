@@ -64,25 +64,31 @@ const Login = ({navigation}: { navigation: any }) => {
                 <ThemedText type="title" style={styles.textLogo}>Match Movie</ThemedText>
             </View>
             <View style={styles.container}>
-                <ThemedText type="defaultSemiBold" style={{color:'white', alignSelf:'flex-start'}}>E-mail</ThemedText>
+                <ThemedText type="default" style={{color:'white', alignSelf:'flex-start'}}>E-mail</ThemedText>
                 <TextInput
                     style={styles.input}
-                    placeholder="Email"
+                    placeholder="Digite seu email"
                     value={email}
+                    selectionColor={Colors.dark.tabIconSelected}
+                    placeholderTextColor={Colors.dark.textPlaceHolder}
                     onChangeText={setEmail}
                     keyboardType="email-address"
                     autoCapitalize="none"/>
-                <ThemedText type="defaultSemiBold" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Senha</ThemedText>
+                <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Senha</ThemedText>
                 <TextInput
                     style={styles.input}
-                    placeholder="Senha"
+                    placeholder="Digite sua senha"
                     value={password}
+                    selectionColor={Colors.dark.tabIconSelected}
+                    placeholderTextColor={Colors.dark.textPlaceHolder}
                     onChangeText={setPassword}
                     secureTextEntry/>
-                <ThemedText type={'default'} style={{fontSize: 12}}>Ainda não possui conta?<ThemedText type={'default'} style={{fontSize: 12, color:Colors.dark.tabIconSelected}}> Registre-se!</ThemedText></ThemedText>
-                <View style={{flex:1/2, flexDirection:'row', backgroundColor: Colors.dark.background,justifyContent:'space-around', alignItems:'center', marginBottom: 40,paddingLeft:60, paddingRight:60, gap: 10}}>
-                    <Pressable onPress={handleLogin} style={styles.button}>
+                <View style={{flex:1/2, flexDirection:'column', backgroundColor: Colors.dark.background, justifyContent:'center', alignItems:'center', marginBottom: 40, gap:10}}>
+                    <Pressable onPress={handleLogin} style={styles.buttonLogin}>
                         <ThemedText type={'defaultSemiBold'} style={{fontSize: 16}}>Login</ThemedText>
+                    </Pressable>
+                    <Pressable onPress={handleLogin} style={styles.buttonRegister}>
+                        <ThemedText type={'defaultSemiBold'} style={{fontSize: 16}}>Criar Conta</ThemedText>
                     </Pressable>
                 </View>
             </View>
@@ -110,19 +116,29 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.input,
         padding: 15,
         borderRadius: 8,
-        elevation: 10,
+        elevation: 2,
     },
-    button:{
-        flex:1,
+    buttonLogin:{
         justifyContent:'center',
         alignItems:'center',
-        width: 100,
+        width: 360,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
         borderRadius: 8,
-        elevation: 10,
-        marginTop:150
+        elevation: 2,
+        marginTop:100
+    },
+    buttonRegister:{
+        justifyContent:'center',
+        alignItems:'center',
+        width: 360,
+        height: 50,
+        backgroundColor: Colors.dark.background,
+        padding: 0,
+        borderRadius: 8,
+        borderWidth:1,
+        borderColor: Colors.dark.tabIconSelected,
     },
     textLogo:{
         color:'white',

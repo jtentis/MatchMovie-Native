@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Pressable } from "expo-router/build/views/Pressable";
-import React from "react";
+import React, { useState } from "react";
 import {
   Image,
   ImageBackground,
@@ -11,51 +11,72 @@ import {
 import { ThemedText } from "./ThemedText";
 
 export const GroupsScreen: React.FC = () => {
+
+  const buttonNames = ["Em Cartaz", "Populares", "Melhor Avaliados", "Em Breve"];
+  const dropdownNames = ["Gênero", "Ano", "Nacionalidade"];
+  
+  const [selectedButtons, setSelectedButtons] = useState(
+    Array(buttonNames.length).fill(false)
+  );
+
+  const handlePress = (index: any) => {
+      const newSelectedButtons = [...selectedButtons];
+      newSelectedButtons[index] = !newSelectedButtons[index];
+      setSelectedButtons(newSelectedButtons);
+    }
     
-    return (
-      <>
-      <View style={{ flex: 2, backgroundColor: Colors.dark.background }}>
-        <ImageBackground
-          style={styles.image}
-          source={require('@/assets/images/random 4.jpg')}
-        ></ImageBackground>
-        <ThemedText type="defaultSemiBold" style={styles.title}>
-            Escola
-        </ThemedText>
-        <View style={styles.backButton}><FontAwesome size={35} name="chevron-left" color={'black'}/></View>
-        <FontAwesome style={{position: "absolute",right: 30,top: 70,opacity: 0.7,color:'white',elevation:10}}size={25}name="pencil"/>
-      </View>
-      <View style={styles.mainContainer}>
-          <View style={{ flex: 2, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'flex-start'}}>
-            <ThemedText type="defaultSemiBold" style={styles.subtitle}>
-              Filmes de Referência
-            </ThemedText>
-            <View style={{backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'flex-start', padding: 20, flexDirection:'row', gap:5}}>
-              <View style={styles.poster}><Image source={require("@/assets/images/movie-poster.jpg")} style={styles.poster}></Image></View>
-              <View style={styles.poster}><Image source={require("@/assets/images/movie-poster.jpg")} style={styles.poster}></Image></View>
-              <View style={styles.posterAdd}><View style={styles.add}><FontAwesome name={"plus"} size={10}></FontAwesome></View></View>
-            </View>
+  return (
+    <>
+    <View style={{ flex: 2, backgroundColor: Colors.dark.background }}>
+      <ImageBackground
+        style={styles.image}
+        source={require('@/assets/images/random 4.jpg')}
+      ></ImageBackground>
+      <ThemedText type="defaultSemiBold" style={styles.title}>
+          Escola
+      </ThemedText>
+      <View style={styles.backButton}><FontAwesome size={35} name="chevron-left" color={'black'}/></View>
+      <FontAwesome style={{position: "absolute",right: 30,top: 70,opacity: 0.7,color:'white',elevation:10}}size={25}name="pencil"/>
+    </View>
+    <View style={styles.mainContainer}>
+        <View style={{ flex: 2, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'flex-start'}}>
+          <ThemedText type="defaultSemiBold" style={styles.subtitle}>
+            Filmes de Referência
+          </ThemedText>
+          <View style={{backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'flex-start', padding: 20, flexDirection:'row', gap:5}}>
+            <View style={styles.poster}><Image source={require("@/assets/images/movie-poster.jpg")} style={styles.poster}></Image></View>
+            <View style={styles.poster}><Image source={require("@/assets/images/movie-poster.jpg")} style={styles.poster}></Image></View>
+            <View style={styles.posterAdd}><View style={styles.add}><FontAwesome name={"plus"} size={10}></FontAwesome></View></View>
           </View>
-          <View style={{ flex: 2, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'flex-start', borderTopWidth:1, borderColor: Colors.dark.light}}>
-            <ThemedText type="defaultSemiBold" style={styles.subtitleFiltros}>
-              Filtros da sessão
-            </ThemedText>
-            <View style={{width:360, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'center', padding: 20, flexDirection:'row', gap:8, flexWrap:'wrap'}}>
-              <Pressable style={styles.button}><ThemedText type="default" style={styles.buttonText}>Gênero</ThemedText></Pressable>
-              <Pressable style={styles.button}><ThemedText type="default" style={styles.buttonText}>Ano</ThemedText></Pressable>
-              <Pressable style={styles.button}><ThemedText type="default" style={styles.buttonText}>Nacionalidade</ThemedText></Pressable>
-              <Pressable style={styles.button}><ThemedText type="default" style={styles.buttonText}>Em cartaz</ThemedText></Pressable>
-              <Pressable style={styles.button}><ThemedText type="default" style={styles.buttonText}>Populares</ThemedText></Pressable>
-              <Pressable style={styles.button}><ThemedText type="default" style={styles.buttonText}>Melhor Avaliados</ThemedText></Pressable>
-              <Pressable style={styles.button}><ThemedText type="default" style={styles.buttonText}>Em Breve</ThemedText></Pressable>
-            </View>
+        </View>
+        <View style={{ flex: 2, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'flex-start', borderTopWidth:1, borderColor: Colors.dark.light, gap:10}}>
+          <ThemedText type="defaultSemiBold" style={styles.subtitleFiltros}>
+            Filtros da sessão
+          </ThemedText>
+          <View style={{width:360, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'center', flexDirection:'row', gap:5, flexWrap:'nowrap'}}>
+            {dropdownNames.map((name, index) => (
+              <Pressable key={index}
+              style={[styles.button, styles.default]}>
+              <ThemedText type="default" style={styles.buttonText}>{name} <FontAwesome size={12} name="caret-down"/></ThemedText>
+              </Pressable>
+            ))}
           </View>
-          <View style={{ flex: 2/3, backgroundColor: Colors.dark.background, flexDirection:'row', alignItems:'center', justifyContent:'center', gap:5}}>
-            <Pressable style={styles.buttonMatch}><ThemedText type="title" style={{fontSize: 18}}>Iniciar Match</ThemedText></Pressable>
-            <Pressable style={styles.buttonHistory}><ThemedText type="title" style={{fontSize: 18}}>Histórico</ThemedText></Pressable>
+          <View style={{width:360, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'center', flexDirection:'row', gap:5, flexWrap:'nowrap'}}>
+            {buttonNames.map((name, index) => (
+              <Pressable key={index}
+              style={[styles.button, selectedButtons[index] ? styles.selected : styles.default]}
+              onPress={() => handlePress(index)}>
+              <ThemedText type="default" style={styles.buttonText}>{name}</ThemedText>
+              </Pressable>
+            ))}
           </View>
-        </View></>  
-    );
+        </View>
+        <View style={{ flex: 2/3, backgroundColor: Colors.dark.background, flexDirection:'row', alignItems:'center', justifyContent:'center', gap:5}}>
+          <Pressable style={styles.buttonMatch}><ThemedText type="title" style={{fontSize: 18}}>Iniciar Match</ThemedText></Pressable>
+          <Pressable style={styles.buttonHistory}><ThemedText type="title" style={{fontSize: 18}}>Histórico</ThemedText></Pressable>
+        </View>
+      </View></>  
+  );
 }
 
 const styles = StyleSheet.create({
@@ -94,7 +115,7 @@ const styles = StyleSheet.create({
     subtitleFiltros:{
       fontSize: 24,
       color: "white",
-      marginTop:20,
+      marginTop:15,
     },
     poster:{
       width: 80,
@@ -119,12 +140,17 @@ const styles = StyleSheet.create({
     },
     button:{
       padding: 10,
-      backgroundColor: Colors.dark.input,
       borderRadius: 5,
       elevation: 5
     },
+    selected:{
+      backgroundColor: Colors.dark.tabIconSelected,
+    },
+    default:{
+      backgroundColor: Colors.dark.input,
+    },
     buttonText:{
-      fontSize: 16,
+      fontSize: 14,
       color: "white",
     },
     buttonMatch:{

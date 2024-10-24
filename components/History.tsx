@@ -21,10 +21,12 @@ export const HistoryScreen: React.FC = () => {
         <View style={{flex:3, alignItems:'center',backgroundColor: Colors.dark.background, marginTop:10}}>
           <ThemedText type="title" style={{marginBottom: 20}}>Histórico</ThemedText>
           <ScrollView style={{width:'100%', height:'100%', gap:5, padding: 0}} showsVerticalScrollIndicator={false}>
-            <View style={styles.card}>
-              <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+          <View style={styles.card}>
+              <View style={styles.poster}>
+                <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              </View>
               <View style={{flex: 1}}>
-                <ThemedText type="default" style={styles.text}>Filme: Nomadland</ThemedText>
+                <ThemedText type="default" style={styles.text}>Filme: Nada de Novo no Front</ThemedText>
                 <ThemedText type="default" style={styles.text}>Grupo: Escola</ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
@@ -33,9 +35,11 @@ export const HistoryScreen: React.FC = () => {
               </View>
             </View>
             <View style={styles.card}>
-              <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              <View style={styles.poster}>
+                <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              </View>
               <View style={{flex: 1}}>
-                <ThemedText type="default" style={styles.text}>Filme: Nomadland</ThemedText>
+                <ThemedText type="default" style={styles.text}>Filme: Nada de Novo no Front</ThemedText>
                 <ThemedText type="default" style={styles.text}>Grupo: Escola</ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
@@ -44,9 +48,11 @@ export const HistoryScreen: React.FC = () => {
               </View>
             </View>
             <View style={styles.card}>
-              <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              <View style={styles.poster}>
+                <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              </View>
               <View style={{flex: 1}}>
-                <ThemedText type="default" style={styles.text}>Filme: Nomadland</ThemedText>
+                <ThemedText type="default" style={styles.text}>Filme: Nada de Novo no Front</ThemedText>
                 <ThemedText type="default" style={styles.text}>Grupo: Escola</ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
@@ -55,9 +61,11 @@ export const HistoryScreen: React.FC = () => {
               </View>
             </View>
             <View style={styles.card}>
-              <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              <View style={styles.poster}>
+                <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              </View>
               <View style={{flex: 1}}>
-                <ThemedText type="default" style={styles.text}>Filme: Nomadland</ThemedText>
+                <ThemedText type="default" style={styles.text}>Filme: Nada de Novo no Front</ThemedText>
                 <ThemedText type="default" style={styles.text}>Grupo: Escola</ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
@@ -66,9 +74,11 @@ export const HistoryScreen: React.FC = () => {
               </View>
             </View>
             <View style={styles.card}>
-              <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              <View style={styles.poster}>
+                <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              </View>
               <View style={{flex: 1}}>
-                <ThemedText type="default" style={styles.text}>Filme: Nomadland</ThemedText>
+                <ThemedText type="default" style={styles.text}>Filme: Nada de Novo no Front</ThemedText>
                 <ThemedText type="default" style={styles.text}>Grupo: Escola</ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
@@ -77,9 +87,11 @@ export const HistoryScreen: React.FC = () => {
               </View>
             </View>
             <View style={styles.card}>
-              <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              <View style={styles.poster}>
+                <Image source={require('@/assets/images/movie-poster.jpg')} style={styles.poster}></Image>
+              </View>
               <View style={{flex: 1}}>
-                <ThemedText type="default" style={styles.text}>Filme: Nomadland</ThemedText>
+                <ThemedText type="default" style={styles.text}>Filme: Nada de Novo no Front</ThemedText>
                 <ThemedText type="default" style={styles.text}>Grupo: Escola</ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
                 <ThemedText type="default" style={styles.text}></ThemedText>
@@ -87,7 +99,6 @@ export const HistoryScreen: React.FC = () => {
                 <FontAwesome size={20} name="trash" style={styles.trash}/>
               </View>
             </View>
-
           </ScrollView>
         </View>
       </View>
@@ -113,12 +124,13 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 1000,
-    elevation: 10
+    elevation: 2
   },
   poster:{
     width: 70,
     height:100,
-    borderRadius:5
+    borderRadius:5,
+    elevation: 2
   },
   card:{
     flexDirection:'row',
@@ -133,7 +145,7 @@ const styles = StyleSheet.create({
     marginLeft: 10
   },
   endText:{
-    marginLeft: 10,
+    marginRight: 5,
     marginTop: 5,
     textAlign:'right',
     opacity:.5,

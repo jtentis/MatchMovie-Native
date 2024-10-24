@@ -157,8 +157,10 @@ const App = ({navigation}:{navigation: any}) => {
                 <TextInput
                     style={styles.input}
                     placeholder="Procurando algum filme?"
+                    placeholderTextColor={Colors.dark.textPlaceHolder}
                     value={query}
                     onChangeText={setQuery}
+                    selectionColor={Colors.dark.tabIconSelected}
                 />
                 <Pressable style={styles.button} onPress={searchMovies}>
                     <Text style={{
@@ -230,7 +232,8 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 8,
         borderTopLeftRadius: 8,
         elevation: 10,
-        marginLeft:55
+        marginLeft:55,
+        color: Colors.dark.text
     },
     button: {
         width: 85,
