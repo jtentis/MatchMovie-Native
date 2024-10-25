@@ -203,9 +203,11 @@ const MovieDetailsScreen = () => {
                 <ThemedText type="defaultSemiBold" style={styles.title}>
                     {title}
                 </ThemedText>
-                <View style={styles.backButton}>
-                    <Pressable onPress={() => navigation.goBack()}><FontAwesome size={30} name="chevron-left" color={Colors.dark.text} /></Pressable>
-                </View>
+                <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <View >
+                        <FontAwesome size={30} name="chevron-left" color={Colors.dark.text} />
+                    </View>
+                </Pressable>
                 <View style={styles.likeButton}>
                     <FontAwesome size={25} name="heart" color="white" />
                 </View>

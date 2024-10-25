@@ -1,7 +1,8 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React from 'react';
 import {
@@ -10,34 +11,35 @@ import {
     ScrollView,
     StyleSheet,
     TextInput,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
 
+type RootStackParamList = {
+    groups: undefined;
+  };
+
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'groups'>;
+
 export default function MatchScreen() {
+    const navigation = useNavigation<HomeScreenNavigationProp>();
     function buttonPressed(){
         return Alert.alert('Botão pressionado!');
     }
 
     return (
         <View
-            style={[
-                styles.container,
-                {
-                    // Try setting `flexDirection` to `"row"`.
-                    flexDirection: 'column',
-                },
-            ]}>
+            style={[styles.container,{flexDirection: 'column',},]}>
             <View style={{
                 flex: 1,
                 backgroundColor: Colors.dark.background,
-                flexDirection: 'row-reverse',
+                flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 15,
+                justifyContent: 'flex-start',
+                paddingHorizontal: 16,
                 gap: 10,
             }}>
                 <ThemedText type="title" style={{marginTop: '10%'}}>Minhas Sessões</ThemedText>
-                <View style={styles.backButton}><FontAwesome size={25}name="chevron-left" color="white"/></View>
             </View>
             <View style={{
                 flex: 4 / 2,
@@ -47,51 +49,39 @@ export default function MatchScreen() {
                 justifyContent: 'space-between',
             }}>
                 <ScrollView horizontal={true} style={{marginLeft: 10}} showsHorizontalScrollIndicator={false}>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="default" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '70%'
-                        }}>Escola</ThemedText>
-                    </View>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random2.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="default" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '60%'
-                        }}>Trabalho</ThemedText>
-                    </View>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random3.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="default" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '60%'
-                        }}>Família</ThemedText>
-                    </View>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random 4.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="default" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '60%'
-                        }}>Escola</ThemedText>
-                    </View>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="default" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '60%'
-                        }}>Trabalho</ThemedText>
-                    </View>
+                    <TouchableWithoutFeedback onPress={() => navigation.navigate('groups')}>
+                        <View style={[styles.card, styles.elevated]}>
+                            <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
+                                style={styles.images}></Image>
+                            <ThemedText type="default" style={{
+                                position: 'absolute',
+                                paddingTop: '170%',
+                                paddingRight: '70%'
+                            }}>Escola</ThemedText>
+                        </View>
+                    </TouchableWithoutFeedback>
+                    <TouchableWithoutFeedback onPress={() => navigation.navigate('groups')}>
+                        <View style={[styles.card, styles.elevated]}>
+                            <Image source={require('@/assets/images/random2.jpg')} resizeMode={"stretch"}
+                                style={styles.images}></Image>
+                            <ThemedText type="default" style={{
+                                position: 'absolute',
+                                paddingTop: '170%',
+                                paddingRight: '65%'
+                            }}>Trabalho</ThemedText>
+                        </View>
+                    </TouchableWithoutFeedback>
+                    <TouchableWithoutFeedback onPress={() => navigation.navigate('groups')}>
+                        <View style={[styles.card, styles.elevated]}>
+                            <Image source={require('@/assets/images/random3.jpg')} resizeMode={"stretch"}
+                                style={styles.images}></Image>
+                            <ThemedText type="default" style={{
+                                position: 'absolute',
+                                paddingTop: '170%',
+                                paddingRight: '70%'
+                            }}>Curso</ThemedText>
+                        </View>
+                    </TouchableWithoutFeedback>
                 </ScrollView>
             </View>
             <View style={{

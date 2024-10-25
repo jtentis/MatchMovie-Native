@@ -1,20 +1,26 @@
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useNavigation } from "expo-router";
+import { Pressable } from "expo-router/build/views/Pressable";
 import React from "react";
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  View
+    Image,
+    ScrollView,
+    StyleSheet,
+    View
 } from "react-native";
-import { ThemedText } from "./ThemedText";
+import { ThemedText } from "../components/ThemedText";
 
-export const HistoryScreen: React.FC = () => {
-    
+const HistoryScreen = ({navigation}:{navigation: any}) => {
+    navigation = useNavigation();
     return (
       <View style={styles.mainContainer}>
         <View style={{flex:1/2, flexDirection:'row', alignItems:'center', justifyContent:'space-between', backgroundColor:Colors.dark.background, marginTop:30}}>
-          <View style={styles.backButton}><FontAwesome size={25}name="chevron-left" color="white"/></View>
+          <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+            <View >
+              <FontAwesome size={30} name="chevron-left" color={Colors.dark.text} />
+            </View>
+          </Pressable>
           <ThemedText type="subtitle" style={{marginLeft:'50%'}}>Escola</ThemedText>
           <View style={styles.groupImage}><Image source={require('@/assets/images/random 4.jpg')} style={styles.groupImage}></Image></View>
         </View>
@@ -159,3 +165,5 @@ const styles = StyleSheet.create({
     opacity:.6
   }
 });
+
+export default HistoryScreen;

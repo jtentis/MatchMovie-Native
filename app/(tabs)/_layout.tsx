@@ -12,8 +12,10 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <Tabs
+    <Tabs 
       screenOptions={{
+        tabBarItemStyle:{padding: 10},
+        tabBarStyle:{backgroundColor:Colors.dark.background, height: 60},
         tabBarActiveTintColor: Colors[colorScheme ?? 'dark'].tabIconSelected,
           tabBarInactiveTintColor: Colors[colorScheme ?? 'dark'].tabIconDefault,
         headerShown: false,
@@ -37,34 +39,6 @@ export default function TabLayout() {
             options={{
                 title: 'Perfil',
                 tabBarIcon: ({ color }) => <FontAwesome size={28} name="user" color={color} />,
-            }}
-        />
-        <Tabs.Screen
-            name="login"
-            options={{
-                title: 'Login',
-                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />
-            }}
-        />
-        <Tabs.Screen
-            name="details"
-            options={{
-                title: 'Detalhes de filmes',
-                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />
-            }}
-        />
-        <Tabs.Screen
-            name="groups"
-            options={{
-                title: 'Grupos',
-                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />,
-            }}
-        />
-        <Tabs.Screen
-            name="history"
-            options={{
-                title: 'Histórico',
-                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />,
             }}
         />
     </Tabs>

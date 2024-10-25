@@ -1,17 +1,25 @@
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
 import {
-  Image,
-  ImageBackground,
-  StyleSheet,
-  View
+    Image,
+    ImageBackground,
+    StyleSheet,
+    View
 } from "react-native";
-import { ThemedText } from "./ThemedText";
+import { ThemedText } from "../components/ThemedText";
 
-export const GroupsScreen: React.FC = () => {
+type RootStackParamList = {
+  history: undefined;
+};
 
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'history'>;
+
+const GroupsScreen = ({navigation}:{navigation: any}) => {
+  navigation = useNavigation();
   const buttonNames = ["Em Cartaz", "Populares", "Melhor Avaliados", "Em Breve"];
   const dropdownNames = ["Gênero", "Ano", "Nacionalidade"];
   
@@ -35,7 +43,11 @@ export const GroupsScreen: React.FC = () => {
       <ThemedText type="defaultSemiBold" style={styles.title}>
           Escola
       </ThemedText>
-      <View style={styles.backButton}><FontAwesome size={35} name="chevron-left" color={'black'}/></View>
+      <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+        <View >
+          <FontAwesome size={30} name="chevron-left" color={Colors.dark.text} />
+        </View>
+      </Pressable>
       <FontAwesome style={{position: "absolute",right: 30,top: 70,opacity: 0.7,color:'white',elevation:10}}size={25}name="pencil"/>
     </View>
     <View style={styles.mainContainer}>
@@ -73,7 +85,7 @@ export const GroupsScreen: React.FC = () => {
         </View>
         <View style={{ flex: 2/3, backgroundColor: Colors.dark.background, flexDirection:'row', alignItems:'center', justifyContent:'center', gap:5}}>
           <Pressable style={styles.buttonMatch}><ThemedText type="title" style={{fontSize: 18}}>Iniciar Match</ThemedText></Pressable>
-          <Pressable style={styles.buttonHistory}><ThemedText type="title" style={{fontSize: 18}}>Histórico</ThemedText></Pressable>
+          <Pressable onPress={() => navigation.navigate('history')} style={styles.buttonHistory}><ThemedText type="title" style={{fontSize: 18}}>Histórico</ThemedText></Pressable>
         </View>
       </View></>  
   );
@@ -169,16 +181,17 @@ const styles = StyleSheet.create({
       borderRadius: 8,
       elevation: 10,
     },
-    backButton:{
-      width: 50,
-      height: 50,
-      alignItems:'center',
-      justifyContent:'center',
+    backButton: {
+      width: 55,
+      height: 55,
+      alignItems: "center",
+      justifyContent: "center",
       position: "absolute",
-      left: 20,
       top: 60,
-      opacity: 0.8,
-      elevation:5,
-      color: 'Colors.dark.tabIconSelected'
-    }
+      backgroundColor: Colors.dark.background,
+      borderTopRightRadius: 8,
+      borderBottomRightRadius: 8
+    },
 });
+
+export default GroupsScreen;

@@ -12,19 +12,20 @@ export default function ProfileScreen({navigation}: {navigation: any}) {
         <View style={{flex:1, backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'center'}}>
             <View style={{
                 width:'100%',
+                height: 80,
+                marginTop: '16%',
                 backgroundColor: Colors.dark.background,
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                marginTop: 30,
-                paddingHorizontal:10
+                justifyContent: 'flex-start',
+                paddingHorizontal: 16,
             }}>
-                <View style={styles.backButton}><FontAwesome size={25}name="chevron-left" color="white"/></View>
-                <ThemedText type="title" style={{marginTop: '10%'}}>Perfil</ThemedText>
+                <ThemedText type="title">Perfil</ThemedText>
                 <FontAwesome size={22} name="pencil" color={'#FFFFFF'} style={{
-                    marginTop: '10%',
                     backgroundColor: 'transparent',
-                    padding: 15,
+                    position: 'absolute',
+                    right: 30,
+                    top: 25,
                     borderRadius: 100,
                 }}/>
             </View>

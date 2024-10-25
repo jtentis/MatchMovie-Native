@@ -1,5 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from "@/constants/Colors";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useNavigation } from 'expo-router';
 import { Pressable } from "expo-router/build/views/Pressable";
 import React from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
@@ -7,8 +9,12 @@ import { Icon } from '../../components/MatchLogo';
 
 
 export default function RegisterScreen({navigation}: {navigation: any}) {
+    navigation = useNavigation();
     return (
         <><><View style={{ flex: 2/4, flexDirection: 'row', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={styles.backButton}>
+                <Pressable onPress={() => navigation.goBack()}><FontAwesome size={30} name="chevron-left" color={Colors.dark.text} /></Pressable>
+            </View>
             <View style={{height: '100%',width:'100%', alignItems:'center', justifyContent:'center', marginTop:'10%'}}>
                 <Icon width={130} height={130} fill={Colors.dark.tabIconSelected} style={{alignSelf:'center', marginRight:0}}/>
                 <ThemedText type="default" style={{fontFamily:'Coiny-Regular', fontWeight:400, fontSize: 32, padding: 20}}>Registre-se!</ThemedText>
@@ -143,5 +149,17 @@ const styles = StyleSheet.create({
         fontFamily:'Coiny-Regular',
         fontWeight: 400,
         fontSize: 38
-    }
+    },
+    backButton: {
+        width: 55,
+        height: 55,
+        alignItems: "center",
+        justifyContent: "center",
+        position: "absolute",
+        top: 60,
+        left:0,
+        backgroundColor: Colors.dark.background,
+        borderTopRightRadius: 8,
+        borderBottomRightRadius: 8,
+    },
 });
