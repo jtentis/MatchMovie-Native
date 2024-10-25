@@ -14,7 +14,7 @@ type RootStackParamList = {
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-const Login = () => {
+const LoginScreen = () => {
     const navigation = useNavigation<LoginScreenNavigationProp>();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -165,4 +165,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default Login;
+export default LoginScreen;
