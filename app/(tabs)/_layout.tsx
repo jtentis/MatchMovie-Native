@@ -54,13 +54,6 @@ export default function TabLayout() {
             }}
         />
         <Tabs.Screen
-            name="register"
-            options={{
-                title: 'Registro',
-                tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />,
-            }}
-        />
-        <Tabs.Screen
             name="groups"
             options={{
                 title: 'Grupos',

@@ -1,7 +1,8 @@
 // App.tsx
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { createStackNavigator } from "@react-navigation/stack";
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from "@react-navigation/stack";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -36,9 +37,15 @@ interface Movie {
     poster_path: string | null;
 }
 
-const Stack = createStackNavigator();
+type RootStackParamList = {
+    index: undefined;
+    details: { movieId: number }; // Match this to your route parameters in details.tsx
+  };
 
-const App = ({navigation}:{navigation: any}) => {
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'index'>;
+
+const HomeScreen = () => {
+    const navigation = useNavigation<HomeScreenNavigationProp>();
     const [query, setQuery] = useState<string>('');
     const [movies, setMovies] = useState<Movie[]>([]);
     const [filter, setFilter] = useState<string>('popular');
@@ -135,7 +142,7 @@ const App = ({navigation}:{navigation: any}) => {
             : require('@/assets/images/No-Image-Placeholder.png');
 
         return (
-            <TouchableWithoutFeedback onPress={() => navigation.navigate('MovieDetailsScreen', { movieId: item.id })}>
+            <TouchableWithoutFeedback onPress={() => navigation.navigate('details', { movieId: item.id })}>
                 <View key={item.id} style={styles.gridItem}>
                     <Image source={posterUrl} style={styles.posterImage} />
                 </View>
@@ -275,4 +282,4 @@ const styles = StyleSheet.create({
         left:18,
     }
 });
-export default App;
+export default HomeScreen;

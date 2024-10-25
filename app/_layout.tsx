@@ -12,11 +12,9 @@ import React from 'react';
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  // Ensure any route can link back to `/`
   initialRouteName: "index",
-
-  auths: { // <= important!
-    initialRouteName: "Login", // <= important!
+  auths: { 
+    initialRouteName: "Login",
   },
 };
 
@@ -39,8 +37,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(auths)" options={{ headerShown: false }}/>
+        <Stack.Screen name="(auths)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="details" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>

@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import axios from 'axios';
-import {useNavigation} from "expo-router";
+import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
 const LoginScreen = ({navigation}: {navigation: any}) => {
     // const navigation = useNavigation();
