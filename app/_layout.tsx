@@ -6,9 +6,14 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import React from 'react';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+export const unstable_settings = {
+  initialRouteName: "(tabs)/index"
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -25,11 +30,12 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
-
+ 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{headerShown: false}}>
+        <Stack.Screen name="(auths)"/>
+        <Stack.Screen name="(tabs)"/>
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>

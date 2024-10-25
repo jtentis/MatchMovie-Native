@@ -17,11 +17,13 @@ export const Colors = {
   },
   dark: {
     text: '#ECEDEE',
+    textPlaceHolder: '#ECEDEE4D',
     background: '#343637',
     tint: tintColorDark,
     icon: '#FFFFFF',
     tabIconDefault: '#ECEDEE',
     tabIconSelected: '#D46162',
-    input: '#707374'
+    input: '#707374',
+    light: '#5B5B57'
   },
 };

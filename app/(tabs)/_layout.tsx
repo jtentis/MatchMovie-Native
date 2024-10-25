@@ -1,19 +1,21 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import * as React from 'react';
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import {xml} from '@/assets/images/logo';
-import { SvgXml } from 'react-native-svg';
+import { Icon } from '../../components/MatchLogo';
+
 
 export default function TabLayout() {
+
   const colorScheme = useColorScheme();
 
   return (
-    <Tabs
+    <Tabs 
       screenOptions={{
+        tabBarItemStyle:{padding: 10},
+        tabBarStyle:{backgroundColor:Colors.dark.background, height: 60},
         tabBarActiveTintColor: Colors[colorScheme ?? 'dark'].tabIconSelected,
           tabBarInactiveTintColor: Colors[colorScheme ?? 'dark'].tabIconDefault,
         headerShown: false,
@@ -29,7 +31,7 @@ export default function TabLayout() {
         name="match"
         options={{
             title: 'Match',
-            tabBarIcon: ({ color }) => <FontAwesome size={28} name="compress" color={color} />,
+            tabBarIcon: ({ color }) => <Icon fill={color}/>,
         }}
       />
         <Tabs.Screen

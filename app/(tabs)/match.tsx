@@ -1,45 +1,44 @@
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Fonts";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation } from "expo-router";
+import { Pressable } from "expo-router/build/views/Pressable";
 import React from 'react';
 import {
-    Button,
+    Alert,
     Image,
-    ImageBackground,
     ScrollView,
     StyleSheet,
-    Text,
     TextInput,
-    TouchableOpacity,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
-import {ThemedText} from "@/components/ThemedText";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import {Colors} from "@/constants/Colors";
-import Carousel from 'react-native-reanimated-carousel';
+
+type RootStackParamList = {
+    groups: undefined;
+  };
+
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'groups'>;
 
 export default function MatchScreen() {
+    const navigation = useNavigation<HomeScreenNavigationProp>();
+    function buttonPressed(){
+        return Alert.alert('Botão pressionado!');
+    }
 
     return (
         <View
-            style={[
-                styles.container,
-                {
-                    // Try setting `flexDirection` to `"row"`.
-                    flexDirection: 'column',
-                },
-            ]}>
+            style={[styles.container,{flexDirection: 'column',},]}>
             <View style={{
                 flex: 1,
                 backgroundColor: Colors.dark.background,
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'space-around',
+                justifyContent: 'flex-start',
+                paddingHorizontal: 16,
                 gap: 10,
             }}>
-                <FontAwesome size={22} name="arrow-left" color={'#FFFFFF'} style={{
-                    marginTop: '10%',
-                    backgroundColor: Colors.dark.tabIconSelected,
-                    padding: 15,
-                    borderRadius: 100,
-                }}/>
                 <ThemedText type="title" style={{marginTop: '10%'}}>Minhas Sessões</ThemedText>
             </View>
             <View style={{
@@ -49,58 +48,46 @@ export default function MatchScreen() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
             }}>
-                <ScrollView horizontal={true} style={{marginLeft: 20}} showsHorizontalScrollIndicator={false}>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '70%'
-                        }}>Escola</ThemedText>
-                    </View>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random2.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '60%'
-                        }}>Trabalho</ThemedText>
-                    </View>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random3.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '60%'
-                        }}>Família</ThemedText>
-                    </View>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random 4.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '60%'
-                        }}>Escola</ThemedText>
-                    </View>
-                    <View style={[styles.card, styles.elevated]}>
-                        <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
-                               style={styles.images}></Image>
-                        <ThemedText type="defaultSemiBold" style={{
-                            position: 'absolute',
-                            paddingTop: '170%',
-                            paddingRight: '60%'
-                        }}>Trabalho</ThemedText>
-                    </View>
+                <ScrollView horizontal={true} style={{marginLeft: 10}} showsHorizontalScrollIndicator={false}>
+                    <TouchableWithoutFeedback onPress={() => navigation.navigate('groups')}>
+                        <View style={[styles.card, styles.elevated]}>
+                            <Image source={require('@/assets/images/random1.jpg')} resizeMode={"stretch"}
+                                style={styles.images}></Image>
+                            <ThemedText type="default" style={{
+                                position: 'absolute',
+                                paddingTop: '170%',
+                                paddingRight: '70%'
+                            }}>Escola</ThemedText>
+                        </View>
+                    </TouchableWithoutFeedback>
+                    <TouchableWithoutFeedback onPress={() => navigation.navigate('groups')}>
+                        <View style={[styles.card, styles.elevated]}>
+                            <Image source={require('@/assets/images/random2.jpg')} resizeMode={"stretch"}
+                                style={styles.images}></Image>
+                            <ThemedText type="default" style={{
+                                position: 'absolute',
+                                paddingTop: '170%',
+                                paddingRight: '65%'
+                            }}>Trabalho</ThemedText>
+                        </View>
+                    </TouchableWithoutFeedback>
+                    <TouchableWithoutFeedback onPress={() => navigation.navigate('groups')}>
+                        <View style={[styles.card, styles.elevated]}>
+                            <Image source={require('@/assets/images/random3.jpg')} resizeMode={"stretch"}
+                                style={styles.images}></Image>
+                            <ThemedText type="default" style={{
+                                position: 'absolute',
+                                paddingTop: '170%',
+                                paddingRight: '70%'
+                            }}>Curso</ThemedText>
+                        </View>
+                    </TouchableWithoutFeedback>
                 </ScrollView>
             </View>
             <View style={{
-                flex: 1,
+                flex: 3/4,
                 backgroundColor: Colors.dark.background,
-                paddingLeft: 27,
+                paddingLeft: 20,
                 paddingTop: 20,
                 flexDirection: 'column',
                 alignItems: 'flex-start',
@@ -109,21 +96,25 @@ export default function MatchScreen() {
             }}>
                 <ThemedText type="subtitle" style={{
                     position: 'absolute',
-                    paddingTop: 10,
-                    paddingLeft: 30
+                    marginTop: 10,
+                    marginLeft: 20,
 
                 }}>Criar nova sessão</ThemedText>
                 <TextInput
                     style={styles.input}
-                    value='Nome da Sessão'
-                    placeholder="useless placeholder"
+                    placeholder="Nome da Sessão"
                     keyboardType="default"
+                    selectionColor={Colors.dark.tabIconSelected}
+                    placeholderTextColor={Colors.dark.textPlaceHolder}
                 />
+                <Pressable style={styles.button}>
+                    <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: Fonts.dark.buttonText}}>Criar</ThemedText>
+                </Pressable>
             </View>
             <View style={{
                 flex: 1,
                 backgroundColor: Colors.dark.background,
-                paddingLeft: 27,
+                paddingLeft: 20,
                 paddingTop: 20,
                 flexDirection: 'column',
                 alignItems: 'flex-start',
@@ -132,16 +123,20 @@ export default function MatchScreen() {
             }}>
                 <ThemedText type="subtitle" style={{
                     position: 'absolute',
-                    paddingTop: 10,
-                    paddingLeft: 30
+                    marginTop: 10,
+                    marginLeft: 20,
 
                 }}>Entrar em sessão existente</ThemedText>
                 <TextInput
                     style={styles.input}
-                    value='Endereço da Sessão'
-                    placeholder="useless placeholder"
+                    placeholder="Endereço da Sessão"
                     keyboardType="default"
+                    selectionColor={Colors.dark.tabIconSelected}
+                    placeholderTextColor={Colors.dark.textPlaceHolder}
                 />
+                <Pressable style={styles.button}>
+                    <ThemedText onPress={buttonPressed} type={'defaultSemiBold'} style={{fontSize: Fonts.dark.buttonText}}>Entrar</ThemedText>
+                </Pressable>
             </View>
         </View>
     );
@@ -179,8 +174,32 @@ const styles = StyleSheet.create({
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
-        marginTop: 30,
+        marginTop: 20,
         borderRadius: 8,
-        elevation: 10,
+        elevation: 2,
+        color:Colors.dark.text
+    },
+    button:{
+        position: 'absolute',
+        right: 12,
+        flex:1,
+        justifyContent:'center',
+        alignItems:'center',
+        width: 100,
+        height: 50,
+        backgroundColor: Colors.dark.tabIconSelected,
+        padding: 0,
+        borderRadius: 8,
+        elevation: 2,
+        marginTop:40,
+        fontSize: Fonts.dark.buttonText
+    },
+    backButton:{
+        width: 30,
+        height: 30,
+        alignItems:'center',
+        justifyContent:'center',
+        opacity: 0.8,
+        marginTop:32
     }
 });
