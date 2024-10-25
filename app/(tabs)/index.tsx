@@ -1,7 +1,7 @@
 // App.tsx
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useRef, useState } from 'react';
@@ -37,14 +37,22 @@ interface Movie {
     poster_path: string | null;
 }
 
-type RootStackParamList = {
-    index: undefined;
-    details: { movieId: number }; // Match this to your route parameters in details.tsx
+type RootStackParamListTeste = {
+    register: undefined;
+    index: undefined
   };
 
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'index'>;
+type LoginScreenNavigationProp = RouteProp<RootStackParamListTeste>;
+
+type RootStackParamList = {
+    index: undefined;
+    details: { movieId: number }; // Match this to route parameters in details.tsx
+  };
+
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const HomeScreen = () => {
+    const route = useRoute<LoginScreenNavigationProp>();
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const [query, setQuery] = useState<string>('');
     const [movies, setMovies] = useState<Movie[]>([]);

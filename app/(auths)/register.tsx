@@ -7,14 +7,15 @@ import React from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Icon } from '../../components/MatchLogo';
 
-
-export default function RegisterScreen({navigation}: {navigation: any}) {
+const RegisterScreen = ({navigation}: {navigation: any}) => {
     navigation = useNavigation();
     return (
         <><><View style={{ flex: 2/4, flexDirection: 'row', backgroundColor: Colors.dark.background, justifyContent: 'center', alignItems: 'center' }}>
-            <View style={styles.backButton}>
-                <Pressable onPress={() => navigation.goBack()}><FontAwesome size={30} name="chevron-left" color={Colors.dark.text} /></Pressable>
-            </View>
+                <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <View >
+                    <FontAwesome size={30} name="chevron-left" color={Colors.dark.text} />
+                    </View>
+                </Pressable>
             <View style={{height: '100%',width:'100%', alignItems:'center', justifyContent:'center', marginTop:'10%'}}>
                 <Icon width={130} height={130} fill={Colors.dark.tabIconSelected} style={{alignSelf:'center', marginRight:0}}/>
                 <ThemedText type="default" style={{fontFamily:'Coiny-Regular', fontWeight:400, fontSize: 32, padding: 20}}>Registre-se!</ThemedText>
@@ -56,6 +57,7 @@ export default function RegisterScreen({navigation}: {navigation: any}) {
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                         placeholder="Digite sua senha"
+                        secureTextEntry
                         keyboardType="default" />
                     <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Confirmação de Senha</ThemedText>
                     <TextInput
@@ -63,7 +65,8 @@ export default function RegisterScreen({navigation}: {navigation: any}) {
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                         placeholder="Confirme sua senha"
-                        keyboardType="numeric" />
+                        secureTextEntry
+                        keyboardType="default" />
                     <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>CPF</ThemedText>
                     <TextInput
                         style={styles.input}
@@ -103,6 +106,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         elevation: 2,
+        color: Colors.dark.text
     },
     inputSmall: {
         backgroundColor: Colors.dark.input,
@@ -163,3 +167,5 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 8,
     },
 });
+
+export default RegisterScreen;

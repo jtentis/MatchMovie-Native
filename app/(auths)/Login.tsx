@@ -2,20 +2,20 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFonts } from 'expo-font';
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from 'react';
-import { Alert, StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 import { Icon } from '../../components/MatchLogo';
 
 type RootStackParamList = {
     register: undefined;
   };
 
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const Login = () => {
-    const navigation = useNavigation<HomeScreenNavigationProp>();
+    const navigation = useNavigation<LoginScreenNavigationProp>();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -33,16 +33,19 @@ const Login = () => {
             });
 
             if (response.status === 201) {
-                Alert.alert('Erro de Login', 'Login bem sucedido!');
-                console.log(response)
+                router.push('/(tabs)')
+                // Alert.alert('Erro de Login', 'Login bem sucedido!');
+                // console.log(response)
                 // navigation.navigate("Home", { token: token });
             } else {
-                Alert.alert('Erro de Login', 'Senha incorreta!');
-                console.log(response)
+                router.push('/(tabs)')
+                // Alert.alert('Erro de Login', 'Senha incorreta!');
+                // console.log(response)
             }
             return response;
         } catch (error) {
-            Alert.alert('Erro de Login');
+            router.push('/(tabs)')
+            // Alert.alert('Erro de Login');
         }
     };
 
@@ -90,7 +93,7 @@ const Login = () => {
                     selectionColor={Colors.dark.tabIconSelected}
                     placeholderTextColor={Colors.dark.textPlaceHolder}
                     onChangeText={setPassword}
-                    secureTextEntry/>
+                    secureTextEntry></TextInput>
                 <View style={{flex:1/2, flexDirection:'column', backgroundColor: Colors.dark.background, justifyContent:'center', alignItems:'center', marginBottom: 40, gap:10}}>
                     <Pressable onPress={handleLogin} style={styles.buttonLogin}>
                         <ThemedText type={'defaultSemiBold'} style={{fontSize: 16}}>Login</ThemedText>
@@ -125,6 +128,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         elevation: 2,
+        color: Colors.dark.text
     },
     buttonLogin:{
         justifyContent:'center',

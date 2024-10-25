@@ -1,9 +1,9 @@
 import { Image, StyleSheet, TextInput, View } from 'react-native';
 
-import MatchScreen from "@/app/(tabs)/match";
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { router } from 'expo-router';
 import { Pressable } from "expo-router/build/views/Pressable";
 import React from 'react';
 
@@ -70,7 +70,7 @@ export default function ProfileScreen({navigation}: {navigation: any}) {
                 <Pressable style={styles.button}>
                     <ThemedText type="defaultSemiBold" style={{color:'white'}}>Salvar Perfil</ThemedText>
                 </Pressable>
-                <Pressable style={styles.button2} onPress={() => navigation.navigate(MatchScreen())}>
+                <Pressable style={styles.button2} onPress={() => router.push('/(auths)/login')}>
                     <ThemedText type="defaultSemiBold" style={{color:'white'}}>Sair</ThemedText>
                 </Pressable>
             </View>

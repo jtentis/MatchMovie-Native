@@ -12,11 +12,8 @@ import React from 'react';
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  initialRouteName: "index",
-  auths: { 
-    initialRouteName: "login",
-  },
-};
+  initialRouteName: "(tabs)/index"
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -33,12 +30,12 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
-
+ 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{headerShown: false}}>
-        <Stack.Screen name="(tabs)"/>
         <Stack.Screen name="(auths)"/>
+        <Stack.Screen name="(tabs)"/>
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>

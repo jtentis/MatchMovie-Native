@@ -176,10 +176,12 @@ const styles = StyleSheet.create({
     buttonHistory:{
       justifyContent:'center',
       alignItems:'center',
-      backgroundColor: Colors.dark.light,
+      backgroundColor: Colors.dark.background,
       padding: 12,
       borderRadius: 8,
-      elevation: 10,
+      elevation: 2,
+      borderWidth: 1,
+      borderColor: Colors.dark.tabIconSelected
     },
     backButton: {
       width: 55,

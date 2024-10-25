@@ -21,7 +21,7 @@ type RootStackParamList = {
     details: { movieId: number };
 };
 
-type DetailsScreenRouteProp = RouteProp<RootStackParamList, "details">;
+type DetailsScreenRouteProp = RouteProp<RootStackParamList>;
 
 interface Genre {
     id: number;
