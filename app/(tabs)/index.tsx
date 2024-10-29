@@ -228,9 +228,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     searchDiv: {
-        paddingLeft: 30,
-        paddingRight: 30,
-        paddingTop: 30,
+        paddingHorizontal: 30,
+        paddingTop: 10,
         flex: 2,
         flexDirection: 'row',
         alignItems: "center",
@@ -286,7 +285,7 @@ const styles = StyleSheet.create({
     },
     icon:{
         position: 'absolute',
-        top:85,
+        top:60,
         left:18,
     }
 });

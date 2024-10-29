@@ -5,10 +5,10 @@ import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
 import {
-    Image,
-    ImageBackground,
-    StyleSheet,
-    View
+  Image,
+  ImageBackground,
+  StyleSheet,
+  View
 } from "react-native";
 import { ThemedText } from "../components/ThemedText";
 
@@ -57,7 +57,7 @@ const GroupsScreen = ({navigation}:{navigation: any}) => {
           </ThemedText>
           <View style={{backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'flex-start', padding: 20, flexDirection:'row', gap:5}}>
             <View style={styles.poster}><Image source={require("@/assets/images/movie-poster.jpg")} style={styles.poster}></Image></View>
-            <View style={styles.poster}><Image source={require("@/assets/images/movie-poster.jpg")} style={styles.poster}></Image></View>
+            <View style={styles.poster}><Image source={require("@/assets/images/moonlight.jpg")} style={styles.poster}></Image></View>
             <View style={styles.posterAdd}><View style={styles.add}><FontAwesome name={"plus"} size={10}></FontAwesome></View></View>
           </View>
         </View>
@@ -73,7 +73,7 @@ const GroupsScreen = ({navigation}:{navigation: any}) => {
               </Pressable>
             ))}
           </View>
-          <View style={{width:360, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'center', flexDirection:'row', gap:5, flexWrap:'nowrap'}}>
+          <View style={{width:360, backgroundColor: Colors.dark.background, alignItems:'center', justifyContent:'center', flexDirection:'row', gap:5, flexWrap:'wrap'}}>
             {buttonNames.map((name, index) => (
               <Pressable key={index}
               style={[styles.button, selectedButtons[index] ? styles.selected : styles.default]}
@@ -151,9 +151,9 @@ const styles = StyleSheet.create({
       opacity: 0.8
     },
     button:{
-      padding: 10,
+      padding: 8,
       borderRadius: 5,
-      elevation: 5
+      elevation: 5,
     },
     selected:{
       backgroundColor: Colors.dark.tabIconSelected,
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
       backgroundColor: Colors.dark.input,
     },
     buttonText:{
-      fontSize: 14,
+      fontSize: 12,
       color: "white",
     },
     buttonMatch:{

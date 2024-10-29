@@ -129,7 +129,7 @@ const MovieDetailsScreen = () => {
 
     const genresText = genres
         .map((genre) => genre.name)
-        .slice(0, 3)
+        .slice(0, 2)
         .join(" • ");
 
     const castNames = credits.cast.slice(0, 20).map((member) => member.name);
@@ -194,9 +194,12 @@ const MovieDetailsScreen = () => {
                     backgroundColor: "blue",
                     justifyContent: "flex-start",
                     alignItems: "flex-start",
+                    borderBottomWidth: 2,
+                    borderColor: Colors.dark.tabIconSelected,
                 }}
             >
                 <ImageBackground
+                    
                     style={styles.Image}
                     source={posterUrl}
                 ></ImageBackground>
@@ -215,14 +218,14 @@ const MovieDetailsScreen = () => {
                     <FontAwesome size={25} name="eye" color="#D46162" />
                 </View>
             </View>
-            <View
+            <ScrollView
+                alwaysBounceVertical={true}
+                showsVerticalScrollIndicator={false}
                 style={{
                     flex: 1,
                     backgroundColor: Colors.dark.background,
                     padding: 15,
                     paddingTop: 5,
-                    borderTopWidth: 1,
-                    borderColor: Colors.dark.tabIconSelected,
                 }}
             >
                 <View
@@ -244,12 +247,12 @@ const MovieDetailsScreen = () => {
                         style={{
                             position: "relative",
                             right: 0,
-                            top: 7,
-                            fontSize: 26,
+                            top: 0,
+                            fontSize: 20,
                         }}
                     >
                         {vote_average_divided}{" "}
-                        <FontAwesome size={22} name="star" color="#D46162" />
+                        <FontAwesome size={20} name="star" color="#D46162" />
                     </ThemedText>
                 </View>
                 <View
@@ -296,39 +299,44 @@ const MovieDetailsScreen = () => {
                         paddingVertical: 10,
                     }}
                 >
-                    <ScrollView
+                    <View
                         style={{
-                            maxHeight: 160,
+                            minHeight: 200,
+                            maxHeight: '100%',
                             backgroundColor: Colors.dark.background,
                             width: "100%",
                         }}
                     >
-                        <ThemedText style={{ fontSize: 18 }}>
+                        <ThemedText style={{ fontSize: 16, textAlign:"justify" }}>
                             {overview}
                         </ThemedText>
-                    </ScrollView>
+                    </View>
                     <ThemedText type="subtitle" style={{ paddingVertical: 20 }}>
                         ELENCO
                     </ThemedText>
                     <View
                         style={{
                             flex: 3 / 5,
-                            flexDirection: "row",
-                            marginHorizontal: 5,
+                            flexDirection: "column",
+                            marginLeft: 5,
+                            marginBottom: 10,
+                            alignSelf:"flex-end"
                         }}
                     >
                         <ScrollView
                             horizontal={true}
                             showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{
+                                columnGap: 5,
+                          }}
                         >
                             {castNames.map((item, index) => (
                                 <View key={index} style={styles.elenco}>
                                     <ImageBackground
-                                        imageStyle={{ borderRadius: 8 }}
+                                        imageStyle={{ borderTopRightRadius: 8, borderTopLeftRadius: 8}}
                                         style={{
-                                            width: 90,
-                                            height: "99%",
-                                            borderRadius: 8,
+                                            width: 70,
+                                            height: 90,
                                         }}
                                         source={castPicturesUrl[index]}
                                     ></ImageBackground>
@@ -344,7 +352,7 @@ const MovieDetailsScreen = () => {
                                         numberOfLines={1}
                                         ellipsizeMode="tail"
                                         type="default"
-                                        style={styles.castNamesCaracters}
+                                        style={[styles.castNames, styles.castNamesCaracters]}
                                     >
                                         {castCharacters[index]}
                                     </ThemedText>
@@ -353,7 +361,7 @@ const MovieDetailsScreen = () => {
                         </ScrollView>
                     </View>
                 </View>
-            </View>
+            </ScrollView>
         </>
     );
 };
@@ -399,33 +407,23 @@ const styles = StyleSheet.create({
     },
     elenco: {
         alignItems: "center",
-        marginRight: 10, // Adds space between each item
+        // marginRight: 35,
+        columnGap: 30,
         backgroundColor: Colors.dark.background,
         borderRadius: 8,
-        minHeight: 110,
-        maxHeight: 150,
     },
     castNames: {
-        fontSize: 12,
-        position: "absolute",
+        fontSize: 10,
         color: Colors.dark.text,
         backgroundColor: Colors.dark.light,
-        maxWidth: 90,
-        minWidth: 90,
         paddingHorizontal: 5,
-        bottom: 19,
+        width: 70,
     },
     castNamesCaracters: {
-        fontSize: 12,
-        position: "absolute",
-        color: Colors.dark.text,
-        backgroundColor: Colors.dark.tabIconSelected,
-        maxWidth: 90,
-        minWidth: 90,
-        paddingHorizontal: 5,
         bottom: 0,
         borderBottomRightRadius: 8,
         borderBottomLeftRadius: 8,
+        backgroundColor: Colors.dark.tabIconSelected,
     },
     backButton: {
         width: 55,

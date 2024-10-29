@@ -70,7 +70,7 @@ export default function ProfileScreen({navigation}: {navigation: any}) {
                 <Pressable style={styles.button}>
                     <ThemedText type="defaultSemiBold" style={{color:'white'}}>Salvar Perfil</ThemedText>
                 </Pressable>
-                <Pressable style={styles.button2} onPress={() => router.push('/(auths)/Login')}>
+                <Pressable style={styles.button2} onPress={() => router.push('/(auths)/login')}>
                     <ThemedText type="defaultSemiBold" style={{color:'white'}}>Sair</ThemedText>
                 </Pressable>
             </View>
