@@ -10,8 +10,9 @@
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "resizeMode": "center",
+      "backgroundColor": "#343637",
+      "text":"MatchMovie"
     },
     "ios": {
       "supportsTablet": true

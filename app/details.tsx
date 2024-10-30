@@ -307,7 +307,8 @@ const MovieDetailsScreen = () => {
                             width: "100%",
                         }}
                     >
-                        <ThemedText style={{ fontSize: 16, textAlign:"justify" }}>
+                        <ThemedText type="subtitle" style={{textAlign:"center"}}>SINOPSE</ThemedText>
+                        <ThemedText style={{ fontSize: 16, textAlign:"justify", marginTop: 5 }}>
                             {overview}
                         </ThemedText>
                     </View>
