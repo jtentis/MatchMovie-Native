@@ -1,10 +1,11 @@
 // App.tsx
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Pressable } from "expo-router/build/views/Pressable";
-import React, { useEffect, useRef, useState } from 'react';
+import * as SecureStore from "expo-secure-store";
+import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Dimensions,
@@ -16,14 +17,18 @@ import {
     Text,
     TextInput,
     TouchableWithoutFeedback,
-    View
-} from 'react-native';
-import { Icon } from '../../components/MatchLogo';
+    View,
+} from "react-native";
+import { Icon } from "../../components/MatchLogo";
 
-const API_KEY = '2017240ed8d4e61fbe9ed801fe5da25a';
-const BASE_URL = 'https://api.themoviedb.org/3';
-const BASE_URL_API = 'http://10.0.2.2:3000/movies';
-const POPULAR_MOVIES_URL_API = 'http://10.0.2.2:3000/movies/popular';
+const API_KEY = "2017240ed8d4e61fbe9ed801fe5da25a";
+const BASE_URL = "https://api.themoviedb.org/3";
+const BASE_NGROK = "https://c5aa-201-76-179-217.ngrok-free.app";
+const POPULAR_MOVIES_URL_API = `${BASE_NGROK}/movies/popular`;
+const NOW_PLAYING_MOVIES_URL_API = `${BASE_NGROK}/movies/now_playing`;
+const TOP_RATED_MOVIES_URL_API = `${BASE_NGROK}/movies/top_rated`;
+const UPCOMING_MOVIES_URL_API = `${BASE_NGROK}/movies/upcoming`;
+const SEARCH_MOVIES_URL_API = `${BASE_NGROK}/movies/search`;
 const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`;
 const NOW_PLAYING_MOVIES_URL = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=pt-BR`;
 const TOP_RATED_MOVIES_URL = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=pt-BR`;
@@ -39,29 +44,50 @@ interface Movie {
 
 type RootStackParamListTeste = {
     register: undefined;
-    index: undefined
-  };
+    index: undefined;
+};
 
 type LoginScreenNavigationProp = RouteProp<RootStackParamListTeste>;
 
 type RootStackParamList = {
     index: undefined;
-    details: { movieId: number }; // Match this to route parameters in details.tsx
-  };
+    details: { movieId: number };
+    '(auths)': { screen: string };
+};
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const HomeScreen = () => {
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = await SecureStore.getItemAsync("authToken");
+            if (!token) {
+                navigation.navigate('(auths)', { screen: 'login' });  // Redirect to login if no token is found
+            }
+        };
+
+        checkAuth();
+    }, []);
+
     const route = useRoute<LoginScreenNavigationProp>();
     const navigation = useNavigation<HomeScreenNavigationProp>();
-    const [query, setQuery] = useState<string>('');
+    const [query, setQuery] = useState<string>("");
     const [movies, setMovies] = useState<Movie[]>([]);
-    const [filter, setFilter] = useState<string>('popular');
+    const [filter, setFilter] = useState<string>("popular");
     const [page, setPage] = useState<number>(1);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
+    const FILTER_URLS: any = {
+        popular: POPULAR_MOVIES_URL_API,
+        now_playing: NOW_PLAYING_MOVIES_URL_API,
+        top_rated: TOP_RATED_MOVIES_URL_API,
+        upcoming: UPCOMING_MOVIES_URL_API,
+        search: (query: string, page: number) =>
+            `${SEARCH_MOVIES_URL_API}?search=${query}&page=${page}`,
+    };
+
     useEffect(() => {
-        fetchMovies(POPULAR_MOVIES_URL);
+        fetchMovies(POPULAR_MOVIES_URL_API);
     }, []);
 
     const fetchMovies = async (url: string, isLoadMore = false) => {
@@ -69,11 +95,19 @@ const HomeScreen = () => {
 
         setIsLoading(true);
         try {
+            console.log(`Fetching from URL: ${url}`);
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP status ${response.status}: ${response.statusText}`
+                );
+            }
             const data = await response.json();
-            setMovies((prevMovies) => (isLoadMore ? [...prevMovies, ...data.results] : data.results));
+            setMovies((prevMovies) =>
+                isLoadMore ? [...prevMovies, ...data.results] : data.results
+            );
         } catch (error) {
-            console.error(error);
+            console.error(`Error fetching movies: ${error}`);
         } finally {
             setIsLoading(false);
         }
@@ -91,66 +125,59 @@ const HomeScreen = () => {
     // };
 
     const searchMovies = () => {
-        if (query.length < 1) return;
-        const url = `${SEARCH_MOVIE_URL}&query=${query}`;
+        if (query.trim().length < 1) return;
+
+        setFilter("search"); // Set the filter to "search"
+        setPage(1); // Reset the page number
+
+        const url = `${SEARCH_MOVIES_URL_API}?search=${query}&page=1`;
         fetchMovies(url);
-        listRef.current?.scrollToOffset({animated: true, offset: 0});
+        listRef.current?.scrollToOffset({ animated: true, offset: 0 });
     };
 
-    const listRef = useRef<FlatList>(null)
+    const listRef = useRef<FlatList>(null);
     const applyFilter = (filterType: string) => {
         setFilter(filterType);
         setPage(1);
-        let url = '';
-        switch (filterType) {
-            case 'popular':
-                url = POPULAR_MOVIES_URL;
-                break;
-            case 'now_playing':
-                url = NOW_PLAYING_MOVIES_URL;
-                break;
-            case 'top_rated':
-                url = TOP_RATED_MOVIES_URL;
-                break;
-            case 'upcoming':
-                url = UPCOMING_MOVIES_URL;
-                break;
+
+        let url = "";
+
+        if (filterType === "search") {
+            url = FILTER_URLS.search(query, 1);
+        } else {
+            url = FILTER_URLS[filterType];
         }
+
         fetchMovies(url);
-        listRef.current?.scrollToOffset({animated: true, offset: 0});
+        listRef.current?.scrollToOffset({ animated: true, offset: 0 });
     };
 
     const loadMoreMovies = () => {
         const nextPage = page + 1;
         setPage(nextPage);
-        let url = '';
-        switch (filter) {
-            case 'popular':
-                url = `${POPULAR_MOVIES_URL}&page=${nextPage}`;
-                break;
-            case 'now_playing':
-                url = `${NOW_PLAYING_MOVIES_URL}&page=${nextPage}`;
-                break;
-            case 'top_rated':
-                url = `${TOP_RATED_MOVIES_URL}&page=${nextPage}`;
-                break;
-            case 'upcoming':
-                url = `${UPCOMING_MOVIES_URL}&page=${nextPage}`;
-                break;
-            case 'search':
-                url = `${SEARCH_MOVIE_URL}&query=${query}&page=${nextPage}`;
-                break;
+
+        let url = "";
+
+        if (filter === "search") {
+            url = `${SEARCH_MOVIES_URL_API}?search=${query}&page=${nextPage}`;
+        } else {
+            url = `${FILTER_URLS[filter]}?page=${nextPage}`;
         }
+
         fetchMovies(url, true);
     };
 
     const renderMovie = ({ item }: { item: Movie }) => {
         const posterUrl: ImageSourcePropType = item.poster_path
             ? { uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }
-            : require('@/assets/images/No-Image-Placeholder.png');
+            : require("@/assets/images/No-Image-Placeholder.png");
 
         return (
-            <TouchableWithoutFeedback onPress={() => navigation.navigate('details', { movieId: item.id })}>
+            <TouchableWithoutFeedback
+                onPress={() =>
+                    navigation.navigate("details", { movieId: item.id })
+                }
+            >
                 <View key={item.id} style={styles.gridItem}>
                     <Image source={posterUrl} style={styles.posterImage} />
                 </View>
@@ -159,52 +186,84 @@ const HomeScreen = () => {
     };
 
     const getFilterButtonStyle = (filterType: string) => {
-        return (filter === filterType
+        return filter === filterType
             ? [styles.filterButton, styles.filterButtonActive]
-            : styles.filterButton
-        )
+            : styles.filterButton;
     };
 
     return (
-        <><View style={styles.searchDiv}>
-            <Icon fill="#D46162" viewBox={"0 0 34 39"} width={54} height={50} style={styles.icon}/>
-            <View style={{flexDirection: 'row'}}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Procurando algum filme?"
-                    placeholderTextColor={Colors.dark.textPlaceHolder}
-                    value={query}
-                    onChangeText={setQuery}
-                    selectionColor={Colors.dark.tabIconSelected}
+        <>
+            <View style={styles.searchDiv}>
+                <Icon
+                    fill="#D46162"
+                    viewBox={"0 0 34 39"}
+                    width={54}
+                    height={50}
+                    style={styles.icon}
                 />
-                <Pressable style={styles.button} onPress={searchMovies}>
-                    <Text style={{
-                        fontSize: 12,
-                        lineHeight: 20,
-                        fontWeight: 'bold',
-                        letterSpacing: 0.5,
-                        color: 'white',
-                        flex: 1,
-                        alignSelf: 'center',
-                    }}>Procurar</Text>
-                </Pressable>
+                <View style={{ flexDirection: "row" }}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Procurando algum filme?"
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        value={query}
+                        onChangeText={setQuery}
+                        selectionColor={Colors.dark.tabIconSelected}
+                    />
+                    <Pressable style={styles.button} onPress={searchMovies}>
+                        <Text
+                            style={{
+                                fontSize: 12,
+                                lineHeight: 20,
+                                fontWeight: "bold",
+                                letterSpacing: 0.5,
+                                color: "white",
+                                flex: 1,
+                                alignSelf: "center",
+                            }}
+                        >
+                            Procurar
+                        </Text>
+                    </Pressable>
+                </View>
             </View>
-        </View>
-            <View style={{
-                flex: 1 / 2,
-                flexDirection: 'row',
-                justifyContent: 'space-around',
-                backgroundColor: Colors.dark.background,
-                paddingBottom: 10
-            }}>
-                <ThemedText onPress={() => applyFilter('popular')} type="subtitle"
-                            style={getFilterButtonStyle('popular')}>Populares</ThemedText>
-                <ThemedText onPress={() => applyFilter('top_rated')} type="subtitle"
-                            style={getFilterButtonStyle('top_rated')}>Mais Votados</ThemedText>
-                <ThemedText onPress={() => applyFilter('now_playing')} type="subtitle"
-                            style={getFilterButtonStyle('now_playing')}>Nos Cinemas</ThemedText>
-                <ThemedText onPress={() => applyFilter('upcoming')} type="subtitle"
-                            style={getFilterButtonStyle('upcoming')} >Em Breve</ThemedText>
+            <View
+                style={{
+                    flex: 1 / 2,
+                    flexDirection: "row",
+                    justifyContent: "space-around",
+                    backgroundColor: Colors.dark.background,
+                    paddingBottom: 10,
+                }}
+            >
+                <ThemedText
+                    onPress={() => applyFilter("popular")}
+                    type="subtitle"
+                    style={getFilterButtonStyle("popular")}
+                >
+                    Populares
+                </ThemedText>
+                <ThemedText
+                    onPress={() => applyFilter("top_rated")}
+                    type="subtitle"
+                    style={getFilterButtonStyle("top_rated")}
+                >
+                    Mais Votados
+                </ThemedText>
+                <ThemedText
+                    onPress={() => applyFilter("now_playing")}
+                    type="subtitle"
+                    style={getFilterButtonStyle("now_playing")}
+                >
+                    Nos Cinemas
+                </ThemedText>
+                <ThemedText
+                    onPress={() => applyFilter("upcoming")}
+                    type="subtitle"
+                    style={getFilterButtonStyle("upcoming")}
+                >
+                    Em Breve
+                </ThemedText>
             </View>
             <SafeAreaView style={styles.container}>
                 <FlatList
@@ -215,9 +274,14 @@ const HomeScreen = () => {
                     numColumns={2}
                     onEndReached={loadMoreMovies}
                     onEndReachedThreshold={0.5}
-                    ListFooterComponent={isLoading ? <ActivityIndicator size="large" color="#0000ff"/> : null}
+                    ListFooterComponent={
+                        isLoading ? (
+                            <ActivityIndicator size="large" color="#0000ff" />
+                        ) : null
+                    }
                 />
-            </SafeAreaView></>
+            </SafeAreaView>
+        </>
     );
 };
 
@@ -225,16 +289,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 10,
         padding: 0,
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
     },
     searchDiv: {
         paddingHorizontal: 30,
         paddingTop: 10,
         flex: 2,
-        flexDirection: 'row',
+        flexDirection: "row",
         alignItems: "center",
-        gap:25,
-        justifyContent: 'space-between',
+        gap: 25,
+        justifyContent: "space-between",
         backgroundColor: Colors.dark.background,
     },
     input: {
@@ -246,8 +310,8 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 8,
         borderTopLeftRadius: 8,
         elevation: 10,
-        marginLeft:55,
-        color: Colors.dark.text
+        marginLeft: 55,
+        color: Colors.dark.text,
     },
     button: {
         width: 85,
@@ -260,8 +324,8 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     filterContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
+        flexDirection: "row",
+        justifyContent: "space-around",
         marginBottom: 10,
     },
     filterButton: {
@@ -273,20 +337,21 @@ const styles = StyleSheet.create({
         padding: 0,
     },
     posterImage: {
-        width: (Dimensions.get('window').width / 2),
-        height: ((Dimensions.get('window').width / 2)) * 1.5,
+        width: Dimensions.get("window").width / 2,
+        height: (Dimensions.get("window").width / 2) * 1.5,
     },
     logo: {
         marginTop: 35,
         width: 40,
         height: 70,
-    }, filterButtonActive: {
+    },
+    filterButtonActive: {
         color: Colors.dark.tabIconSelected,
     },
-    icon:{
-        position: 'absolute',
-        top:60,
-        left:18,
-    }
+    icon: {
+        position: "absolute",
+        top: 60,
+        left: 18,
+    },
 });
 export default HomeScreen;

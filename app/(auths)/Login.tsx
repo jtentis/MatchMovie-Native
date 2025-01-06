@@ -4,15 +4,19 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useFonts } from 'expo-font';
 import { router, useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
+import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { Alert, StyleSheet, TextInput, View } from 'react-native';
 import { Icon } from '../../components/MatchLogo';
 
 type RootStackParamList = {
     register: undefined;
+    '(tabs)': { screen: string };
   };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
+//TODO: CONSERTAR COMPORTAMENTO DA DIV DOS BOTOES DE LOGIN COM O TECLADO
 
 const LoginScreen = () => {
     const navigation = useNavigation<LoginScreenNavigationProp>();
@@ -21,7 +25,7 @@ const LoginScreen = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('http://10.0.2.2:3000/auth/login', {
+            const response = await fetch('https://c5aa-201-76-179-217.ngrok-free.app/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -33,14 +37,21 @@ const LoginScreen = () => {
             });
 
             if (response.status === 201) {
-                router.push('/(tabs)')
-                // Alert.alert('Erro de Login', 'Login bem sucedido!');
-                // console.log(response)
-                // navigation.navigate("Home", { token: token });
+                const data = await response.json();
+                const accessToken = data.accessToken;
+                
+                await SecureStore.setItemAsync('authToken', accessToken);
+
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: '(tabs)' }], // Replace 'login' with your login screen's route name
+                });
+                Alert.alert('Sucesso', 'Login bem sucedido!');
+                console.log(data.accessToken)
             } else {
-                router.push('/(tabs)')
-                // Alert.alert('Erro de Login', 'Senha incorreta!');
-                // console.log(response)
+                Alert.alert('Erro', 'Informações incorretas!');
+                // router.push('/(tabs)')
+                console.log(response)
             }
             return response;
         } catch (error) {

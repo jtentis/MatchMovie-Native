@@ -1,13 +1,40 @@
-import { Image, StyleSheet, TextInput, View } from 'react-native';
-
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { Pressable } from "expo-router/build/views/Pressable";
+import * as SecureStore from "expo-secure-store";
 import React from 'react';
+import { Alert, Image, StyleSheet, TextInput, View } from 'react-native';
 
-export default function ProfileScreen({navigation}: {navigation: any}) {
+type RootStackParamList = {
+    '(auths)': { screen: string };
+  };
+
+type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
+export default function ProfileScreen() {
+    const navigation = useNavigation<ProfileScreenNavigationProp>();
+    const handleLogout = async () => {
+        try {
+            // Remove the auth token from SecureStore
+            await SecureStore.deleteItemAsync('authToken');
+
+            // Optionally show a confirmation alert
+            Alert.alert('Desconectado', 'Você foi desconectado com sucesso!');
+
+            // Navigate back to the login screen
+            navigation.reset({
+                index: 0,
+                routes: [{ name: '(auths)' }], // Replace 'login' with your login screen's route name
+            });
+        } catch (error) {
+            console.error('Erro ao desconectar:', error);
+            Alert.alert('Erro', 'Erro ao desconectar.');
+        }
+    }
+
     return (
         <View style={{flex:1, backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'center'}}>
             <View style={{
@@ -70,7 +97,7 @@ export default function ProfileScreen({navigation}: {navigation: any}) {
                 <Pressable style={styles.button}>
                     <ThemedText type="defaultSemiBold" style={{color:'white'}}>Salvar Perfil</ThemedText>
                 </Pressable>
-                <Pressable style={styles.button2} onPress={() => router.push('/(auths)/login')}>
+                <Pressable style={styles.button2} onPress={handleLogout}>
                     <ThemedText type="defaultSemiBold" style={{color:'white'}}>Sair</ThemedText>
                 </Pressable>
             </View>
