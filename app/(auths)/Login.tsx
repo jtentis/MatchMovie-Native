@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFonts } from 'expo-font';
 import { router, useNavigation } from "expo-router";
@@ -8,6 +9,8 @@ import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, TextInput, View } from 'react-native';
 import { Icon } from '../../components/MatchLogo';
+
+const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 
 type RootStackParamList = {
     register: undefined;
@@ -22,10 +25,17 @@ const LoginScreen = () => {
     const navigation = useNavigation<LoginScreenNavigationProp>();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Function to toggle the password visibility state
+    const toggleShowPassword = () => {
+        setShowPassword(!showPassword);
+    };
+
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('https://c5aa-201-76-179-217.ngrok-free.app/auth/login', {
+            const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -87,25 +97,44 @@ const LoginScreen = () => {
             </View>
             <View style={styles.container}>
                 <ThemedText type="default" style={{color:'white', alignSelf:'flex-start'}}>E-mail</ThemedText>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Digite seu email"
-                    value={email}
-                    selectionColor={Colors.dark.tabIconSelected}
-                    placeholderTextColor={Colors.dark.textPlaceHolder}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"/>
+                <View style={styles.inputContainers}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Digite seu email"
+                        value={email}
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                    <MaterialIcons
+                        name={'person'}
+                        size={24}
+                        color="#aaa"
+                        style={styles.icon}
+                    />
+                </View>
                 <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Senha</ThemedText>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Digite sua senha"
-                    value={password}
-                    selectionColor={Colors.dark.tabIconSelected}
-                    placeholderTextColor={Colors.dark.textPlaceHolder}
-                    onChangeText={setPassword}
-                    secureTextEntry></TextInput>
-                <View style={{flex:1/2, flexDirection:'column', backgroundColor: Colors.dark.background, justifyContent:'center', alignItems:'center', marginBottom: 40, gap:10}}>
+                <View style={styles.inputContainers}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Digite sua senha"
+                        value={password}
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}>
+                    </TextInput>
+                    <MaterialCommunityIcons
+                        name={showPassword ? 'eye' : 'eye-off'}
+                        size={24}
+                        color="#aaa"
+                        style={styles.icon}
+                        onPress={toggleShowPassword}
+                    />
+                </View>
+                <View style={{flex:1/2, flexDirection:'column', backgroundColor: Colors.dark.background, justifyContent:'center', alignItems:'center', gap:10}}>
                     <Pressable onPress={handleLogin} style={styles.buttonLogin}>
                         <ThemedText type={'defaultSemiBold'} style={{fontSize: 16}}>Login</ThemedText>
                     </Pressable>
@@ -126,6 +155,15 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: Colors.dark.background,
         gap:5
+    },
+    icon: {
+        position: 'absolute',
+        right: 0,
+        paddingHorizontal: '5%',
+    },
+    inputContainers: {
+        justifyContent: 'center',
+        alignItems:'center',
     },
     title: {
         fontSize: 24,

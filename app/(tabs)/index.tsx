@@ -21,19 +21,14 @@ import {
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
-const API_KEY = "2017240ed8d4e61fbe9ed801fe5da25a";
-const BASE_URL = "https://api.themoviedb.org/3";
-const BASE_NGROK = "https://c5aa-201-76-179-217.ngrok-free.app";
-const POPULAR_MOVIES_URL_API = `${BASE_NGROK}/movies/popular`;
-const NOW_PLAYING_MOVIES_URL_API = `${BASE_NGROK}/movies/now_playing`;
-const TOP_RATED_MOVIES_URL_API = `${BASE_NGROK}/movies/top_rated`;
-const UPCOMING_MOVIES_URL_API = `${BASE_NGROK}/movies/upcoming`;
-const SEARCH_MOVIES_URL_API = `${BASE_NGROK}/movies/search`;
-const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`;
-const NOW_PLAYING_MOVIES_URL = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=pt-BR`;
-const TOP_RATED_MOVIES_URL = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=pt-BR`;
-const UPCOMING_MOVIES_URL = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=pt-BR`;
-const SEARCH_MOVIE_URL = `${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-BR`;
+
+// const BASE_URL = "https://api.themoviedb.org/3";
+// const API_KEY = process.env.TMDB_API_KEY;
+// const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`;
+// const NOW_PLAYING_MOVIES_URL = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=pt-BR`;
+// const TOP_RATED_MOVIES_URL = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=pt-BR`;
+// const UPCOMING_MOVIES_URL = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=pt-BR`;
+// const SEARCH_MOVIE_URL = `${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-BR`;
 
 // const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient)
 
@@ -58,6 +53,13 @@ type RootStackParamList = {
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const HomeScreen = () => {
+    const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+    const POPULAR_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/popular`;
+    const NOW_PLAYING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/now_playing`;
+    const TOP_RATED_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/top_rated`;
+    const UPCOMING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/upcoming`;
+    const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
+
     useEffect(() => {
         const checkAuth = async () => {
             const token = await SecureStore.getItemAsync("authToken");
@@ -94,9 +96,16 @@ const HomeScreen = () => {
         if (isLoading) return;
 
         setIsLoading(true);
+        const token = await SecureStore.getItemAsync("authToken");
         try {
             console.log(`Fetching from URL: ${url}`);
-            const response = await fetch(url);
+            const response = await fetch(url,{
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+            })
             if (!response.ok) {
                 throw new Error(
                     `HTTP status ${response.status}: ${response.statusText}`
