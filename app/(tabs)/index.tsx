@@ -1,5 +1,4 @@
 // App.tsx
-import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -8,6 +7,7 @@ import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
+    Animated,
     Dimensions,
     FlatList,
     Image,
@@ -21,7 +21,12 @@ import {
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
-
+const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+const POPULAR_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/popular`;
+const NOW_PLAYING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/now_playing`;
+const TOP_RATED_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/top_rated`;
+const UPCOMING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/upcoming`;
+const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
 // const BASE_URL = "https://api.themoviedb.org/3";
 // const API_KEY = process.env.TMDB_API_KEY;
 // const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`;
@@ -47,24 +52,19 @@ type LoginScreenNavigationProp = RouteProp<RootStackParamListTeste>;
 type RootStackParamList = {
     index: undefined;
     details: { movieId: number };
-    '(auths)': { screen: string };
+    "(auths)": { screen: string };
 };
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const HomeScreen = () => {
-    const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-    const POPULAR_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/popular`;
-    const NOW_PLAYING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/now_playing`;
-    const TOP_RATED_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/top_rated`;
-    const UPCOMING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/upcoming`;
-    const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
-
     useEffect(() => {
         const checkAuth = async () => {
             const token = await SecureStore.getItemAsync("authToken");
             if (!token) {
-                navigation.navigate('(auths)', { screen: 'login' });  // Redirect to login if no token is found
+                navigation.navigate('(auths)', { screen: 'login' }); // Redirect to login if no token is found
+                console.log('nao ta logado')
+                console.log('teste',token)
             }
         };
 
@@ -96,16 +96,16 @@ const HomeScreen = () => {
         if (isLoading) return;
 
         setIsLoading(true);
-        const token = await SecureStore.getItemAsync("authToken");
+        // const token = await SecureStore.getItemAsync("authToken");
         try {
             console.log(`Fetching from URL: ${url}`);
-            const response = await fetch(url,{
-                method: 'GET',
+            const response = await fetch(url, {
+                method: "GET",
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
-            })
+                    // Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
             if (!response.ok) {
                 throw new Error(
                     `HTTP status ${response.status}: ${response.statusText}`
@@ -145,7 +145,7 @@ const HomeScreen = () => {
     };
 
     const listRef = useRef<FlatList>(null);
-    const applyFilter = (filterType: string) => {
+    const applyFilter = (filterType: string, index: number) => {
         setFilter(filterType);
         setPage(1);
 
@@ -153,13 +153,39 @@ const HomeScreen = () => {
 
         if (filterType === "search") {
             url = FILTER_URLS.search(query, 1);
+
+            Animated.timing(underlineColor, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: false,
+            }).start();
         } else {
             url = FILTER_URLS[filterType];
+            Animated.timing(underlineColor, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: false,
+            }).start();
+
+            Animated.timing(underlinePosition, {
+                toValue: index * 100, // Assuming each filter has a width of 100px
+                duration: 300,
+                useNativeDriver: false,
+            }).start();
         }
 
         fetchMovies(url);
         listRef.current?.scrollToOffset({ animated: true, offset: 0 });
+
     };
+    const underlineColor = useRef(new Animated.Value(0)).current;
+
+    const animatedColor = underlineColor.interpolate({
+        inputRange: [0, 1],
+        outputRange: filter === "search"
+            ? [Colors.dark.background, Colors.dark.background] // Match the text color
+            : [Colors.dark.tabIconSelected, Colors.dark.background], // Normal behavior
+    });
 
     const loadMoreMovies = () => {
         const nextPage = page + 1;
@@ -194,6 +220,15 @@ const HomeScreen = () => {
         );
     };
 
+    const filterTypes = ["popular", "top_rated", "now_playing", "upcoming"];
+    const filterTranslations: any = {
+        popular: "Popular",
+        top_rated: "Melhor avaliados",
+        now_playing: "Em exibição",
+        upcoming: "Em breve",
+    };
+    const underlinePosition = useRef(new Animated.Value(0)).current;
+
     const getFilterButtonStyle = (filterType: string) => {
         return filter === filterType
             ? [styles.filterButton, styles.filterButtonActive]
@@ -205,7 +240,7 @@ const HomeScreen = () => {
             <View style={styles.searchDiv}>
                 <Icon
                     fill="#D46162"
-                    viewBox={"0 0 34 39"}
+                    viewBox={"0 0 34 35"}
                     width={54}
                     height={50}
                     style={styles.icon}
@@ -245,34 +280,24 @@ const HomeScreen = () => {
                     paddingBottom: 10,
                 }}
             >
-                <ThemedText
-                    onPress={() => applyFilter("popular")}
-                    type="subtitle"
-                    style={getFilterButtonStyle("popular")}
-                >
-                    Populares
-                </ThemedText>
-                <ThemedText
-                    onPress={() => applyFilter("top_rated")}
-                    type="subtitle"
-                    style={getFilterButtonStyle("top_rated")}
-                >
-                    Mais Votados
-                </ThemedText>
-                <ThemedText
-                    onPress={() => applyFilter("now_playing")}
-                    type="subtitle"
-                    style={getFilterButtonStyle("now_playing")}
-                >
-                    Nos Cinemas
-                </ThemedText>
-                <ThemedText
-                    onPress={() => applyFilter("upcoming")}
-                    type="subtitle"
-                    style={getFilterButtonStyle("upcoming")}
-                >
-                    Em Breve
-                </ThemedText>
+                <Animated.View
+                    style={[
+                        styles.underline,
+                        {
+                            left: underlinePosition,
+                            backgroundColor: animatedColor,
+                        },
+                    ]}
+                />
+                {filterTypes.map((filterType, index) => (
+                    <Text
+                        key={filterType}
+                        onPress={() => applyFilter(filterType, index)}
+                        style={getFilterButtonStyle(filterType)}
+                    >
+                        {filterTranslations[filterType].replace("_", " ")}
+                    </Text>
+                ))}
             </View>
             <SafeAreaView style={styles.container}>
                 <FlatList
@@ -299,6 +324,14 @@ const styles = StyleSheet.create({
         flex: 10,
         padding: 0,
         backgroundColor: "#fff",
+    },
+    underline: {
+        position: "absolute",
+        bottom: 0,
+        width: 100, // Match button width
+        height: 3,
+        backgroundColor: "black",
+        zIndex: 1000,
     },
     searchDiv: {
         paddingHorizontal: 30,
@@ -338,8 +371,11 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     filterButton: {
-        fontSize: 12,
         marginTop: 10,
+        fontSize: 14,
+        color: Colors.dark.text,
+        textTransform: "capitalize",
+        textAlign: "center",
     },
     gridItem: {
         flex: 1,
@@ -356,11 +392,12 @@ const styles = StyleSheet.create({
     },
     filterButtonActive: {
         color: Colors.dark.tabIconSelected,
+        fontWeight: "bold",
     },
     icon: {
         position: "absolute",
-        top: 60,
-        left: 18,
+        top: 63,
+        left: 14,
     },
 });
 export default HomeScreen;

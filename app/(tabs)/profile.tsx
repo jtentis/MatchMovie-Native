@@ -19,8 +19,10 @@ export default function ProfileScreen() {
     const handleLogout = async () => {
         try {
             // Remove the auth token from SecureStore
-            await SecureStore.deleteItemAsync('authToken');
-
+            var token:any = await SecureStore.getItemAsync('authToken');
+            console.log('antes', token)
+            token = await SecureStore.deleteItemAsync('authToken');
+            console.log('depois',token)
             // Optionally show a confirmation alert
             Alert.alert('Desconectado', 'Você foi desconectado com sucesso!');
 

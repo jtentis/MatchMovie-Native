@@ -309,6 +309,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         elevation: 10,
+        color: Colors.dark.text,
     },
     size: {
         width: 240,
