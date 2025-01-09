@@ -11,13 +11,12 @@ import {
     Dimensions,
     FlatList,
     Image,
-    ImageSourcePropType,
     SafeAreaView,
     StyleSheet,
     Text,
     TextInput,
     TouchableWithoutFeedback,
-    View,
+    View
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
@@ -27,6 +26,7 @@ const NOW_PLAYING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/now_playing
 const TOP_RATED_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/top_rated`;
 const UPCOMING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/upcoming`;
 const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
+const MOVIE_POSTER_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies`;
 // const BASE_URL = "https://api.themoviedb.org/3";
 // const API_KEY = process.env.TMDB_API_KEY;
 // const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`;
@@ -39,7 +39,7 @@ const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
 
 interface Movie {
     id: number;
-    poster_path: string | null;
+    poster_path: string | null | any;
 }
 
 type RootStackParamListTeste = {
@@ -62,9 +62,9 @@ const HomeScreen = () => {
         const checkAuth = async () => {
             const token = await SecureStore.getItemAsync("authToken");
             if (!token) {
-                navigation.navigate('(auths)', { screen: 'login' }); // Redirect to login if no token is found
-                console.log('nao ta logado')
-                console.log('teste',token)
+                navigation.navigate("(auths)", { screen: "login" });
+                console.log("nao ta logado");
+                console.log("teste", token);
             }
         };
 
@@ -136,8 +136,8 @@ const HomeScreen = () => {
     const searchMovies = () => {
         if (query.trim().length < 1) return;
 
-        setFilter("search"); // Set the filter to "search"
-        setPage(1); // Reset the page number
+        setFilter("search");
+        setPage(1);
 
         const url = `${SEARCH_MOVIES_URL_API}?search=${query}&page=1`;
         fetchMovies(url);
@@ -168,23 +168,22 @@ const HomeScreen = () => {
             }).start();
 
             Animated.timing(underlinePosition, {
-                toValue: index * 100, // Assuming each filter has a width of 100px
-                duration: 300,
+                toValue: index * 100, 
                 useNativeDriver: false,
             }).start();
         }
 
         fetchMovies(url);
         listRef.current?.scrollToOffset({ animated: true, offset: 0 });
-
     };
     const underlineColor = useRef(new Animated.Value(0)).current;
 
     const animatedColor = underlineColor.interpolate({
         inputRange: [0, 1],
-        outputRange: filter === "search"
-            ? [Colors.dark.background, Colors.dark.background] // Match the text color
-            : [Colors.dark.tabIconSelected, Colors.dark.background], // Normal behavior
+        outputRange:
+            filter === "search"
+                ? [Colors.dark.background, Colors.dark.background]
+                : [Colors.dark.tabIconSelected, Colors.dark.background],
     });
 
     const loadMoreMovies = () => {
@@ -202,11 +201,45 @@ const HomeScreen = () => {
         fetchMovies(url, true);
     };
 
+    const [posters, setPosters] = useState<{ [id: string]: string | null }>({});
+
+    useEffect(() => {
+        const fetchPosters = async () => {
+            const posterData: { [id: string]: string | null } = {};
+            for (const movie of movies) {
+                const formattedPosterPath = movie.poster_path
+                    ? `${movie.poster_path[0]}%2F${movie.poster_path.slice(1)}`
+                    : "";
+                try {
+                    const response = await fetch(
+                        `${MOVIE_POSTER_URL_API}/poster${formattedPosterPath}`
+                    );
+                    if (response.ok) {
+                        const base64Image = await response.text();
+                        posterData[movie.id] = base64Image;
+                    } else {
+                        console.error("Failed to fetch poster for:", movie.id);
+                        posterData[movie.id] = null;
+                    }
+                } catch (error) {
+                    console.error("Error fetching poster for:", movie.id, error);
+                    posterData[movie.id] = null;
+                }
+            }
+            setPosters(posterData);
+        };
+
+        fetchPosters();
+    }, [movies]);
+
+    //TODO: FIX THIS
     const renderMovie = ({ item }: { item: Movie }) => {
-        const posterUrl: ImageSourcePropType = item.poster_path
-            ? { uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }
+        const posterUrl = posters[item.id];
+        const posterSource = posterUrl
+            ? { uri:`data:image/jpeg;base64,${posterUrl}` }
             : require("@/assets/images/No-Image-Placeholder.png");
 
+        // console.log(posterSource, '\n\n\n')
         return (
             <TouchableWithoutFeedback
                 onPress={() =>
@@ -214,7 +247,7 @@ const HomeScreen = () => {
                 }
             >
                 <View key={item.id} style={styles.gridItem}>
-                    <Image source={posterUrl} style={styles.posterImage} />
+                    <Image source={posterSource} style={styles.posterImage} />
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -328,7 +361,7 @@ const styles = StyleSheet.create({
     underline: {
         position: "absolute",
         bottom: 0,
-        width: 100, // Match button width
+        width: 100,
         height: 3,
         backgroundColor: "black",
         zIndex: 1000,

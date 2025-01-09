@@ -27,11 +27,9 @@ const LoginScreen = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    // Function to toggle the password visibility state
     const toggleShowPassword = () => {
         setShowPassword(!showPassword);
     };
-
 
     const handleLogin = async () => {
         try {
@@ -54,7 +52,7 @@ const LoginScreen = () => {
 
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: '(tabs)' }], // Replace 'login' with your login screen's route name
+                    routes: [{ name: '(tabs)' }],
                 });
                 Alert.alert('Sucesso', 'Login bem sucedido!');
                 console.log(data.accessToken)

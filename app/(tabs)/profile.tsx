@@ -18,18 +18,17 @@ export default function ProfileScreen() {
     const navigation = useNavigation<ProfileScreenNavigationProp>();
     const handleLogout = async () => {
         try {
-            // Remove the auth token from SecureStore
             var token:any = await SecureStore.getItemAsync('authToken');
             console.log('antes', token)
+
             token = await SecureStore.deleteItemAsync('authToken');
             console.log('depois',token)
-            // Optionally show a confirmation alert
+
             Alert.alert('Desconectado', 'Você foi desconectado com sucesso!');
 
-            // Navigate back to the login screen
             navigation.reset({
                 index: 0,
-                routes: [{ name: '(auths)' }], // Replace 'login' with your login screen's route name
+                routes: [{ name: '(auths)' }],
             });
         } catch (error) {
             console.error('Erro ao desconectar:', error);

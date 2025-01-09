@@ -26,11 +26,9 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         setFormData({ ...formData, [field]: value });
     };
 
-    // Handle form submission
     const handleRegister = async () => {
         const { conf_password, ...dataToSend } = formData;
 
-        // Basic validation
         if (
             !formData.name ||
             !formData.second_name ||
@@ -73,16 +71,15 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         }
 
         const validateCPF = (cpf: string): boolean => {
-            cpf = cpf.replace(/[^\d]+/g, ""); // Remove non-numeric characters
+            cpf = cpf.replace(/[^\d]+/g, "");
 
             if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
-                return false; // Invalid CPF if it contains all identical digits
+                return false;
             }
 
             let sum = 0;
             let remainder;
 
-            // Validate first checksum digit
             for (let i = 0; i < 9; i++) {
                 sum += parseInt(cpf.charAt(i)) * (10 - i);
             }
@@ -94,7 +91,6 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                 return false;
             }
 
-            // Validate second checksum digit
             sum = 0;
             for (let i = 0; i < 10; i++) {
                 sum += parseInt(cpf.charAt(i)) * (11 - i);
