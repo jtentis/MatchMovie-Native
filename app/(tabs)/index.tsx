@@ -16,7 +16,7 @@ import {
     Text,
     TextInput,
     TouchableWithoutFeedback,
-    View
+    View,
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
@@ -58,13 +58,15 @@ type RootStackParamList = {
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const HomeScreen = () => {
+    // const [showModal, setShowModal] = useState(false);
+    // const [modalText, setModalText] = useState<string>("");
     useEffect(() => {
         const checkAuth = async () => {
+            // SecureStore.deleteItemAsync("authToken");
             const token = await SecureStore.getItemAsync("authToken");
             if (!token) {
                 navigation.navigate("(auths)", { screen: "login" });
-                console.log("nao ta logado");
-                console.log("teste", token);
+                console.log("nao ta logado", token);
             }
         };
 
@@ -168,7 +170,7 @@ const HomeScreen = () => {
             }).start();
 
             Animated.timing(underlinePosition, {
-                toValue: index * 100, 
+                toValue: index * 100,
                 useNativeDriver: false,
             }).start();
         }
@@ -212,7 +214,7 @@ const HomeScreen = () => {
                     : "";
                 try {
                     const response = await fetch(
-                        `${MOVIE_POSTER_URL_API}/poster${formattedPosterPath}`
+                        `${MOVIE_POSTER_URL_API}${formattedPosterPath}/poster`
                     );
                     if (response.ok) {
                         const base64Image = await response.text();
@@ -222,7 +224,11 @@ const HomeScreen = () => {
                         posterData[movie.id] = null;
                     }
                 } catch (error) {
-                    console.error("Error fetching poster for:", movie.id, error);
+                    console.error(
+                        "Error fetching poster for:",
+                        movie.id,
+                        error
+                    );
                     posterData[movie.id] = null;
                 }
             }
@@ -236,7 +242,7 @@ const HomeScreen = () => {
     const renderMovie = ({ item }: { item: Movie }) => {
         const posterUrl = posters[item.id];
         const posterSource = posterUrl
-            ? { uri:`data:image/jpeg;base64,${posterUrl}` }
+            ? { uri: `data:image/jpeg;base64,${posterUrl}` }
             : require("@/assets/images/No-Image-Placeholder.png");
 
         // console.log(posterSource, '\n\n\n')
@@ -348,6 +354,7 @@ const HomeScreen = () => {
                     }
                 />
             </SafeAreaView>
+            {/* {showModal && <TinyModal text={modalText} />} */}
         </>
     );
 };

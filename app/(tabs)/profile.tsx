@@ -1,3 +1,4 @@
+import AlertModal from '@/components/ModalAlert';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -5,8 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Pressable } from "expo-router/build/views/Pressable";
 import * as SecureStore from "expo-secure-store";
-import React from 'react';
-import { Alert, Image, StyleSheet, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, StyleSheet, TextInput, View } from 'react-native';
 
 type RootStackParamList = {
     '(auths)': { screen: string };
@@ -16,26 +17,39 @@ type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
     const navigation = useNavigation<ProfileScreenNavigationProp>();
+
+    // State to manage modal visibility and type
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<'error' | 'success' | 'alert'>('alert');
+    const [modalMessage, setModalMessage] = useState<string>('');
+
     const handleLogout = async () => {
         try {
-            var token:any = await SecureStore.getItemAsync('authToken');
-            console.log('antes', token)
+            const token = await SecureStore.getItemAsync('authToken');
+            console.log('token', token);
 
-            token = await SecureStore.deleteItemAsync('authToken');
-            console.log('depois',token)
+            await SecureStore.deleteItemAsync('authToken');
+            console.log('token deleted');
 
-            Alert.alert('Desconectado', 'Você foi desconectado com sucesso!');
+            setModalMessage('Usuário desconectado com sucesso!');
+            setModalType('success');
+            setModalVisible(true);
 
-            navigation.reset({
-                index: 0,
-                routes: [{ name: '(auths)' }],
-            });
+            setTimeout(() => {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: '(auths)' }],
+                });
+            }, 1500);
         } catch (error) {
             console.error('Erro ao desconectar:', error);
-            Alert.alert('Erro', 'Erro ao desconectar.');
-        }
-    }
 
+            setModalMessage('Erro ao desconectar usuário.');
+            setModalType('error');
+            setModalVisible(true);
+        }
+    };
+    
     return (
         <View style={{flex:1, backgroundColor: Colors.dark.background,justifyContent:'center', alignItems:'center'}}>
             <View style={{
@@ -101,6 +115,12 @@ export default function ProfileScreen() {
                 <Pressable style={styles.button2} onPress={handleLogout}>
                     <ThemedText type="defaultSemiBold" style={{color:'white'}}>Sair</ThemedText>
                 </Pressable>
+                <AlertModal
+                type={modalType}
+                message={modalMessage}
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                />
             </View>
         </View>
 
