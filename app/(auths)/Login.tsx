@@ -3,11 +3,12 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
-import { Alert, StyleSheet, TextInput, View } from "react-native";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
 const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
@@ -28,6 +29,14 @@ const LoginScreen = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+
+    const [fontsLoaded] = useFonts({
+        CoinyRegular: require('../../assets/fonts/Coiny-Regular.ttf'),
+      });
+
+      if (!fontsLoaded) {
+        return <Text>Loading fonts...</Text>;
+      }
   
     const toggleShowPassword = () => {
       setShowPassword(!showPassword);
@@ -258,7 +267,7 @@ const styles = StyleSheet.create({
         width: 130,
         textAlign: "center",
         backgroundColor: Colors.dark.background,
-        fontFamily: "Coiny-Regular",
+        fontFamily: "CoinyRegular",
         fontWeight: 400,
         fontSize: 46,
     },

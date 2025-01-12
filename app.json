@@ -8,6 +8,16 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
+    "fonts":{
+      "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Coiny-Regular.ttf"]
+        }
+      ]
+    ]
+    },
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "center",

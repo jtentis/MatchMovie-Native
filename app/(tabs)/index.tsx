@@ -52,7 +52,7 @@ type LoginScreenNavigationProp = RouteProp<RootStackParamListTeste>;
 type RootStackParamList = {
     index: undefined;
     details: { movieId: number };
-    "(auths)": { screen: string };
+    "(auths)": { screen: "Login" };
 };
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -65,7 +65,10 @@ const HomeScreen = () => {
             // SecureStore.deleteItemAsync("authToken");
             const token = await SecureStore.getItemAsync("authToken");
             if (!token) {
-                navigation.navigate("(auths)", { screen: "login" });
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: "(auths)" }],
+                });
                 console.log("nao ta logado", token);
             }
         };
@@ -98,7 +101,6 @@ const HomeScreen = () => {
         if (isLoading) return;
 
         setIsLoading(true);
-        // const token = await SecureStore.getItemAsync("authToken");
         try {
             console.log(`Fetching from URL: ${url}`);
             const response = await fetch(url, {

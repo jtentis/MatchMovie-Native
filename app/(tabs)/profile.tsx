@@ -10,15 +10,13 @@ import React, { useState } from 'react';
 import { Image, StyleSheet, TextInput, View } from 'react-native';
 
 type RootStackParamList = {
-    '(auths)': { screen: string };
+    '(auths)': { screen: 'Login' };
   };
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
     const navigation = useNavigation<ProfileScreenNavigationProp>();
-
-    // State to manage modal visibility and type
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<'error' | 'success' | 'alert'>('alert');
     const [modalMessage, setModalMessage] = useState<string>('');
@@ -38,7 +36,7 @@ export default function ProfileScreen() {
             setTimeout(() => {
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: '(auths)' }],
+                    routes: [{ name: '(auths)'}],
                 });
             }, 1500);
         } catch (error) {

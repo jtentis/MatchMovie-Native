@@ -1,14 +1,27 @@
+import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
-import { Alert, KeyboardType, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import {
+    Alert,
+    KeyboardType,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    View,
+} from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
 const RegisterScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<"error" | "success" | "alert">(
+        "alert"
+    );
+    const [modalMessage, setModalMessage] = useState<string>("");
     const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
     // const EXPO_PUBLIC_JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET;
     const [formData, setFormData]: any = useState({
@@ -39,7 +52,9 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
             !formData.location ||
             !formData.location_number
         ) {
-            Alert.alert("Error", "Todos os campos devem ser preenchidos.");
+            setModalMessage("Todos os campos devem ser preenchidos!");
+            setModalType("error");
+            setModalVisible(true);
             return;
         }
 
@@ -47,26 +62,31 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
             typeof formData.name !== "string" ||
             typeof formData.second_name !== "string"
         ) {
-            Alert.alert(
-                "Error",
-                "Nome and Sobrenome não devem conter números."
-            );
+            setModalMessage("Nome e sobrenome não devem conter números.");
+            setModalType("error");
+            setModalVisible(true);
             return;
         }
 
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
         if (!emailRegex.test(formData.email)) {
-            Alert.alert("Error", "Endereço de email inválido.");
+            setModalMessage("Endereço de email inválido.");
+            setModalType("error");
+            setModalVisible(true);
             return;
         }
 
         if (formData.password.length < 6) {
-            Alert.alert("Error", "A senha deve conter 6 no mínimo dígitos.");
+            setModalMessage("Senha devem conter no mínimo 6 dígitos!");
+            setModalType("error");
+            setModalVisible(true);
             return;
         }
 
         if (formData.password !== conf_password) {
-            Alert.alert("Erro", "Senhas não coincidem.");
+            setModalMessage("Senhas não coincidem!");
+            setModalType("error");
+            setModalVisible(true);
             return;
         }
 
@@ -107,7 +127,9 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         };
 
         if (!validateCPF(formData.cpf)) {
-            Alert.alert("Erro", "CPF inválido.");
+            setModalMessage("CPF inválido!");
+            setModalType("error");
+            setModalVisible(true);
             return;
         }
 
@@ -122,8 +144,12 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
             console.log(dataToSend);
 
             if (response.ok) {
-                Alert.alert("Success", "User registered successfully!");
-                navigation.navigate("(auths)", { screen: "login" });
+                setModalMessage("Usuário criado com sucesso!");
+                setModalType("success");
+                setModalVisible(true);
+                setTimeout(() => {
+                    navigation.navigate("(auths)", { screen: "Login" });
+                }, 500);
             } else {
                 const errorData = await response.json();
                 Alert.alert(
@@ -133,8 +159,10 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                 console.log(errorData);
             }
         } catch (error) {
-            console.error("Error registering user:", error);
-            Alert.alert("Error", "An error occurred. Please try again.");
+            console.error("Erro ao cadastrar usuário.", error);
+            setModalMessage("Erro ao cadastrar usuário.");
+            setModalType("error");
+            setModalVisible(true);
         }
     };
 
@@ -170,25 +198,25 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                             label: "Nome",
                             field: "name",
                             placeholder: "Digite seu nome",
-                            keyboardType:"default"
+                            keyboardType: "default",
                         },
                         {
                             label: "Sobrenome",
                             field: "second_name",
                             placeholder: "Digite seu sobrenome",
-                            keyboardType:"default"
+                            keyboardType: "default",
                         },
                         {
                             label: "Usuário",
                             field: "user",
                             placeholder: "Digite seu usuário",
-                            keyboardType:"default"
+                            keyboardType: "default",
                         },
                         {
                             label: "E-mail",
                             field: "email",
                             placeholder: "Digite seu e-mail",
-                            keyboardType:"email-adress"
+                            keyboardType: "email-adress",
                         },
                         {
                             label: "Senha",
@@ -206,7 +234,7 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                             label: "CPF",
                             field: "cpf",
                             placeholder: "Digite seu CPF",
-                            keyboardType:"numeric"
+                            keyboardType: "numeric",
                         },
                     ].map(({ label, field, keyboardType, ...inputProps }) => (
                         <View key={field} style={styles.inputGroup}>
@@ -230,10 +258,7 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                     ))}
 
                     {}
-                    <ThemedText
-                        type="default"
-                        style={styles.label}
-                    >
+                    <ThemedText type="default" style={styles.label}>
                         Endereço
                     </ThemedText>
                     <View style={{ flexDirection: "row", gap: 10 }}>
@@ -270,6 +295,12 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                             Registrar
                         </ThemedText>
                     </Pressable>
+                    <AlertModal
+                        type={modalType}
+                        message={modalMessage}
+                        visible={modalVisible}
+                        onClose={() => setModalVisible(false)}
+                    />
                 </View>
             </ScrollView>
         </>
