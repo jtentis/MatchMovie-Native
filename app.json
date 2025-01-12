@@ -12,7 +12,7 @@
       "image": "./assets/images/splash.png",
       "resizeMode": "center",
       "backgroundColor": "#343637",
-      "text":"MatchMovie"
+      "text": "MatchMovie"
     },
     "ios": {
       "supportsTablet": true
@@ -20,18 +20,19 @@
     "android": {
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo-clean.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#343637"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo-clean.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

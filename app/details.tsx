@@ -14,8 +14,9 @@ import {
 } from "react-native";
 import { ThemedText } from "../components/ThemedText";
 
-const API_KEY = "2017240ed8d4e61fbe9ed801fe5da25a";
-const BASE_URL = "https://api.themoviedb.org/3";
+// const BASE_URL = "https://api.themoviedb.org/3";
+// const API_KEY = process.env.EXPO_PUBLIC_TMDB_API_KEY;
+const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 
 type RootStackParamList = {
     details: { movieId: number };
@@ -76,13 +77,14 @@ const MovieDetailsScreen = () => {
         const fetchMovieDetails = async () => {
             try {
                 const responseMovieDetails = await fetch(
-                    `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits&language=pt-BR`
+                    `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/details`
                 );
+                console.log('filme clicado', movieId);
                 const dataMovieDetails: MovieDetails =
                     await responseMovieDetails.json();
                 setMovieDetails(dataMovieDetails);
                 const responseWatchProviders = await fetch(
-                    `${BASE_URL}/movie/${movieId}/watch/providers?api_key=${API_KEY}`
+                    `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/watch_providers`
                 );
                 const dataWatchProviders: WatchProvider =
                     await responseWatchProviders.json();

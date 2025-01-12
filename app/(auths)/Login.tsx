@@ -1,105 +1,195 @@
+import TinyModal from "@/components/ModalAlertTiny";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useFonts } from 'expo-font';
-import { router, useNavigation } from "expo-router";
+import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
-import React, { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
-import { Icon } from '../../components/MatchLogo';
+import * as SecureStore from "expo-secure-store";
+import React, { useState } from "react";
+import { Alert, StyleSheet, TextInput, View } from "react-native";
+import { Icon } from "../../components/MatchLogo";
+
+const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 
 type RootStackParamList = {
     register: undefined;
-  };
+    "(tabs)": { screen: string };
+};
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
+//TODO: CONSERTAR COMPORTAMENTO DA DIV DOS BOTOES DE LOGIN COM O TECLADO
+
 const LoginScreen = () => {
+    const [showModal, setShowModal] = useState(false);
+    const [modalText, setModalText] = useState<string>("");
     const navigation = useNavigation<LoginScreenNavigationProp>();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+  
+    const toggleShowPassword = () => {
+      setShowPassword(!showPassword);
+    };
+  
     const handleLogin = async () => {
-        try {
-            const response = await fetch('http://10.0.2.2:3000/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password,
-                }),
+      try {
+        const response = await fetch(
+          `${EXPO_PUBLIC_BASE_NGROK}/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: email,
+              password: password,
+            }),
+          }
+        );
+  
+        if (response.status === 201) {
+          const data = await response.json();
+          const accessToken = data.accessToken;
+  
+          await SecureStore.setItemAsync("authToken", accessToken);
+  
+          // Show modal and navigate to tabs
+          setModalText("Usuário logado!");
+          setShowModal(true);
+  
+          setTimeout(() => {
+            setShowModal(false);
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "(tabs)" }],
             });
-
-            if (response.status === 201) {
-                router.push('/(tabs)')
-                // Alert.alert('Erro de Login', 'Login bem sucedido!');
-                // console.log(response)
-                // navigation.navigate("Home", { token: token });
-            } else {
-                router.push('/(tabs)')
-                // Alert.alert('Erro de Login', 'Senha incorreta!');
-                // console.log(response)
-            }
-            return response;
-        } catch (error) {
-            router.push('/(tabs)')
-            // Alert.alert('Erro de Login');
+          }, 500);
+  
+          console.log(data.accessToken);
+        } else {
+          Alert.alert("Erro", "Informações incorretas!");
+          console.log(response);
         }
+        return response;
+      } catch (error) {
+        console.error("Login Error: ", error);
+        Alert.alert("Erro", "Erro de conexão.");
+      }
     };
 
-    let [fontsLoaded] = useFonts({
-        'Coiny-Regular': require('../../assets/fonts/Coiny-Regular.ttf'),
-    });
-
-    if (!fontsLoaded) {
-        return null;
-    }
-
     return (
-        <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 16,
-            backgroundColor: Colors.dark.background,
-        }}>
-            <View style={{flex: 1,
-                justifyContent: 'flex-end',
-                alignItems: 'center',
+        <View
+            style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
                 padding: 16,
-                marginTop: 100,
-                backgroundColor: Colors.dark.background,}}>
-                <Icon width={150} height={150} fill={Colors.dark.tabIconSelected} />
-                <ThemedText type="title" style={styles.textLogo}>Match Movie</ThemedText>
+                backgroundColor: Colors.dark.background,
+            }}
+        >
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    padding: 16,
+                    marginTop: 100,
+                    backgroundColor: Colors.dark.background,
+                }}
+            >
+                <Icon
+                    width={150}
+                    height={150}
+                    fill={Colors.dark.tabIconSelected}
+                />
+                <ThemedText type="title" style={styles.textLogo}>
+                    Match Movie
+                </ThemedText>
             </View>
             <View style={styles.container}>
-                <ThemedText type="default" style={{color:'white', alignSelf:'flex-start'}}>E-mail</ThemedText>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Digite seu email"
-                    value={email}
-                    selectionColor={Colors.dark.tabIconSelected}
-                    placeholderTextColor={Colors.dark.textPlaceHolder}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"/>
-                <ThemedText type="default" style={{color:'white', alignSelf:'flex-start', marginTop:10}}>Senha</ThemedText>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Digite sua senha"
-                    value={password}
-                    selectionColor={Colors.dark.tabIconSelected}
-                    placeholderTextColor={Colors.dark.textPlaceHolder}
-                    onChangeText={setPassword}
-                    secureTextEntry></TextInput>
-                <View style={{flex:1/2, flexDirection:'column', backgroundColor: Colors.dark.background, justifyContent:'center', alignItems:'center', marginBottom: 40, gap:10}}>
+                <ThemedText
+                    type="default"
+                    style={{ color: "white", alignSelf: "flex-start" }}
+                >
+                    E-mail
+                </ThemedText>
+                <View style={styles.inputContainers}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Digite seu email"
+                        value={email}
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                    <MaterialIcons
+                        name={"person"}
+                        size={24}
+                        color="#aaa"
+                        style={styles.icon}
+                    />
+                </View>
+                <ThemedText
+                    type="default"
+                    style={{
+                        color: "white",
+                        alignSelf: "flex-start",
+                        marginTop: 10,
+                    }}
+                >
+                    Senha
+                </ThemedText>
+                <View style={styles.inputContainers}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Digite sua senha"
+                        value={password}
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                    ></TextInput>
+                    <MaterialCommunityIcons
+                        name={showPassword ? "eye" : "eye-off"}
+                        size={24}
+                        color="#aaa"
+                        style={styles.icon}
+                        onPress={toggleShowPassword}
+                    />
+                </View>
+                <View
+                    style={{
+                        flex: 1 / 2,
+                        flexDirection: "column",
+                        backgroundColor: Colors.dark.background,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 10,
+                    }}
+                >
                     <Pressable onPress={handleLogin} style={styles.buttonLogin}>
-                        <ThemedText type={'defaultSemiBold'} style={{fontSize: 16}}>Login</ThemedText>
+                        <ThemedText
+                            type={"defaultSemiBold"}
+                            style={{ fontSize: 16 }}
+                        >
+                            Login
+                        </ThemedText>
                     </Pressable>
-                    <Pressable onPress={() => navigation.navigate('register')} style={styles.buttonRegister}>
-                        <ThemedText type={'defaultSemiBold'} style={{fontSize: 16}}>Criar Conta</ThemedText>
+                    {showModal && <TinyModal text={modalText} />}
+                    <Pressable
+                        onPress={() => navigation.navigate("register")}
+                        style={styles.buttonRegister}
+                    >
+                        <ThemedText
+                            type={"defaultSemiBold"}
+                            style={{ fontSize: 16 }}
+                        >
+                            Criar Conta
+                        </ThemedText>
                     </Pressable>
                 </View>
             </View>
@@ -110,16 +200,25 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 2,
-        justifyContent: 'center',
-        alignItems:'center',
+        justifyContent: "center",
+        alignItems: "center",
         padding: 16,
         backgroundColor: Colors.dark.background,
-        gap:5
+        gap: 5,
+    },
+    icon: {
+        position: "absolute",
+        right: 0,
+        paddingHorizontal: "5%",
+    },
+    inputContainers: {
+        justifyContent: "center",
+        alignItems: "center",
     },
     title: {
         fontSize: 24,
         marginBottom: 0,
-        textAlign: 'center',
+        textAlign: "center",
     },
     input: {
         width: 360,
@@ -128,41 +227,41 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         elevation: 2,
-        color: Colors.dark.text
+        color: Colors.dark.text,
     },
-    buttonLogin:{
-        justifyContent:'center',
-        alignItems:'center',
+    buttonLogin: {
+        justifyContent: "center",
+        alignItems: "center",
         width: 360,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
         borderRadius: 8,
         elevation: 2,
-        marginTop:100
+        marginTop: 100,
     },
-    buttonRegister:{
-        justifyContent:'center',
-        alignItems:'center',
+    buttonRegister: {
+        justifyContent: "center",
+        alignItems: "center",
         width: 360,
         height: 50,
         backgroundColor: Colors.dark.background,
         padding: 0,
         borderRadius: 8,
-        borderWidth:1,
+        borderWidth: 1,
         borderColor: Colors.dark.tabIconSelected,
     },
-    textLogo:{
-        color:'white',
-        alignSelf:'center',
-        justifyContent:'center',
+    textLogo: {
+        color: "white",
+        alignSelf: "center",
+        justifyContent: "center",
         width: 130,
-        textAlign:'center',
-        backgroundColor:Colors.dark.background,
-        fontFamily:'Coiny-Regular',
+        textAlign: "center",
+        backgroundColor: Colors.dark.background,
+        fontFamily: "Coiny-Regular",
         fontWeight: 400,
-        fontSize: 46
-    }
+        fontSize: 46,
+    },
 });
 
 export default LoginScreen;
