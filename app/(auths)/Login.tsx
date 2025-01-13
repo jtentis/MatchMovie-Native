@@ -6,7 +6,6 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
-import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { Icon } from "../../components/MatchLogo";
@@ -30,7 +29,7 @@ const LoginScreen = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const { setUserId } = useAuth();
+    const { login } = useAuth();
 
     const [fontsLoaded] = useFonts({
         CoinyRegular: require('../../assets/fonts/Coiny-Regular.ttf'),
@@ -44,56 +43,19 @@ const LoginScreen = () => {
       setShowPassword(!showPassword);
     };
   
-    const handleLogin = async () => {   
+    const handleLogin = async () => {
         try {
-          const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: email,
-              password: password,
-            }),
+          await login(email, password);
+          console.log("Login successful!");
+    
+          // Navigate to the main tabs
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "(tabs)" }],
           });
-      
-          if (response.status === 201) {
-            const data = await response.json();
-            const accessToken = data.accessToken;
-            const userId = data.userId;
-            const userIdString = userId.toString()
-      
-            await SecureStore.setItemAsync("authToken", accessToken);
-            await SecureStore.setItemAsync("userId", userIdString);
-      
-            // Atualiza o contexto com o userId
-            setUserId(userId);
-            console.log('var',typeof(userId))
-            console.log(userIdString)
-      
-            // Mostra o modal e navega para tabs
-            setModalText("Usuário logado!");
-            setShowModal(true);
-      
-            setTimeout(() => {
-              setShowModal(false);
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "(tabs)" }],
-              });
-            }, 500);
-      
-            console.log("Access Token:", accessToken);
-            console.log("User ID:", userId);
-          } else {
-            Alert.alert("Erro", "Informações incorretas!");
-            console.log(response);
-          }
-      
-          return response;
-        } catch (error) {
-          console.error("Login Error: ", error);
-          Alert.alert("Erro", "Erro de conexão.");
+        } catch (error:any) {
+          console.error("Login error:", error);
+          Alert.alert("Login Error", error.message || "An unexpected error occurred.");
         }
       };
 

@@ -20,106 +20,107 @@ import { useAuth } from "../contexts/AuthContext";
 
 type RootStackParamList = {
     "(auths)": { screen: "Login" };
-};
-
-type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
-
-const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-
-export default function ProfileScreen() {
+  };
+  
+  type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+  
+  const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+  
+  export default function ProfileScreen() {
     const navigation = useNavigation<ProfileScreenNavigationProp>();
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
-        "alert"
+      "alert"
     );
-    const token = SecureStore.getItemAsync("authToken");
     const [modalMessage, setModalMessage] = useState<string>("");
-    const { userId } = useAuth();
-    const [user, setUser] = useState(null);
+    const { userId, logout } = useAuth(); // Use context for userId and logout
+    const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null); // Explicitly typed
+    const [error, setError] = useState<string | null>(null);
     const [fontsLoaded] = useFonts({
-        CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
+      CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
     });
-
+  
     useEffect(() => {
-        const fetchUserData = async () => {
-          console.log("Starting fetchUserData...");
-      
-          const tokenBearer = await SecureStore.getItemAsync("authToken");
-          console.log("Retrieved token:", tokenBearer);
-      
-          if (!userId) {
-            console.log("User ID is missing.");
-            setError("User ID is missing.");
-            setIsLoading(false);
-            return;
-          }
-      
-          try {
-            console.log("Fetching user data for userId:", userId);
-      
-            const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`, {
-              headers: {
-                Authorization: `Bearer ${tokenBearer}`,
-              },
-            });
-      
-            console.log("Response status:", response.status);
-      
-            if (!response.ok) {
-              throw new Error("Failed to fetch user data.");
-            }
-      
-            const data = await response.json();
-            setUser(data);
-            console.log("Fetched user data:", data);
-          } catch (err) {
-            console.error("Error fetching user data:", err);
-          } finally {
-            setIsLoading(false);
-          }
-        };
-      
-        fetchUserData();
-      }, [userId]);
-
-    if (isLoading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
-    }
-
-    if (!fontsLoaded) {
-        return <Text>Loading fonts...</Text>;
-    }
-
-    const handleSaveProfile = async () => {
-        console.log("user", user);
-    };
-
-    const handleLogout = async () => {
-        try {
-            console.log("token", token);
-
-            await SecureStore.deleteItemAsync("authToken");
-            console.log("token deleted");
-
-            setModalMessage("Usuário desconectado com sucesso!");
-            setModalType("success");
-            setModalVisible(true);
-
-            setTimeout(() => {
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: "(auths)" }],
-                });
-            }, 1500);
-        } catch (error) {
-            console.error("Erro ao desconectar:", error);
-
-            setModalMessage("Erro ao desconectar usuário.");
-            setModalType("error");
-            setModalVisible(true);
+      const fetchUserData = async () => {
+  
+        const tokenBearer = await SecureStore.getItemAsync("authToken");
+        console.log("Token", tokenBearer);
+  
+        if (!userId) {
+          console.log("Sem ID");
+          setError("Sem ID");
+          setIsLoading(false);
+          return;
         }
+  
+        try {
+          console.log("Pegando dados do usuário: ", userId);
+  
+          const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${tokenBearer}`,
+            },
+          });
+  
+          console.log("Status:", response.status);
+  
+          if (!response.ok) {
+            console.log(response)
+            throw new Error("Erra o pegar dados.");
+          }
+  
+          const data = await response.json();
+          setUser(data);
+          console.log("Dados do usuário:", data);
+        } catch (err) {
+          console.error("Erro:", err);
+          setError("Erro.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+  
+      fetchUserData();
+    }, [userId]);
+  
+    if (isLoading) {
+      return <ActivityIndicator size="large" color="#0000ff" />;
+    }
+  
+    if (!fontsLoaded) {
+      return <Text>Carregando fontes...</Text>;
+    }
+  
+    if (error) {
+      return (
+        <View>
+          <Text>{error}</Text>
+        </View>
+      );
+    }
+  
+    const handleSaveProfile = async () => {
+      console.log("teste", user);
+      setModalType("success");
+      setModalMessage("teste");
+      setModalVisible(true);
+    };
+  
+    const handleLogout = async () => {
+      try {
+        await logout();
+        console.log("User logged out.");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "(auths)" }],
+        });
+      } catch (error) {
+        console.error("Logout error:", error);
+        setModalType("error");
+        setModalMessage("Failed to log out. Please try again.");
+        setModalVisible(true);
+      }
     };
 
     return (
@@ -170,7 +171,7 @@ export default function ProfileScreen() {
                     source={require("@/assets/images/foto_perfil.png")}
                 ></Image>
                 <ThemedText type="defaultSemiBold" style={{}}>
-                    teste
+                    {user.name} {user.second_name}
                 </ThemedText>
             </View>
             <View
@@ -215,7 +216,7 @@ export default function ProfileScreen() {
                     </ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="Little Cachorrinho"
+                        placeholder={user.name}
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                     />
