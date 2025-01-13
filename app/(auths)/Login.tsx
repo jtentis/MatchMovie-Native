@@ -60,13 +60,16 @@ const LoginScreen = () => {
           if (response.status === 201) {
             const data = await response.json();
             const accessToken = data.accessToken;
-            const userId = data.userId; // Supondo que a API retorna o `userId` junto com o `accessToken`
+            const userId = data.userId;
+            const userIdString = userId.toString()
       
             await SecureStore.setItemAsync("authToken", accessToken);
+            await SecureStore.setItemAsync("userId", userIdString);
       
             // Atualiza o contexto com o userId
             setUserId(userId);
             console.log('var',typeof(userId))
+            console.log(userIdString)
       
             // Mostra o modal e navega para tabs
             setModalText("Usuário logado!");
