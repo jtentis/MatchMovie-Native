@@ -10,6 +10,7 @@ import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { Icon } from "../../components/MatchLogo";
+import { useAuth } from "../contexts/AuthContext";
 
 const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 
@@ -29,6 +30,7 @@ const LoginScreen = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const { setUserId } = useAuth();
 
     const [fontsLoaded] = useFonts({
         CoinyRegular: require('../../assets/fonts/Coiny-Regular.ttf'),
@@ -42,11 +44,9 @@ const LoginScreen = () => {
       setShowPassword(!showPassword);
     };
   
-    const handleLogin = async () => {
-      try {
-        const response = await fetch(
-          `${EXPO_PUBLIC_BASE_NGROK}/auth/login`,
-          {
+    const handleLogin = async () => {   
+        try {
+          const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/auth/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -55,38 +55,44 @@ const LoginScreen = () => {
               email: email,
               password: password,
             }),
+          });
+      
+          if (response.status === 201) {
+            const data = await response.json();
+            const accessToken = data.accessToken;
+            const userId = data.userId; // Supondo que a API retorna o `userId` junto com o `accessToken`
+      
+            await SecureStore.setItemAsync("authToken", accessToken);
+      
+            // Atualiza o contexto com o userId
+            setUserId(userId);
+            console.log('var',typeof(userId))
+      
+            // Mostra o modal e navega para tabs
+            setModalText("Usuário logado!");
+            setShowModal(true);
+      
+            setTimeout(() => {
+              setShowModal(false);
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "(tabs)" }],
+              });
+            }, 500);
+      
+            console.log("Access Token:", accessToken);
+            console.log("User ID:", userId);
+          } else {
+            Alert.alert("Erro", "Informações incorretas!");
+            console.log(response);
           }
-        );
-  
-        if (response.status === 201) {
-          const data = await response.json();
-          const accessToken = data.accessToken;
-  
-          await SecureStore.setItemAsync("authToken", accessToken);
-  
-          // Show modal and navigate to tabs
-          setModalText("Usuário logado!");
-          setShowModal(true);
-  
-          setTimeout(() => {
-            setShowModal(false);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "(tabs)" }],
-            });
-          }, 500);
-  
-          console.log(data.accessToken);
-        } else {
-          Alert.alert("Erro", "Informações incorretas!");
-          console.log(response);
+      
+          return response;
+        } catch (error) {
+          console.error("Login Error: ", error);
+          Alert.alert("Erro", "Erro de conexão.");
         }
-        return response;
-      } catch (error) {
-        console.error("Login Error: ", error);
-        Alert.alert("Erro", "Erro de conexão.");
-      }
-    };
+      };
 
     return (
         <View

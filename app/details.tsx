@@ -13,6 +13,7 @@ import {
     View,
 } from "react-native";
 import { ThemedText } from "../components/ThemedText";
+import { useAuth } from "./contexts/AuthContext";
 
 // const BASE_URL = "https://api.themoviedb.org/3";
 // const API_KEY = process.env.EXPO_PUBLIC_TMDB_API_KEY;
@@ -68,10 +69,12 @@ const MovieDetailsScreen = () => {
     const { movieId } = route.params; //581734, 414906, 157336, 389, 240, 278, 155
     const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(true);
-    const [movieWatchProviders, setWatchProvider] =
-        useState<WatchProvider | null>(null);
+    const [movieWatchProviders, setWatchProvider] = useState<WatchProvider | null>(null);
     const [isLoadingProviders, setIsLoadingProviders] = useState<boolean>(true);
     const navigation = useNavigation();
+    const { userId } = useAuth();
+    const [isFavorited, setIsFavorited] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchMovieDetails = async () => {
@@ -97,8 +100,51 @@ const MovieDetailsScreen = () => {
             }
         };
 
+        const fetchFavoriteState = async () => {
+            try {
+              const response = await fetch(
+                `${EXPO_PUBLIC_BASE_NGROK}/movies/favorites/${userId}/${movieId}`,
+              );
+              const data = await response.json();
+              console.log('Estado de favorito recebido:', data);
+              setIsFavorited(data.isFavorited);
+            } catch (error) {
+              console.error('Erro ao verificar favorito:', error);
+            }
+          };
+
         fetchMovieDetails();
-    }, [movieId]);
+        fetchFavoriteState();
+    }, [movieId, userId]);
+
+    const toggleFavorite = async () => {
+        setIsLoading(true);
+        try {
+          const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/movies/favorites`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: userId,
+              movieId: movieId,
+            }),
+          });
+        //   console.log('var',typeof(userId),typeof(movieId))
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Erro desconhecido ao alternar favorito.");
+          }
+      
+          const data = await response.json();
+          console.log(data.message);
+          setIsFavorited((prev) => !prev);
+        } catch (error) {
+          console.error("Erro ao favoritar/desfavoritar filme:", error);
+        } finally {
+            setIsLoading(false);
+        }
+      };
 
     if (isLoadingDetails && isLoadingProviders) {
         return <ActivityIndicator size="large" color="#0000ff" />;
@@ -213,9 +259,13 @@ const MovieDetailsScreen = () => {
                         <FontAwesome size={30} name="chevron-left" color={Colors.dark.text} />
                     </View>
                 </Pressable>
-                <View style={styles.likeButton}>
-                    <FontAwesome size={25} name="heart" color="white" />
-                </View>
+                <Pressable style={styles.likeButton} onPress={toggleFavorite} disabled={isLoading}>
+                {isLoading ? (
+                    <ActivityIndicator size="small" color="#D46162" />
+                ) : (
+                    <FontAwesome size={25} name="heart" color={isFavorited ? "#D46162" : "white"} />
+                )}
+                </Pressable>
                 <View style={styles.watchedButton}>
                     <FontAwesome size={25} name="eye" color="#D46162" />
                 </View>
