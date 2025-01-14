@@ -46,7 +46,7 @@ const LoginScreen = () => {
     const handleLogin = async () => {
         try {
           await login(email, password);
-          console.log("Login successful!");
+          console.log("Login feito com sucesso!");
     
           // Navigate to the main tabs
           navigation.reset({
@@ -55,7 +55,7 @@ const LoginScreen = () => {
           });
         } catch (error:any) {
           console.error("Login error:", error);
-          Alert.alert("Login Error", error.message || "An unexpected error occurred.");
+          Alert.alert("Login Error", error.message || "Erro inesperado!");
         }
       };
 

@@ -123,6 +123,8 @@ type RootStackParamList = {
       }
     };
 
+    const fullName: string = (String(user.name).charAt(0).toUpperCase() + String(user.name).slice(1) +' '+ String(user.second_name).charAt(0).toUpperCase() + String(user.second_name).slice(1))
+
     return (
         <View
             style={{
@@ -171,7 +173,7 @@ type RootStackParamList = {
                     source={require("@/assets/images/foto_perfil.png")}
                 ></Image>
                 <ThemedText type="defaultSemiBold" style={{}}>
-                    {user.name} {user.second_name}
+                    {fullName}
                 </ThemedText>
             </View>
             <View
@@ -216,7 +218,7 @@ type RootStackParamList = {
                     </ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder={user.name}
+                        placeholder={fullName}
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                     />
@@ -235,7 +237,7 @@ type RootStackParamList = {
                     </ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder="little.cachorrinho"
+                        placeholder={user.name}
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                     />

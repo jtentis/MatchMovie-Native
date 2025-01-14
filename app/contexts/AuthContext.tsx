@@ -50,11 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await SecureStore.setItemAsync("authToken", accessToken);
         await SecureStore.setItemAsync("userId", userId.toString());
 
-        // Update context state
+        // Update context state/
         setAuthToken(accessToken);
         setUserId(userId.toString());
-      } else {
-        throw new Error("Login failed. Please check your credentials.");
+      } else if (response.status == 404) {
+        throw new Error("Erro de login. API não conectada!");
+      } else{
+        throw new Error("Erro de login. Verifique suas credenciais!");
       }
     } catch (error) {
       console.error("Login error:", error);

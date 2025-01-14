@@ -69,12 +69,15 @@ const MovieDetailsScreen = () => {
     const { movieId } = route.params; //581734, 414906, 157336, 389, 240, 278, 155
     const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(true);
-    const [movieWatchProviders, setWatchProvider] = useState<WatchProvider | null>(null);
+    const [movieWatchProviders, setWatchProvider] =
+        useState<WatchProvider | null>(null);
     const [isLoadingProviders, setIsLoadingProviders] = useState<boolean>(true);
     const navigation = useNavigation();
     const { userId } = useAuth();
     const [isFavorited, setIsFavorited] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isWatched, setIsWatched] = useState<boolean>(false);
+    const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
+    const [isLoadingWatched, setIsLoadingWatched] = useState(false);
 
     useEffect(() => {
         const fetchMovieDetails = async () => {
@@ -82,7 +85,7 @@ const MovieDetailsScreen = () => {
                 const responseMovieDetails = await fetch(
                     `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/details`
                 );
-                console.log('filme clicado', movieId);
+                console.log("filme clicado", movieId);
                 const dataMovieDetails: MovieDetails =
                     await responseMovieDetails.json();
                 setMovieDetails(dataMovieDetails);
@@ -102,49 +105,104 @@ const MovieDetailsScreen = () => {
 
         const fetchFavoriteState = async () => {
             try {
-              const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/movies/favorites/${userId}/${movieId}`,
-              );
-              const data = await response.json();
-              console.log('Estado de favorito recebido:', data);
-              setIsFavorited(data.isFavorited);
+                const response = await fetch(
+                    `${EXPO_PUBLIC_BASE_NGROK}/movies/favorites/${userId}/${movieId}`
+                );
+                const data = await response.json();
+                console.log("Estado de favorito recebido:", data);
+                setIsFavorited(data.isFavorited);
             } catch (error) {
-              console.error('Erro ao verificar favorito:', error);
+                console.error("Erro ao verificar favorito:", error);
             }
-          };
+        };
 
+        const fetchWatchedState = async () => {
+            try {
+                const response = await fetch(
+                    `${EXPO_PUBLIC_BASE_NGROK}/movies/watched/${userId}/${movieId}`
+                );
+                const data = await response.json();
+                console.log("Estado de visto recebido:", data);
+                setIsWatched(data.isWatched);
+            } catch (error) {
+                console.error("Erro ao verificar visto:", error);
+            }
+        };
+
+        fetchWatchedState();
         fetchMovieDetails();
         fetchFavoriteState();
     }, [movieId, userId]);
 
     const toggleFavorite = async () => {
-        setIsLoading(true);
+        setIsLoadingFavorite(true);
         try {
-          const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/movies/favorites`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: userId,
-              movieId: movieId,
-            }),
-          });
-        //   console.log('var',typeof(userId),typeof(movieId))
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Erro desconhecido ao alternar favorito.");
-          }
-      
-          const data = await response.json();
-          console.log(data.message);
-          setIsFavorited((prev) => !prev);
+            const response = await fetch(
+                `${EXPO_PUBLIC_BASE_NGROK}/movies/favorites`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        movieId: movieId,
+                    }),
+                }
+            );
+            //   console.log('var',typeof(userId),typeof(movieId))
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.message ||
+                        "Erro desconhecido ao alternar favorito."
+                );
+            }
+
+            const data = await response.json();
+            console.log(data.message);
+            setIsFavorited((prev) => !prev);
         } catch (error) {
-          console.error("Erro ao favoritar/desfavoritar filme:", error);
+            console.error("Erro ao favoritar/desfavoritar filme:", error);
         } finally {
-            setIsLoading(false);
+            setIsLoadingFavorite(false);
         }
-      };
+    };
+
+    const toggleWatched = async () => {
+        setIsLoadingWatched(true);
+        try {
+            const response = await fetch(
+                `${EXPO_PUBLIC_BASE_NGROK}/movies/watched`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        movieId: movieId,
+                    }),
+                }
+            );
+            //   console.log('var',typeof(userId),typeof(movieId))
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.message ||
+                        "Erro desconhecido ao alternar favorito."
+                );
+            }
+
+            const data = await response.json();
+            console.log(data.message);
+            setIsWatched((prev) => !prev);
+        } catch (error) {
+            console.error("Erro ao favoritar/desfavoritar filme:", error);
+        } finally {
+            setIsLoadingWatched(false);
+        }
+    };
 
     if (isLoadingDetails && isLoadingProviders) {
         return <ActivityIndicator size="large" color="#0000ff" />;
@@ -221,7 +279,7 @@ const MovieDetailsScreen = () => {
             ? { uri: `https://image.tmdb.org/t/p/w500${path}` }
             : require("@/assets/images/no-image.png")
     );
-    
+
     // const platforms: any = {
     //     "Max": require("@/assets/images/max.png"),
     //     "Max Amazon Channel": require("@/assets/images/max.png"),
@@ -247,28 +305,54 @@ const MovieDetailsScreen = () => {
                 }}
             >
                 <ImageBackground
-                    
                     style={styles.Image}
                     source={posterUrl}
                 ></ImageBackground>
                 <ThemedText type="defaultSemiBold" style={styles.title}>
                     {title}
                 </ThemedText>
-                <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <View >
-                        <FontAwesome size={30} name="chevron-left" color={Colors.dark.text} />
+                <Pressable
+                    onPress={() => navigation.goBack()}
+                    style={styles.backButton}
+                >
+                    <View>
+                        <FontAwesome
+                            size={30}
+                            name="chevron-left"
+                            color={Colors.dark.text}
+                        />
                     </View>
                 </Pressable>
-                <Pressable style={styles.likeButton} onPress={toggleFavorite} disabled={isLoading}>
-                {isLoading ? (
-                    <ActivityIndicator size="small" color="#D46162" />
-                ) : (
-                    <FontAwesome size={25} name="heart" color={isFavorited ? "#D46162" : "white"} />
-                )}
+                <Pressable
+                    style={styles.likeButton}
+                    onPress={toggleFavorite}
+                    disabled={isLoadingFavorite}
+                >
+                    {isLoadingFavorite ? (
+                        <ActivityIndicator size="small" color="#D46162" />
+                    ) : (
+                        <FontAwesome
+                            size={25}
+                            name="heart"
+                            color={isFavorited ? "#D46162" : "white"}
+                        />
+                    )}
                 </Pressable>
-                <View style={styles.watchedButton}>
-                    <FontAwesome size={25} name="eye" color="#D46162" />
-                </View>
+                <Pressable
+                    style={styles.watchedButton}
+                    onPress={toggleWatched}
+                    disabled={isLoadingWatched}
+                >
+                    {isLoadingWatched ? (
+                        <ActivityIndicator size="small" color="#D46162" />
+                    ) : (
+                        <FontAwesome
+                            size={25}
+                            name="eye"
+                            color={isWatched ? "#D46162" : "white"}
+                        />
+                    )}
+                </Pressable>
             </View>
             <ScrollView
                 alwaysBounceVertical={true}
@@ -333,12 +417,19 @@ const MovieDetailsScreen = () => {
                                 <View key={index} style={styles.streamings}>
                                     <Image
                                         style={styles.streamingImages}
-                                        source={streamingPlatformsPostersUrl[index]}
+                                        source={
+                                            streamingPlatformsPostersUrl[index]
+                                        }
                                     />
                                 </View>
                             ))
                         ) : (
-                            <ThemedText type="defaultSemiBold" style={styles.details}>Nenhuma plataforma de streaming disponível.</ThemedText>
+                            <ThemedText
+                                type="defaultSemiBold"
+                                style={styles.details}
+                            >
+                                Nenhuma plataforma de streaming disponível.
+                            </ThemedText>
                         )}
                     </View>
                 </View>
@@ -354,13 +445,24 @@ const MovieDetailsScreen = () => {
                     <View
                         style={{
                             minHeight: 200,
-                            maxHeight: '100%',
+                            maxHeight: "100%",
                             backgroundColor: Colors.dark.background,
                             width: "100%",
                         }}
                     >
-                        <ThemedText type="subtitle" style={{textAlign:"center"}}>SINOPSE</ThemedText>
-                        <ThemedText style={{ fontSize: 16, textAlign:"justify", marginTop: 5 }}>
+                        <ThemedText
+                            type="subtitle"
+                            style={{ textAlign: "center" }}
+                        >
+                            SINOPSE
+                        </ThemedText>
+                        <ThemedText
+                            style={{
+                                fontSize: 16,
+                                textAlign: "justify",
+                                marginTop: 5,
+                            }}
+                        >
                             {overview}
                         </ThemedText>
                     </View>
@@ -373,7 +475,7 @@ const MovieDetailsScreen = () => {
                             flexDirection: "column",
                             marginLeft: 5,
                             marginBottom: 10,
-                            alignSelf:"flex-end"
+                            alignSelf: "flex-end",
                         }}
                     >
                         <ScrollView
@@ -381,12 +483,15 @@ const MovieDetailsScreen = () => {
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{
                                 columnGap: 5,
-                          }}
+                            }}
                         >
                             {castNames.map((item, index) => (
                                 <View key={index} style={styles.elenco}>
                                     <ImageBackground
-                                        imageStyle={{ borderTopRightRadius: 8, borderTopLeftRadius: 8}}
+                                        imageStyle={{
+                                            borderTopRightRadius: 8,
+                                            borderTopLeftRadius: 8,
+                                        }}
                                         style={{
                                             width: 70,
                                             height: 90,
@@ -405,7 +510,10 @@ const MovieDetailsScreen = () => {
                                         numberOfLines={1}
                                         ellipsizeMode="tail"
                                         type="default"
-                                        style={[styles.castNames, styles.castNamesCaracters]}
+                                        style={[
+                                            styles.castNames,
+                                            styles.castNamesCaracters,
+                                        ]}
                                     >
                                         {castCharacters[index]}
                                     </ThemedText>
@@ -488,7 +596,6 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
         borderTopRightRadius: 8,
         borderBottomRightRadius: 8,
-
     },
     likeButton: {
         alignItems: "center",
@@ -501,7 +608,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
         borderTopLeftRadius: 8,
         borderBottomLeftRadius: 8,
-        opacity: .8
+        opacity: 0.8,
     },
     watchedButton: {
         alignItems: "center",
@@ -514,7 +621,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
         borderTopLeftRadius: 8,
         borderBottomLeftRadius: 8,
-        opacity: .8
+        opacity: 0.8,
     },
 });
 
