@@ -84,6 +84,7 @@ const HomeScreen = () => {
     const [filter, setFilter] = useState<string>("popular");
     const [page, setPage] = useState<number>(1);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [posterCache, setPosterCache] = useState<{ [id: string]: string | null }>({});
 
     const FILTER_URLS: any = {
         popular: POPULAR_MOVIES_URL_API,
@@ -127,17 +128,7 @@ const HomeScreen = () => {
         }
     };
 
-    // const fetchMovies = async (url: string) => {
-    //     try {
-    //         const response = await fetch(url);
-    //         const data = await response.json();
-    //         setMovies(data.results || []);
-    //     } catch (error) {
-    //         console.error(error);
-    //         setMovies([]);
-    //     }
-    // };
-
+    //TODO: loadmoremovies da procura de filmes esta bugado
     const searchMovies = () => {
         if (query.trim().length < 1) return;
 
@@ -210,52 +201,49 @@ const HomeScreen = () => {
 
     useEffect(() => {
         const fetchPosters = async () => {
-            try {
-                const posterData = await Promise.all(
-                    movies.map(async (movie) => {
-                        if (!movie.poster_path)
-                            return { id: movie.id, poster: null };
-
-                        const formattedPosterPath = `${
-                            movie.poster_path[0]
-                        }%2F${movie.poster_path.slice(1)}`;
-                        try {
-                            const response = await fetch(
-                                `${MOVIE_POSTER_URL_API}${formattedPosterPath}/poster`
-                            );
-                            if (response.ok) {
-                                const base64Image = await response.text();
-                                return { id: movie.id, poster: base64Image };
-                            } else {
-                                console.error(
-                                    "Failed to fetch poster for:",
-                                    movie.id
-                                );
-                                return { id: movie.id, poster: null };
-                            }
-                        } catch (error) {
-                            console.error(
-                                "Error fetching poster for:",
-                                movie.id,
-                                error
-                            );
-                            return { id: movie.id, poster: null };
+            // Define the type for newPosters
+            const newPosters: { [id: number]: string | null } = {};
+    
+            await Promise.all(
+                movies.map(async (movie) => {
+                    // Check the cache first
+                    if (posterCache[movie.id]) {
+                        newPosters[movie.id] = posterCache[movie.id];
+                        return;
+                    }
+    
+                    // Format the poster path
+                    const formattedPosterPath = movie.poster_path
+                        ? `${movie.poster_path[0]}%2F${movie.poster_path.slice(1)}`
+                        : "";
+    
+                    try {
+                        // Fetch the poster data
+                        const response = await fetch(
+                            `${MOVIE_POSTER_URL_API}${formattedPosterPath}/poster`
+                        );
+    
+                        if (response.ok) {
+                            const base64Image = await response.text();
+                            newPosters[movie.id] = base64Image; // Cache the poster
+                        } else {
+                            newPosters[movie.id] = null; // Handle failed fetch
                         }
-                    })
-                );
-
-                const posterMap = posterData.reduce(
-                    (acc, { id, poster }) => ({ ...acc, [id]: poster }),
-                    {}
-                );
-                setPosters(posterMap);
-            } catch (error) {
-                console.error("Error fetching posters:", error);
-            }
+                    } catch (error) {
+                        console.error("Error fetching poster:", movie.id, error);
+                        newPosters[movie.id] = null; // Handle errors
+                    }
+                })
+            );
+    
+            // Update the state with the new posters
+            setPosterCache((prevCache) => ({ ...prevCache, ...newPosters }));
+            setPosters(newPosters);
         };
-
+    
         fetchPosters();
     }, [movies]);
+    
 
     const renderMovie = ({ item }: { item: Movie }) => {
         const posterUrl = posters[item.id];
