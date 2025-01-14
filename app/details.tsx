@@ -106,7 +106,7 @@ const MovieDetailsScreen = () => {
         const fetchFavoriteState = async () => {
             try {
                 const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/movies/favorites/${userId}/${movieId}`
+                    `${EXPO_PUBLIC_BASE_NGROK}/favorites/isFavorite/${userId}/${movieId}`
                 );
                 const data = await response.json();
                 console.log("Estado de favorito recebido:", data);
@@ -119,7 +119,7 @@ const MovieDetailsScreen = () => {
         const fetchWatchedState = async () => {
             try {
                 const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/movies/watched/${userId}/${movieId}`
+                    `${EXPO_PUBLIC_BASE_NGROK}/watched/isWatched/${userId}/${movieId}`
                 );
                 const data = await response.json();
                 console.log("Estado de visto recebido:", data);
@@ -138,7 +138,7 @@ const MovieDetailsScreen = () => {
         setIsLoadingFavorite(true);
         try {
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/movies/favorites`,
+                `${EXPO_PUBLIC_BASE_NGROK}/favorites`,
                 {
                     method: "POST",
                     headers: {
@@ -173,7 +173,7 @@ const MovieDetailsScreen = () => {
         setIsLoadingWatched(true);
         try {
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/movies/watched`,
+                `${EXPO_PUBLIC_BASE_NGROK}/watched`,
                 {
                     method: "POST",
                     headers: {

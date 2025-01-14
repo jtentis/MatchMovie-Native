@@ -7,6 +7,7 @@ interface AuthContextData {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  handleTokenExpiration: () => void;
 }
 
 const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    // setAuthToken(null);
+    // setAuthToken(null)
     try {
       const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/auth/login`, {
         method: "POST",
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await SecureStore.setItemAsync("authToken", accessToken);
         await SecureStore.setItemAsync("userId", userId.toString());
 
-        // Update context state/
+        // Update context state
         setAuthToken(accessToken);
         setUserId(userId.toString());
       } else if (response.status == 404) {
@@ -64,6 +65,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const handleTokenExpiration = async () => {
+    alert("Your session has expired. Please log in again.");
+    logout();
+  };
+
   const logout = async () => {
     await SecureStore.deleteItemAsync("authToken");
     await SecureStore.deleteItemAsync("userId");
@@ -74,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = !!authToken;
 
   return (
-    <AuthContext.Provider value={{ authToken, userId, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ authToken, userId, login, logout, isAuthenticated, handleTokenExpiration }}>
       {children}
     </AuthContext.Provider>
   );

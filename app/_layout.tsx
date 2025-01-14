@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import 'react-native-reanimated';
 
 // Importação do AuthProvider
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from './contexts/AuthContext';
 
 // Impede a splash screen de desaparecer antes do carregamento dos assets
@@ -34,17 +35,19 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auths)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="details" />
-          <Stack.Screen name="groups" />
-          <Stack.Screen name="history" />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </ThemeProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auths)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="details" />
+            <Stack.Screen name="groups" />
+            <Stack.Screen name="history" />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </ThemeProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }

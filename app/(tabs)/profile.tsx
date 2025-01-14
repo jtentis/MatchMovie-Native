@@ -16,118 +16,154 @@ import {
     TextInput,
     View,
 } from "react-native";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { useAuth } from "../contexts/AuthContext";
 
 type RootStackParamList = {
     "(auths)": { screen: "Login" };
-  };
-  
-  type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
-  
-  const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-  
-  export default function ProfileScreen() {
+};
+
+type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
+const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+
+export default function ProfileScreen() {
     const navigation = useNavigation<ProfileScreenNavigationProp>();
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
-      "alert"
+        "alert"
     );
     const [modalMessage, setModalMessage] = useState<string>("");
-    const { userId, logout } = useAuth(); // Use context for userId and logout
+    const { userId, logout, handleTokenExpiration } = useAuth(); // Use context for userId and logout
     const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [fontsLoaded] = useFonts({
-      CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
+        CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
     });
-  
-    useEffect(() => {
-      const fetchUserData = async () => {
-  
+    const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
+
+    const fetchUserData = async () => {
         const tokenBearer = await SecureStore.getItemAsync("authToken");
         console.log("Token", tokenBearer);
-  
+
         if (!userId) {
-          console.log("Sem ID");
-          setError("Sem ID");
-          setIsLoading(false);
-          return;
+            console.log("Sem ID");
+            setError("Sem ID");
+            setIsLoading(false);
+            return;
         }
-  
+
         try {
-          console.log("Pegando dados do usuário: ", userId);
-  
-          const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`, {
-            headers: {
-                Authorization: `Bearer ${tokenBearer}`,
-            },
-          });
-  
-          console.log("Status:", response.status);
-  
-          if (!response.ok) {
-            console.log(response)
-            throw new Error("Erra o pegar dados.");
-          }
-  
-          const data = await response.json();
-          setUser(data);
-          console.log("Dados do usuário:", data);
+            console.log("Pegando dados do usuário: ", userId);
+            const response = await fetch(
+                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokenBearer}`,
+                    },
+                }
+            );
+            console.log("Status:", response.status);
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    handleTokenExpiration();
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: "(auths)" }],
+                    });
+                    return;
+                  }
+                throw new Error("Failed to fetch user data.");
+            }
+            const data = await response.json();
+            setUser(data);
+
+            console.log("Dados do usuário:", data);
         } catch (err) {
-          console.error("Erro:", err);
-          setError("Erro.");
+            console.error("Erro:", err);
+            setError("Erro.");
         } finally {
-          setIsLoading(false);
+            setIsLoading(false);
+            setRefreshing(false);
         }
-      };
-  
-      fetchUserData();
-    }, [userId]);
-  
-    if (isLoading) {
-      return <ActivityIndicator size="large" color="#0000ff" />;
-    }
-  
-    if (!fontsLoaded) {
-      return <Text>Carregando fontes...</Text>;
-    }
-  
-    if (error) {
-      return (
-        <View>
-          <Text>{error}</Text>
-        </View>
-      );
-    }
-  
-    const handleSaveProfile = async () => {
-      console.log("teste", user);
-      setModalType("success");
-      setModalMessage("teste");
-      setModalVisible(true);
-    };
-  
-    const handleLogout = async () => {
-      try {
-        await logout();
-        console.log("User logged out.");
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "(auths)" }],
-        });
-      } catch (error) {
-        console.error("Logout error:", error);
-        setModalType("error");
-        setModalMessage("Failed to log out. Please try again.");
-        setModalVisible(true);
-      }
     };
 
-    const fullName: string = (String(user.name).charAt(0).toUpperCase() + String(user.name).slice(1) +' '+ String(user.second_name).charAt(0).toUpperCase() + String(user.second_name).slice(1))
+    useEffect(() => {
+        fetchUserData();
+    }, []);
+
+    let isRefreshing = false;
+
+    const onRefresh = () => {
+        if (isRefreshing) {
+            console.log("Already refreshing, skipping...");
+            return;
+        }
+
+        isRefreshing = true;
+        setRefreshing(true);
+        fetchUserData().finally(() => {
+            isRefreshing = false;
+        });
+    };
+
+    if (isLoading) {
+        return <ActivityIndicator size="large" color="#0000ff" />;
+    }
+
+    if (!fontsLoaded) {
+        return <Text>Carregando fontes...</Text>;
+    }
+
+    if (error) {
+        return (
+            <View>
+                <Text>{error}</Text>
+            </View>
+        );
+    }
+
+    const handleSaveProfile = async () => {
+        console.log("teste", user);
+        setModalType("success");
+        setModalMessage("teste");
+        setModalVisible(true);
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            console.log("User logged out.");
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "(auths)" }],
+            });
+        } catch (error) {
+            console.error("Logout error:", error);
+            setModalType("error");
+            setModalMessage("Failed to log out. Please try again.");
+            setModalVisible(true);
+        }
+    };
+
+    const fullName: string =
+        String(user.name).charAt(0).toUpperCase() +
+        String(user.name).slice(1) +
+        " " +
+        String(user.second_name).charAt(0).toUpperCase() +
+        String(user.second_name).slice(1);
+
+    const favoriteCountLength = user.favorites.length || 0;
+    const watchedCountLength = user.watched.length || 0;
 
     return (
-        <View
-            style={{
+        <ScrollView
+            refreshControl={
+                <RefreshControl style={styles.refresh} colors={['#D46162']} refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            contentContainerStyle={{
                 flex: 1,
                 backgroundColor: Colors.dark.background,
                 justifyContent: "center",
@@ -188,11 +224,15 @@ type RootStackParamList = {
             >
                 <Pressable style={styles.markAsBox}>
                     <ThemedText style={styles.fontMark}>FAVORITOS</ThemedText>
-                    <ThemedText style={styles.fontQuant}>4</ThemedText>
+                    <ThemedText style={styles.fontQuant}>
+                        {favoriteCountLength}
+                    </ThemedText>
                 </Pressable>
                 <Pressable style={styles.markAsBox}>
                     <ThemedText style={styles.fontMark}>ASSISTIDOS</ThemedText>
-                    <ThemedText style={styles.fontQuant}>10</ThemedText>
+                    <ThemedText style={styles.fontQuant}>
+                        {watchedCountLength}
+                    </ThemedText>
                 </Pressable>
             </View>
             <View
@@ -278,7 +318,7 @@ type RootStackParamList = {
                     onClose={() => setModalVisible(false)}
                 />
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
@@ -341,4 +381,8 @@ const styles = StyleSheet.create({
         fontFamily: "CoinyRegular",
         color: Colors.dark.tabIconSelected,
     },
+    refresh:{
+        color: Colors.dark.tabIconSelected,
+        backgroundColor: Colors.dark.input
+    }
 });
