@@ -33,6 +33,11 @@ export default function ProfileScreen() {
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
     );
+    const [name, setName] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+    const [userUpdate, setUserUpdate] = useState(false);
+    const [username, setUsername] = useState("");
+    const [second_name, setSecond_name] = useState("");
     const [modalMessage, setModalMessage] = useState<string>("");
     const { userId, logout, handleTokenExpiration } = useAuth(); // Use context for userId and logout
     const [user, setUser] = useState<any>(null);
@@ -74,7 +79,7 @@ export default function ProfileScreen() {
                         routes: [{ name: "(auths)" }],
                     });
                     return;
-                  }
+                }
                 throw new Error("Failed to fetch user data.");
             }
             const data = await response.json();
@@ -109,27 +114,60 @@ export default function ProfileScreen() {
         });
     };
 
-    if (isLoading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
-    }
-
-    if (!fontsLoaded) {
-        return <Text>Carregando fontes...</Text>;
-    }
-
-    if (error) {
-        return (
-            <View>
-                <Text>{error}</Text>
-            </View>
-        );
-    }
-
     const handleSaveProfile = async () => {
-        console.log("teste", user);
-        setModalType("success");
-        setModalMessage("teste");
-        setModalVisible(true);
+        if (!name.trim() || !username.trim()) {
+            setModalType("alert");
+            setModalMessage("Campos não podem estar vázios.");
+            setModalVisible(true);
+            return;
+        }
+
+        setIsSaving(true);
+
+        try {
+            const tokenBearer = await SecureStore.getItemAsync("authToken");
+            const response = await fetch(
+                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json", // Ensure JSON content type
+                        Authorization: `Bearer ${tokenBearer}`,
+                    },
+                    body: JSON.stringify({
+                        name: name.trim(),
+                        user: username.trim(),
+                        second_name: second_name.trim(), // Ensure no extra spaces
+                    }),
+                }
+            );
+
+            console.log("Response Status:", response.status);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.log("Error Response:", errorData);
+                throw new Error(
+                    errorData.message || "Falha ao salvar o perfil."
+                );
+            }
+
+            const updatedUser = await response.json();
+            setName("");
+            setUsername("");
+            setSecond_name("");
+            // setUser(updatedUser); // Update the UI with new user data
+            setModalType("success");
+            setModalMessage("Perfil salvo com sucesso.");
+            setModalVisible(true);
+        } catch (err) {
+            console.error("Falha ao salvar o perfil.", err);
+            setModalType("error");
+            setModalMessage("Falha ao salvar o perfil.");
+            setModalVisible(true);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleLogout = async () => {
@@ -148,6 +186,22 @@ export default function ProfileScreen() {
         }
     };
 
+    if (isLoading) {
+        return <ActivityIndicator size="large" color="#0000ff" />;
+    }
+
+    if (!fontsLoaded) {
+        return <Text>Carregando fontes...</Text>;
+    }
+
+    if (error) {
+        return (
+            <View>
+                <Text>{error}</Text>
+            </View>
+        );
+    }
+
     const fullName: string =
         String(user.name).charAt(0).toUpperCase() +
         String(user.name).slice(1) +
@@ -161,7 +215,12 @@ export default function ProfileScreen() {
     return (
         <ScrollView
             refreshControl={
-                <RefreshControl style={styles.refresh} colors={['#D46162']} refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl
+                    style={styles.refresh}
+                    colors={["#D46162"]}
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                />
             }
             contentContainerStyle={{
                 flex: 1,
@@ -244,24 +303,54 @@ export default function ProfileScreen() {
                     marginBottom: 30,
                 }}
             >
-                <View
-                    style={{
-                        flex: 1,
-                        flexDirection: "column",
-                        backgroundColor: Colors.dark.background,
-                        justifyContent: "center",
-                        alignItems: "flex-start",
-                    }}
-                >
-                    <ThemedText type="default" style={{ color: "white" }}>
-                        Nome
-                    </ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        placeholder={fullName}
-                        selectionColor={Colors.dark.tabIconSelected}
-                        placeholderTextColor={Colors.dark.textPlaceHolder}
-                    />
+                <View style={{
+                            flex: 1,
+                            flexDirection: "row",
+                            backgroundColor: Colors.dark.background,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            gap: 6
+                        }}>
+                    <View
+                        style={{
+                            flexDirection: "column",
+                            backgroundColor: Colors.dark.background,
+                            justifyContent: "center",
+                            alignItems: "flex-start",
+                        }}
+                    >
+                        <ThemedText type="default" style={{ color: "white" }}>
+                            Nome
+                        </ThemedText>
+                        <TextInput
+                            style={styles.inputHalf}
+                            placeholder={user.name}
+                            value={name}
+                            onChangeText={setName}
+                            selectionColor={Colors.dark.tabIconSelected}
+                            placeholderTextColor={Colors.dark.textPlaceHolder}
+                        />
+                    </View>
+                    <View
+                        style={{
+                            flexDirection: "column",
+                            backgroundColor: Colors.dark.background,
+                            justifyContent: "center",
+                            alignItems: "flex-start",
+                        }}
+                    >
+                        <ThemedText type="default" style={{ color: "white" }}>
+                            Sobrenome
+                        </ThemedText>
+                        <TextInput
+                            style={styles.inputHalf}
+                            placeholder={user.second_name}
+                            value={second_name}
+                            onChangeText={setSecond_name}
+                            selectionColor={Colors.dark.tabIconSelected}
+                            placeholderTextColor={Colors.dark.textPlaceHolder}
+                        />
+                    </View>
                 </View>
                 <View
                     style={{
@@ -277,7 +366,9 @@ export default function ProfileScreen() {
                     </ThemedText>
                     <TextInput
                         style={styles.input}
-                        placeholder={user.name}
+                        placeholder={user.user}
+                        value={username}
+                        onChangeText={setUsername}
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                     />
@@ -294,13 +385,16 @@ export default function ProfileScreen() {
                     gap: 10,
                 }}
             >
-                <Pressable style={styles.button}>
+                <Pressable
+                    style={styles.button}
+                    onPress={handleSaveProfile}
+                    disabled={isSaving}
+                >
                     <ThemedText
                         type="defaultSemiBold"
-                        onPress={handleSaveProfile}
                         style={{ color: "white" }}
                     >
-                        Salvar Perfil
+                        {isSaving ? "Salvando..." : "Salvar perfil"}
                     </ThemedText>
                 </Pressable>
                 <Pressable style={styles.button2} onPress={handleLogout}>
@@ -325,6 +419,16 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     input: {
         width: 360,
+        height: 50,
+        backgroundColor: Colors.dark.input,
+        padding: 15,
+        borderRadius: 8,
+        elevation: 2,
+        marginTop: 5,
+        color: Colors.dark.text,
+    },
+    inputHalf: {
+        width: 177,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -381,8 +485,8 @@ const styles = StyleSheet.create({
         fontFamily: "CoinyRegular",
         color: Colors.dark.tabIconSelected,
     },
-    refresh:{
+    refresh: {
         color: Colors.dark.tabIconSelected,
-        backgroundColor: Colors.dark.input
-    }
+        backgroundColor: Colors.dark.input,
+    },
 });
