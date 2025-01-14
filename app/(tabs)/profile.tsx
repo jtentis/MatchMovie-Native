@@ -309,7 +309,7 @@ export default function ProfileScreen() {
                             backgroundColor: Colors.dark.background,
                             justifyContent: "center",
                             alignItems: "center",
-                            gap: 6
+                            gap: 10
                         }}>
                     <View
                         style={{
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
         color: Colors.dark.text,
     },
     inputHalf: {
-        width: 177,
+        width: 175,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     markAsBox: {
         marginTop: 20,
         paddingVertical: 25,
-        paddingHorizontal: 38,
+        paddingHorizontal: 40,
         borderWidth: 1,
         borderColor: Colors.dark.tabIconSelected,
         borderRadius: 5,

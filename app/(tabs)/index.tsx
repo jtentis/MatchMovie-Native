@@ -5,6 +5,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { Pressable } from "expo-router/build/views/Pressable";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useRef, useState } from "react";
+import ContentLoader, { Rect } from "react-content-loader/native";
 import {
     ActivityIndicator,
     Animated,
@@ -160,14 +161,14 @@ const HomeScreen = () => {
 
             Animated.timing(underlineColor, {
                 toValue: 1,
-                duration: 300,
+                duration: 150,
                 useNativeDriver: false,
             }).start();
         } else {
             url = FILTER_URLS[filterType];
             Animated.timing(underlineColor, {
                 toValue: 0,
-                duration: 300,
+                duration: 150,
                 useNativeDriver: false,
             }).start();
 
@@ -209,45 +210,73 @@ const HomeScreen = () => {
 
     useEffect(() => {
         const fetchPosters = async () => {
-            const posterData: { [id: string]: string | null } = {};
-            for (const movie of movies) {
-                const formattedPosterPath = movie.poster_path
-                    ? `${movie.poster_path[0]}%2F${movie.poster_path.slice(1)}`
-                    : "";
-                try {
-                    const response = await fetch(
-                        `${MOVIE_POSTER_URL_API}${formattedPosterPath}/poster`
-                    );
-                    if (response.ok) {
-                        const base64Image = await response.text();
-                        posterData[movie.id] = base64Image;
-                    } else {
-                        console.error("Failed to fetch poster for:", movie.id);
-                        posterData[movie.id] = null;
-                    }
-                } catch (error) {
-                    console.error(
-                        "Error fetching poster for:",
-                        movie.id,
-                        error
-                    );
-                    posterData[movie.id] = null;
-                }
+            try {
+                const posterData = await Promise.all(
+                    movies.map(async (movie) => {
+                        if (!movie.poster_path)
+                            return { id: movie.id, poster: null };
+
+                        const formattedPosterPath = `${
+                            movie.poster_path[0]
+                        }%2F${movie.poster_path.slice(1)}`;
+                        try {
+                            const response = await fetch(
+                                `${MOVIE_POSTER_URL_API}${formattedPosterPath}/poster`
+                            );
+                            if (response.ok) {
+                                const base64Image = await response.text();
+                                return { id: movie.id, poster: base64Image };
+                            } else {
+                                console.error(
+                                    "Failed to fetch poster for:",
+                                    movie.id
+                                );
+                                return { id: movie.id, poster: null };
+                            }
+                        } catch (error) {
+                            console.error(
+                                "Error fetching poster for:",
+                                movie.id,
+                                error
+                            );
+                            return { id: movie.id, poster: null };
+                        }
+                    })
+                );
+
+                const posterMap = posterData.reduce(
+                    (acc, { id, poster }) => ({ ...acc, [id]: poster }),
+                    {}
+                );
+                setPosters(posterMap);
+            } catch (error) {
+                console.error("Error fetching posters:", error);
             }
-            setPosters(posterData);
         };
 
         fetchPosters();
     }, [movies]);
 
-    //TODO: FIX THIS
     const renderMovie = ({ item }: { item: Movie }) => {
         const posterUrl = posters[item.id];
-        const posterSource = posterUrl
-            ? { uri: `data:image/jpeg;base64,${posterUrl}` }
-            : require("@/assets/images/No-Image-Placeholder.png");
 
-        // console.log(posterSource, '\n\n\n')
+        if (!posterUrl) {
+            return (
+                <ContentLoader
+                    speed={1}
+                    width={Dimensions.get("window").width / 2}
+                    height={(Dimensions.get("window").width / 2) * 1.5}
+                    viewBox="0 0 200 300"
+                    backgroundColor="#ccc"
+                    foregroundColor="#ddd"
+                >
+                    <Rect x="0" y="0" width="200" height="300" />
+                </ContentLoader>
+            );
+        }
+
+        const posterSource = { uri: `data:image/jpeg;base64,${posterUrl}` };
+
         return (
             <TouchableWithoutFeedback
                 onPress={() =>
@@ -342,6 +371,7 @@ const HomeScreen = () => {
             </View>
             <SafeAreaView style={styles.container}>
                 <FlatList
+                    style={{backgroundColor: Colors.dark.input}}
                     ref={listRef}
                     data={movies}
                     renderItem={renderMovie}
@@ -349,9 +379,13 @@ const HomeScreen = () => {
                     numColumns={2}
                     onEndReached={loadMoreMovies}
                     onEndReachedThreshold={0.5}
+                    initialNumToRender={10} // Render only a few items initially
+                    maxToRenderPerBatch={10} // Limit rendering per batch
+                    removeClippedSubviews={true} // Remove offscreen items
+                    windowSize={5} // Number of items to render around the viewport
                     ListFooterComponent={
                         isLoading ? (
-                            <ActivityIndicator size="large" color="#0000ff" />
+                            <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} />
                         ) : null
                     }
                 />
