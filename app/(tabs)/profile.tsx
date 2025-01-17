@@ -6,8 +6,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import Constants from "expo-constants";
 import { useFonts } from "expo-font";
+import * as ImagePicker from "expo-image-picker";
 import { Pressable } from "expo-router/build/views/Pressable";
-import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -15,6 +15,7 @@ import {
     StyleSheet,
     Text,
     TextInput,
+    TouchableOpacity,
     View,
 } from "react-native";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
@@ -33,6 +34,8 @@ const uri =
 const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
 
 export default function ProfileScreen() {
+    const [profilePicture, setProfilePicture] = useState<string | null>(null);
+    const defaultImage = require("../../assets/images/no-image.png");
     const navigation = useNavigation<ProfileScreenNavigationProp>();
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
@@ -44,18 +47,19 @@ export default function ProfileScreen() {
     const [username, setUsername] = useState("");
     const [second_name, setSecond_name] = useState("");
     const [modalMessage, setModalMessage] = useState<string>("");
-    const { userId, logout, handleTokenExpiration } = useAuth(); // Use context for userId and logout
+    const { userId, logout, handleTokenExpiration, authToken } = useAuth();
     const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [fontsLoaded] = useFonts({
         CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
     });
-    const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
+    const [refreshing, setRefreshing] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [modalText, setModalText] = useState<string>("");
 
     const fetchUserData = async () => {
-        const tokenBearer = await SecureStore.getItemAsync("authToken");
-        console.log("Token", tokenBearer);
+        console.log("Token", authToken);
 
         if (!userId) {
             console.log("Sem ID");
@@ -70,7 +74,7 @@ export default function ProfileScreen() {
                 `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${tokenBearer}`,
+                        Authorization: `Bearer ${authToken}`,
                     },
                 }
             );
@@ -89,8 +93,10 @@ export default function ProfileScreen() {
             }
             const data = await response.json();
             setUser(data);
+            setProfilePicture(data.profilePicture);
 
-            console.log("Dados do usuário:", data);
+            // console.log("Dados do usuário:", data);
+            if (data.profilePicture) console.log("imagem aqui!");
         } catch (err) {
             console.error("Erro:", err);
             setError("Erro.");
@@ -120,9 +126,9 @@ export default function ProfileScreen() {
     };
 
     const handleSaveProfile = async () => {
-        if (!name.trim() || !username.trim()) {
+        if (!name.trim() && !username.trim() && !second_name.trim()) {
             setModalType("alert");
-            setModalMessage("Campos não podem estar vázios.");
+            setModalMessage("Preencha ao menos um campo para salvar.");
             setModalVisible(true);
             return;
         }
@@ -130,20 +136,20 @@ export default function ProfileScreen() {
         setIsSaving(true);
 
         try {
-            const tokenBearer = await SecureStore.getItemAsync("authToken");
+            const updatedFields: any = {};
+            if (name.trim()) updatedFields.name = name.trim();
+            if (username.trim()) updatedFields.user = username.trim();
+            if (second_name.trim())
+                updatedFields.second_name = second_name.trim();
             const response = await fetch(
                 `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`,
                 {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json", // Ensure JSON content type
-                        Authorization: `Bearer ${tokenBearer}`,
+                        Authorization: `Bearer ${authToken}`,
                     },
-                    body: JSON.stringify({
-                        name: name.trim(),
-                        user: username.trim(),
-                        second_name: second_name.trim(), // Ensure no extra spaces
-                    }),
+                    body: JSON.stringify(updatedFields),
                 }
             );
 
@@ -157,7 +163,7 @@ export default function ProfileScreen() {
                 );
             }
 
-            const updatedUser = await response.json();
+            // const updatedUser = await response.json();
             setName("");
             setUsername("");
             setSecond_name("");
@@ -186,7 +192,75 @@ export default function ProfileScreen() {
         } catch (error) {
             console.error("Logout error:", error);
             setModalType("error");
-            setModalMessage("Failed to log out. Please try again.");
+            setModalMessage("Erro ao deslogar, tente novamente!");
+            setModalVisible(true);
+        }
+    };
+
+    const pickImage = async () => {
+        // Ask for permissions
+        const permissionResult =
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permissionResult.granted) {
+            setModalType("error");
+            setModalMessage("Permissão para acessar galeria é necessária!");
+            setModalVisible(true);
+            return;
+        }
+
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.8,
+                base64: true,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const base64Image = `data:${result.assets[0].type};base64,${result.assets[0].base64}`;
+                setProfilePicture(base64Image);
+                uploadProfilePicture(base64Image);
+            } else {
+                setModalType("error");
+                setModalMessage("Nenhuma imagem selecionada!");
+                setModalVisible(true);
+            }
+        } catch (error) {
+            console.error("Error picking image:", error);
+            setModalType("error");
+            setModalMessage("Erro ao selecionar imagem!");
+            setModalVisible(true);
+        }
+    };
+
+    const uploadProfilePicture = async (base64Image: string) => {
+        try {
+            const response = await fetch(
+                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}/upload-profile-picture`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                    body: JSON.stringify({
+                        profilePicture: base64Image,
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to upload profile picture");
+            }
+
+            setModalType("success");
+            setModalMessage("Imagem atualizada com sucesso!");
+            setModalVisible(true);
+        } catch (error) {
+            console.error(error);
+            setModalType("error");
+            setModalMessage("Erro ao atualizar imagem!");
             setModalVisible(true);
         }
     };
@@ -247,10 +321,8 @@ export default function ProfileScreen() {
                 }}
             >
                 <ThemedText type="title">Perfil</ThemedText>
-                <FontAwesome
-                    size={22}
-                    name="pencil"
-                    color={"#FFFFFF"}
+                <TouchableOpacity
+                    onPress={pickImage}
                     style={{
                         backgroundColor: "transparent",
                         position: "absolute",
@@ -258,7 +330,9 @@ export default function ProfileScreen() {
                         top: 25,
                         borderRadius: 100,
                     }}
-                />
+                >
+                    <FontAwesome size={22} name="pencil" color={"#FFFFFF"} />
+                </TouchableOpacity>
             </View>
             <View
                 style={{
@@ -270,8 +344,11 @@ export default function ProfileScreen() {
                 }}
             >
                 <Image
-                    source={require("@/assets/images/foto_perfil.png")}
-                ></Image>
+                    source={
+                        profilePicture ? { uri: profilePicture } : defaultImage
+                    }
+                    style={styles.profileImage}
+                />
                 <ThemedText type="defaultSemiBold" style={{}}>
                     {fullName}
                 </ThemedText>
@@ -308,14 +385,16 @@ export default function ProfileScreen() {
                     marginBottom: 30,
                 }}
             >
-                <View style={{
-                            flex: 1,
-                            flexDirection: "row",
-                            backgroundColor: Colors.dark.background,
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: 10
-                        }}>
+                <View
+                    style={{
+                        flex: 1,
+                        flexDirection: "row",
+                        backgroundColor: Colors.dark.background,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 10,
+                    }}
+                >
                     <View
                         style={{
                             flexDirection: "column",
@@ -416,6 +495,7 @@ export default function ProfileScreen() {
                     visible={modalVisible}
                     onClose={() => setModalVisible(false)}
                 />
+                {/* {showModal && <TinyModal text={modalText} />} */}
             </View>
         </ScrollView>
     );
@@ -431,6 +511,18 @@ const styles = StyleSheet.create({
         elevation: 2,
         marginTop: 5,
         color: Colors.dark.text,
+    },
+    profileImage: {
+        width: 150,
+        height: 150,
+        borderRadius: 75,
+        marginBottom: 20,
+        backgroundColor: "#ccc",
+    },
+    buttonText: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center",
     },
     inputHalf: {
         width: 175,
