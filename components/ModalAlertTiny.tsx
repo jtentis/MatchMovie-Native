@@ -10,10 +10,9 @@ interface TinyModalProps {
 
 const TinyModal: React.FC<TinyModalProps> = ({ text, onClose }) => {
   const opacity = new Animated.Value(0);
-  const translateY = new Animated.Value(50); // Start below the screen
+  const translateY = new Animated.Value(50);
 
   useEffect(() => {
-    // Animate in
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
@@ -66,9 +65,9 @@ const TinyModal: React.FC<TinyModalProps> = ({ text, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 30,
-    left: '27%',
-    right: '27%',
+    bottom: 50,
+    left: 60,
+    right: 60,
     backgroundColor: '#333',
     borderRadius: 20,
     paddingVertical: 10,
@@ -88,7 +87,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     fontWeight: '400',
-    color: 'white'
+    color: 'white',
   },
 });
 

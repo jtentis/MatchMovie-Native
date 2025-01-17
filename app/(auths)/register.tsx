@@ -2,6 +2,7 @@ import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import Constants from "expo-constants";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
@@ -22,8 +23,11 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         "alert"
     );
     const [modalMessage, setModalMessage] = useState<string>("");
-    const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-    // const EXPO_PUBLIC_JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET;
+    // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+    const uri =
+        Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
+        "yourapi.com";
+    const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
     const [formData, setFormData]: any = useState({
         name: "",
         second_name: "",
@@ -32,7 +36,6 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         password: "",
         cpf: "",
         location: "",
-        location_number: "",
     });
 
     const handleChange = (field: string, value: string) => {
@@ -49,8 +52,7 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
             !formData.password ||
             !formData.conf_password ||
             !formData.cpf ||
-            !formData.location ||
-            !formData.location_number
+            !formData.location
         ) {
             setModalMessage("Todos os campos devem ser preenchidos!");
             setModalType("error");
@@ -236,6 +238,12 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                             placeholder: "Digite seu CPF",
                             keyboardType: "numeric",
                         },
+                        {
+                            label: "Endereço (CEP)",
+                            field: "location",
+                            placeholder: "Digite seu CEP",
+                            keyboardType: "numeric",
+                        },
                     ].map(({ label, field, keyboardType, ...inputProps }) => (
                         <View key={field} style={styles.inputGroup}>
                             <ThemedText type="default" style={styles.label}>
@@ -256,36 +264,6 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                             />
                         </View>
                     ))}
-
-                    {}
-                    <ThemedText type="default" style={styles.label}>
-                        Endereço
-                    </ThemedText>
-                    <View style={{ flexDirection: "row", gap: 10 }}>
-                        <TextInput
-                            style={[styles.inputSmall, styles.size]}
-                            selectionColor={Colors.dark.tabIconSelected}
-                            value={formData.location}
-                            onChangeText={(value) =>
-                                handleChange("location", value)
-                            }
-                            placeholderTextColor={Colors.dark.textPlaceHolder}
-                            placeholder="Digite seu Endereço"
-                            keyboardType="default"
-                        />
-                        <TextInput
-                            style={[styles.input, styles.inputFlex]}
-                            value={formData.location_number}
-                            onChangeText={(value) =>
-                                handleChange("location_number", value)
-                            }
-                            placeholder="Número"
-                            selectionColor={Colors.dark.tabIconSelected}
-                            placeholderTextColor={Colors.dark.textPlaceHolder}
-                            keyboardType="numeric"
-                        />
-                    </View>
-
                     {}
                     <Pressable style={styles.button} onPress={handleRegister}>
                         <ThemedText

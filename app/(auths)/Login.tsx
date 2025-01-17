@@ -1,4 +1,4 @@
-import TinyModal from "@/components/ModalAlertTiny";
+import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -6,10 +6,10 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
-import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { Icon } from "../../components/MatchLogo";
+import { useAuth } from "../contexts/AuthContext";
 
 const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 
@@ -23,69 +23,51 @@ type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 //TODO: CONSERTAR COMPORTAMENTO DA DIV DOS BOTOES DE LOGIN COM O TECLADO
 
 const LoginScreen = () => {
-    const [showModal, setShowModal] = useState(false);
-    const [modalText, setModalText] = useState<string>("");
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<"error" | "success" | "alert">(
+        "alert"
+    );
+    const [modalMessage, setModalMessage] = useState("");
     const navigation = useNavigation<LoginScreenNavigationProp>();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const { login } = useAuth();
 
     const [fontsLoaded] = useFonts({
-        CoinyRegular: require('../../assets/fonts/Coiny-Regular.ttf'),
-      });
+        CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
+    });
 
-      if (!fontsLoaded) {
+    if (!fontsLoaded) {
         return <Text>Loading fonts...</Text>;
-      }
-  
+    }
+
     const toggleShowPassword = () => {
-      setShowPassword(!showPassword);
+        setShowPassword(!showPassword);
     };
-  
+
     const handleLogin = async () => {
-      try {
-        const response = await fetch(
-          `${EXPO_PUBLIC_BASE_NGROK}/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: email,
-              password: password,
-            }),
-          }
-        );
-  
-        if (response.status === 201) {
-          const data = await response.json();
-          const accessToken = data.accessToken;
-  
-          await SecureStore.setItemAsync("authToken", accessToken);
-  
-          // Show modal and navigate to tabs
-          setModalText("Usuário logado!");
-          setShowModal(true);
-  
-          setTimeout(() => {
-            setShowModal(false);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "(tabs)" }],
-            });
-          }, 500);
-  
-          console.log(data.accessToken);
-        } else {
-          Alert.alert("Erro", "Informações incorretas!");
-          console.log(response);
+        if (!email.trim() || !password.trim()) {
+            setModalType("alert");
+            setModalMessage(
+                "Email e senha não podem conter espaços em branco."
+            );
+            setModalVisible(true);
+        }else{
+            try {
+                await login(email, password);
+                console.log("Login feito com sucesso!");
+    
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: "(tabs)" }],
+                });
+            } catch (error: any) {
+                console.error("Login error:", error);
+                Alert.alert("Login Error", error.message || "Erro inesperado!");
+            }
         }
-        return response;
-      } catch (error) {
-        console.error("Login Error: ", error);
-        Alert.alert("Erro", "Erro de conexão.");
-      }
+
     };
 
     return (
@@ -188,7 +170,12 @@ const LoginScreen = () => {
                             Login
                         </ThemedText>
                     </Pressable>
-                    {showModal && <TinyModal text={modalText} />}
+                    <AlertModal
+                        type={modalType}
+                        visible={modalVisible}
+                        message={modalMessage}
+                        onClose={() => setModalVisible(false)}
+                    />
                     <Pressable
                         onPress={() => navigation.navigate("register")}
                         style={styles.buttonRegister}
