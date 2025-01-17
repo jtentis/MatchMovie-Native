@@ -76,7 +76,7 @@ const MovieDetailsScreen = () => {
         useState<WatchProvider | null>(null);
     const [isLoadingProviders, setIsLoadingProviders] = useState<boolean>(true);
     const navigation = useNavigation();
-    const { userId } = useAuth();
+    const { userId, authToken } = useAuth();
     const [isFavorited, setIsFavorited] = useState<boolean>(false);
     const [isWatched, setIsWatched] = useState<boolean>(false);
     const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
@@ -93,7 +93,7 @@ const MovieDetailsScreen = () => {
                     await responseMovieDetails.json();
                 setMovieDetails(dataMovieDetails);
                 const responseWatchProviders = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/watch_providers`
+                    `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/watch_providers`,
                 );
                 const dataWatchProviders: WatchProvider =
                     await responseWatchProviders.json();
@@ -109,7 +109,11 @@ const MovieDetailsScreen = () => {
         const fetchFavoriteState = async () => {
             try {
                 const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/favorites/isFavorite/${userId}/${movieId}`
+                    `${EXPO_PUBLIC_BASE_NGROK}/favorites/isFavorite/${userId}/${movieId}`,{
+                        headers: {
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
                 );
                 const data = await response.json();
                 console.log("Estado de favorito recebido:", data);
@@ -122,7 +126,11 @@ const MovieDetailsScreen = () => {
         const fetchWatchedState = async () => {
             try {
                 const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/watched/isWatched/${userId}/${movieId}`
+                    `${EXPO_PUBLIC_BASE_NGROK}/watched/isWatched/${userId}/${movieId}`,{
+                        headers: {
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
                 );
                 const data = await response.json();
                 console.log("Estado de visto recebido:", data);
@@ -146,6 +154,7 @@ const MovieDetailsScreen = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${authToken}`,
                     },
                     body: JSON.stringify({
                         userId: userId,
@@ -179,6 +188,7 @@ const MovieDetailsScreen = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
                 },
                 body: JSON.stringify({
                     userId: userId,
