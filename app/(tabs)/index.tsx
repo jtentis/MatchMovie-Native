@@ -1,7 +1,8 @@
 // App.tsx
 import { Colors } from "@/constants/Colors";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import Constants from "expo-constants";
 import { Pressable } from "expo-router/build/views/Pressable";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useRef, useState } from "react";
@@ -12,6 +13,7 @@ import {
     Dimensions,
     FlatList,
     Image,
+    Keyboard,
     SafeAreaView,
     StyleSheet,
     Text,
@@ -21,7 +23,11 @@ import {
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
-const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+const uri =
+    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
+    "yourapi.com";
+const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
+// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 const POPULAR_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/popular`;
 const NOW_PLAYING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/now_playing`;
 const TOP_RATED_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/top_rated`;
@@ -77,14 +83,19 @@ const HomeScreen = () => {
         checkAuth();
     }, []);
 
-    const route = useRoute<LoginScreenNavigationProp>();
+    const screenWidth = Dimensions.get("window").width;
+    const [filterIndex, setFilterIndex] = useState(0);
+    const underlineWidth = screenWidth / 4;
+    const [filterLayouts, setFilterLayouts] = useState<any[]>([]);
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const [query, setQuery] = useState<string>("");
     const [movies, setMovies] = useState<Movie[]>([]);
     const [filter, setFilter] = useState<string>("popular");
     const [page, setPage] = useState<number>(1);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [posterCache, setPosterCache] = useState<{ [id: string]: string | null }>({});
+    const [posterCache, setPosterCache] = useState<{
+        [id: string]: string | null;
+    }>({});
 
     const FILTER_URLS: any = {
         popular: POPULAR_MOVIES_URL_API,
@@ -103,34 +114,27 @@ const HomeScreen = () => {
         if (isLoading) return;
 
         setIsLoading(true);
+
         try {
+            const response = await fetch(url);
             console.log(`Fetching from URL: ${url}`);
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {
-                    // Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-            if (!response.ok) {
-                throw new Error(
-                    `HTTP status ${response.status}: ${response.statusText}`
-                );
-            }
+            if (!response.ok)
+                throw new Error(`Failed to fetch: ${response.status}`);
+
             const data = await response.json();
+
             setMovies((prevMovies) =>
                 isLoadMore ? [...prevMovies, ...data.results] : data.results
             );
         } catch (error) {
-            console.error(`Error fetching movies: ${error}`);
+            console.error("Error fetching movies:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    //TODO: loadmoremovies da procura de filmes esta bugado
     const searchMovies = () => {
-        if (query.trim().length < 1) return;
+        if (!query.trim()) return;
 
         setFilter("search");
         setPage(1);
@@ -138,11 +142,15 @@ const HomeScreen = () => {
         const url = `${SEARCH_MOVIES_URL_API}?search=${query}&page=1`;
         fetchMovies(url);
         listRef.current?.scrollToOffset({ animated: true, offset: 0 });
+
+        Keyboard.dismiss();
     };
 
     const listRef = useRef<FlatList>(null);
-    const applyFilter = (filterType: string, index: number) => {
+    const applyFilter = (index: number) => {
+        const filterType = filterTypes[index];
         setFilter(filterType);
+        setFilterIndex(index);
         setPage(1);
 
         let url = "";
@@ -157,14 +165,9 @@ const HomeScreen = () => {
             }).start();
         } else {
             url = FILTER_URLS[filterType];
-            Animated.timing(underlineColor, {
-                toValue: 0,
-                duration: 150,
-                useNativeDriver: false,
-            }).start();
-
             Animated.timing(underlinePosition, {
-                toValue: index * 100,
+                toValue: index * underlineWidth, // Move underline to the selected filter
+                duration: 150,
                 useNativeDriver: false,
             }).start();
         }
@@ -172,17 +175,21 @@ const HomeScreen = () => {
         fetchMovies(url);
         listRef.current?.scrollToOffset({ animated: true, offset: 0 });
     };
+
+    const onFilterLayout = (event: any, index: number) => {
+        const layout = event.nativeEvent.layout;
+        setFilterLayouts((prev) => {
+            const updatedLayouts = [...prev];
+            updatedLayouts[index] = layout; // Update layout array
+            return updatedLayouts;
+        });
+    };
+
     const underlineColor = useRef(new Animated.Value(0)).current;
 
-    const animatedColor = underlineColor.interpolate({
-        inputRange: [0, 1],
-        outputRange:
-            filter === "search"
-                ? [Colors.dark.background, Colors.dark.background]
-                : [Colors.dark.tabIconSelected, Colors.dark.background],
-    });
-
     const loadMoreMovies = () => {
+        if (isLoading) return;
+
         const nextPage = page + 1;
         setPage(nextPage);
 
@@ -203,7 +210,7 @@ const HomeScreen = () => {
         const fetchPosters = async () => {
             // Define the type for newPosters
             const newPosters: { [id: number]: string | null } = {};
-    
+
             await Promise.all(
                 movies.map(async (movie) => {
                     // Check the cache first
@@ -211,18 +218,20 @@ const HomeScreen = () => {
                         newPosters[movie.id] = posterCache[movie.id];
                         return;
                     }
-    
+
                     // Format the poster path
                     const formattedPosterPath = movie.poster_path
-                        ? `${movie.poster_path[0]}%2F${movie.poster_path.slice(1)}`
+                        ? `${movie.poster_path[0]}%2F${movie.poster_path.slice(
+                              1
+                          )}`
                         : "";
-    
+
                     try {
                         // Fetch the poster data
                         const response = await fetch(
                             `${MOVIE_POSTER_URL_API}${formattedPosterPath}/poster`
                         );
-    
+
                         if (response.ok) {
                             const base64Image = await response.text();
                             newPosters[movie.id] = base64Image; // Cache the poster
@@ -230,20 +239,23 @@ const HomeScreen = () => {
                             newPosters[movie.id] = null; // Handle failed fetch
                         }
                     } catch (error) {
-                        console.error("Error fetching poster:", movie.id, error);
+                        console.error(
+                            "Error fetching poster:",
+                            movie.id,
+                            error
+                        );
                         newPosters[movie.id] = null; // Handle errors
                     }
                 })
             );
-    
+
             // Update the state with the new posters
             setPosterCache((prevCache) => ({ ...prevCache, ...newPosters }));
             setPosters(newPosters);
         };
-    
+
         fetchPosters();
     }, [movies]);
-    
 
     const renderMovie = ({ item }: { item: Movie }) => {
         const posterUrl = posters[item.id];
@@ -310,6 +322,7 @@ const HomeScreen = () => {
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                         value={query}
                         onChangeText={setQuery}
+                        onSubmitEditing={searchMovies}
                         selectionColor={Colors.dark.tabIconSelected}
                     />
                     <Pressable style={styles.button} onPress={searchMovies}>
@@ -329,37 +342,42 @@ const HomeScreen = () => {
                     </Pressable>
                 </View>
             </View>
-            <View
-                style={{
-                    flex: 1 / 2,
-                    flexDirection: "row",
-                    justifyContent: "space-around",
-                    backgroundColor: Colors.dark.background,
-                    paddingBottom: 10,
-                }}
-            >
+            <View style={{ backgroundColor: Colors.dark.background }}>
+                <View
+                    style={{
+                        flexDirection: "row",
+                        justifyContent: "space-around",
+                    }}
+                >
+                    {filterTypes.map((filterType, index) => (
+                        <Pressable
+                            key={filterType}
+                            onLayout={(event) => onFilterLayout(event, index)}
+                            onPress={() => applyFilter(index)}
+                            style={{flex: 1/4, paddingBottom: 10, paddingTop: 8,}} // Capture layout for this filter
+                        >
+                            <Text style={getFilterButtonStyle(filterType)}>
+                                {filterTranslations[filterType].replace(
+                                    "_",
+                                    " "
+                                )}
+                            </Text>
+                        </Pressable>
+                    ))}
+                </View>
                 <Animated.View
                     style={[
                         styles.underline,
                         {
                             left: underlinePosition,
-                            backgroundColor: animatedColor,
+                            width: underlineWidth,
                         },
                     ]}
                 />
-                {filterTypes.map((filterType, index) => (
-                    <Text
-                        key={filterType}
-                        onPress={() => applyFilter(filterType, index)}
-                        style={getFilterButtonStyle(filterType)}
-                    >
-                        {filterTranslations[filterType].replace("_", " ")}
-                    </Text>
-                ))}
             </View>
             <SafeAreaView style={styles.container}>
                 <FlatList
-                    style={{backgroundColor: Colors.dark.input}}
+                    style={{ backgroundColor: Colors.dark.input }}
                     ref={listRef}
                     data={movies}
                     renderItem={renderMovie}
@@ -367,13 +385,16 @@ const HomeScreen = () => {
                     numColumns={2}
                     onEndReached={loadMoreMovies}
                     onEndReachedThreshold={0.5}
-                    initialNumToRender={10} // Render only a few items initially
-                    maxToRenderPerBatch={10} // Limit rendering per batch
-                    removeClippedSubviews={true} // Remove offscreen items
-                    windowSize={5} // Number of items to render around the viewport
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
+                    removeClippedSubviews={true}
+                    windowSize={5}
                     ListFooterComponent={
                         isLoading ? (
-                            <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} />
+                            <ActivityIndicator
+                                size="large"
+                                color={Colors.dark.tabIconSelected}
+                            />
                         ) : null
                     }
                 />
@@ -394,7 +415,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         width: 100,
         height: 3,
-        backgroundColor: "black",
+        backgroundColor: Colors.dark.tabIconSelected,
         zIndex: 1000,
     },
     searchDiv: {
