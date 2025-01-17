@@ -513,11 +513,13 @@ const styles = StyleSheet.create({
         color: Colors.dark.text,
     },
     profileImage: {
-        width: 150,
+        width: 180,
         height: 150,
-        borderRadius: 75,
-        marginBottom: 20,
+        borderRadius: 10,
+        marginBottom: 10,
         backgroundColor: "#ccc",
+        borderWidth: 1,
+        borderColor: Colors.dark.tabIconSelected
     },
     buttonText: {
         color: "white",
