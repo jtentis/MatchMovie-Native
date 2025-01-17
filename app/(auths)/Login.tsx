@@ -1,4 +1,4 @@
-import TinyModal from "@/components/ModalAlertTiny";
+import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -23,8 +23,11 @@ type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 //TODO: CONSERTAR COMPORTAMENTO DA DIV DOS BOTOES DE LOGIN COM O TECLADO
 
 const LoginScreen = () => {
-    const [showModal, setShowModal] = useState(false);
-    const [modalText, setModalText] = useState<string>("");
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<"error" | "success" | "alert">(
+        "alert"
+    );
+    const [modalMessage, setModalMessage] = useState("");
     const navigation = useNavigation<LoginScreenNavigationProp>();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -32,32 +35,40 @@ const LoginScreen = () => {
     const { login } = useAuth();
 
     const [fontsLoaded] = useFonts({
-        CoinyRegular: require('../../assets/fonts/Coiny-Regular.ttf'),
-      });
+        CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
+    });
 
-      if (!fontsLoaded) {
+    if (!fontsLoaded) {
         return <Text>Loading fonts...</Text>;
-      }
-  
+    }
+
     const toggleShowPassword = () => {
-      setShowPassword(!showPassword);
+        setShowPassword(!showPassword);
     };
-  
+
     const handleLogin = async () => {
-        try {
-          await login(email, password);
-          console.log("Login feito com sucesso!");
+        if (!email.trim() || !password.trim()) {
+            setModalType("alert");
+            setModalMessage(
+                "Email e senha não podem conter espaços em branco."
+            );
+            setModalVisible(true);
+        }else{
+            try {
+                await login(email, password);
+                console.log("Login feito com sucesso!");
     
-          // Navigate to the main tabs
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "(tabs)" }],
-          });
-        } catch (error:any) {
-          console.error("Login error:", error);
-          Alert.alert("Login Error", error.message || "Erro inesperado!");
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: "(tabs)" }],
+                });
+            } catch (error: any) {
+                console.error("Login error:", error);
+                Alert.alert("Login Error", error.message || "Erro inesperado!");
+            }
         }
-      };
+
+    };
 
     return (
         <View
@@ -159,7 +170,12 @@ const LoginScreen = () => {
                             Login
                         </ThemedText>
                     </Pressable>
-                    {showModal && <TinyModal text={modalText} />}
+                    <AlertModal
+                        type={modalType}
+                        visible={modalVisible}
+                        message={modalMessage}
+                        onClose={() => setModalVisible(false)}
+                    />
                     <Pressable
                         onPress={() => navigation.navigate("register")}
                         style={styles.buttonRegister}

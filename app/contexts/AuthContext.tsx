@@ -1,6 +1,8 @@
+import TinyModal from "@/components/ModalAlertTiny";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { Alert } from "react-native";
 
 interface AuthContextData {
   authToken: string | null;
@@ -9,6 +11,7 @@ interface AuthContextData {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   handleTokenExpiration: () => void;
+  showModal: (message: string) => void;
 }
 
 const uri =
@@ -19,10 +22,17 @@ const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
 const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [showModal, setShowModal] = useState(false);
   const [modalText, setModalText] = useState<string>("");
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showModal = (message: string) => {
+    setModalMessage(message);
+    setModalVisible(true);
+    setTimeout(() => setModalVisible(false), 1500);
+};
 
   useEffect(() => {
     const loadAuthData = async () => {
@@ -39,7 +49,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    // setAuthToken(null)
+    if(!email || !password){
+      Alert.alert('error','nao')
+    }
     try {
       const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/auth/login`, {
         method: "POST",
@@ -57,6 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await SecureStore.setItemAsync("userId", userId.toString());
 
         // Update context state
+        showModal("Login efetuado com sucesso!");
         setAuthToken(accessToken);
         setUserId(userId.toString());
       } else if (response.status == 404) {
@@ -78,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     await SecureStore.deleteItemAsync("authToken");
     await SecureStore.deleteItemAsync("userId");
+    showModal("Logout efetuado com sucesso!");
     setAuthToken(null);
     setUserId(null);
   };
@@ -85,8 +99,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = !!authToken;
 
   return (
-    <AuthContext.Provider value={{ authToken, userId, login, logout, isAuthenticated, handleTokenExpiration }}>
+    <AuthContext.Provider value={{ authToken, userId, login, logout, isAuthenticated, handleTokenExpiration, showModal }}>
       {children}
+      {modalVisible && <TinyModal text={modalMessage} onClose={() => setModalVisible(false)} />}
     </AuthContext.Provider>
   );
 };
