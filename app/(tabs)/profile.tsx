@@ -4,6 +4,7 @@ import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import Constants from "expo-constants";
 import { useFonts } from "expo-font";
 import { Pressable } from "expo-router/build/views/Pressable";
 import * as SecureStore from "expo-secure-store";
@@ -25,7 +26,11 @@ type RootStackParamList = {
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+const uri =
+    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
+    "yourapi.com";
+const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
 
 export default function ProfileScreen() {
     const navigation = useNavigation<ProfileScreenNavigationProp>();

@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
@@ -10,7 +11,11 @@ interface AuthContextData {
   handleTokenExpiration: () => void;
 }
 
-const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+const uri =
+    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
+    "yourapi.com";
+const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
+// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

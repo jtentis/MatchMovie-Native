@@ -1,6 +1,7 @@
 import { Colors } from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import Constants from "expo-constants";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useState } from "react";
 import {
@@ -15,9 +16,11 @@ import {
 import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
 
-// const BASE_URL = "https://api.themoviedb.org/3";
-// const API_KEY = process.env.EXPO_PUBLIC_TMDB_API_KEY;
-const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+const uri =
+    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
+    "yourapi.com";
+const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
 
 type RootStackParamList = {
     details: { movieId: number };
@@ -172,19 +175,16 @@ const MovieDetailsScreen = () => {
     const toggleWatched = async () => {
         setIsLoadingWatched(true);
         try {
-            const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/watched`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        userId: userId,
-                        movieId: movieId,
-                    }),
-                }
-            );
+            const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/watched`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    movieId: movieId,
+                }),
+            });
             //   console.log('var',typeof(userId),typeof(movieId))
             if (!response.ok) {
                 const errorData = await response.json();
