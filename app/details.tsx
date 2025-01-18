@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
+import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import Constants from "expo-constants";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useState } from "react";
 import {
@@ -17,10 +17,7 @@ import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
 
 // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const uri =
-    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
-    "yourapi.com";
-const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
+const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST
 
 type RootStackParamList = {
     details: { movieId: number };

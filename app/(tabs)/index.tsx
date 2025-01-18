@@ -1,8 +1,8 @@
 // App.tsx
 import { Colors } from "@/constants/Colors";
+import { URL_LOCALHOST } from "@/constants/Url";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import Constants from "expo-constants";
 import { Pressable } from "expo-router/build/views/Pressable";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useRef, useState } from "react";
@@ -23,10 +23,7 @@ import {
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
-const uri =
-    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
-    "yourapi.com";
-const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
+const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 const POPULAR_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/popular`;
 const NOW_PLAYING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/now_playing`;

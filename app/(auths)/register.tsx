@@ -1,8 +1,8 @@
 import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
+import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import Constants from "expo-constants";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
@@ -16,6 +16,9 @@ import {
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
+ // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+ const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
+
 const RegisterScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
     const [modalVisible, setModalVisible] = useState(false);
@@ -23,11 +26,6 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         "alert"
     );
     const [modalMessage, setModalMessage] = useState<string>("");
-    // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-    const uri =
-        Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
-        "yourapi.com";
-    const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
     const [formData, setFormData]: any = useState({
         name: "",
         second_name: "",

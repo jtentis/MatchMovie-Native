@@ -1,8 +1,8 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
+import { URL_LOCALHOST } from "@/constants/Url";
 import { StackNavigationProp } from "@react-navigation/stack";
-import Constants from "expo-constants";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useState } from "react";
@@ -33,10 +33,7 @@ type HomeScreenNavigationProp = StackNavigationProp<
     "groups"
 >;
 
-const uri =
-    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
-    "yourapi.com";
-const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
+const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 
 export default function MatchScreen() {
     const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -135,8 +132,8 @@ export default function MatchScreen() {
                     flex: 4 / 2,
                     backgroundColor: Colors.dark.background,
                     flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    justifyContent: "center",
                 }}
             >
                 <FlatList

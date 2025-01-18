@@ -38,7 +38,7 @@ const GroupsScreen = ({navigation}:{navigation: any}) => {
     <View style={{ flex: 2, backgroundColor: Colors.dark.background }}>
       <ImageBackground
         style={styles.image}
-        source={require('@/assets/images/random 4.jpg')}
+        source={require('@/assets/images/No-Image-Placeholder.png')}
       ></ImageBackground>
       <ThemedText type="defaultSemiBold" style={styles.title}>
           Escola

@@ -1,5 +1,5 @@
 import TinyModal from "@/components/ModalAlertTiny";
-import Constants from "expo-constants";
+import { URL_LOCALHOST } from "@/constants/Url";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { Alert } from "react-native";
@@ -14,10 +14,7 @@ interface AuthContextData {
   showModal: (message: string) => void;
 }
 
-const uri =
-    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
-    "yourapi.com";
-const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
+const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
@@ -73,6 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAuthToken(accessToken);
         setUserId(userId.toString());
       } else if (response.status == 404) {
+        console.log(response)
         throw new Error("Erro de login. API não conectada!");
       } else{
         throw new Error("Erro de login. Verifique suas credenciais!");

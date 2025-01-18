@@ -1,10 +1,10 @@
 import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
+import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import Constants from "expo-constants";
 import { useFonts } from "expo-font";
 import * as ImagePicker from "expo-image-picker";
 import { Pressable } from "expo-router/build/views/Pressable";
@@ -28,10 +28,7 @@ type RootStackParamList = {
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const uri =
-    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
-    "yourapi.com";
-const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
+const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 
 export default function ProfileScreen() {
     const [profilePicture, setProfilePicture] = useState<string | null>(null);

@@ -11,8 +11,6 @@ import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 import { useAuth } from "../contexts/AuthContext";
 
-const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-
 type RootStackParamList = {
     register: undefined;
     "(tabs)": { screen: string };
@@ -47,6 +45,7 @@ const LoginScreen = () => {
     };
 
     const handleLogin = async () => {
+        console.log('clicado')
         if (!email.trim() || !password.trim()) {
             setModalType("alert");
             setModalMessage(

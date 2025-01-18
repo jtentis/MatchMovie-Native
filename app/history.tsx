@@ -4,10 +4,10 @@ import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React from "react";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    View
+  Image,
+  ScrollView,
+  StyleSheet,
+  View
 } from "react-native";
 import { ThemedText } from "../components/ThemedText";
 
@@ -22,7 +22,7 @@ const HistoryScreen = ({navigation}:{navigation: any}) => {
             </View>
           </Pressable>
           <ThemedText type="subtitle" style={{marginLeft:'50%'}}>Escola</ThemedText>
-          <View style={styles.groupImage}><Image source={require('@/assets/images/random 4.jpg')} style={styles.groupImage}></Image></View>
+          <View style={styles.groupImage}><Image source={require('@/assets/images/No-Image-Placeholder.png')} style={styles.groupImage}></Image></View>
         </View>
         <View style={{flex:3, alignItems:'center',backgroundColor: Colors.dark.background, marginTop:10}}>
           <ThemedText type="title" style={{marginBottom: 20}}>Histórico</ThemedText>
