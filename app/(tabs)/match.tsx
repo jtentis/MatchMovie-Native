@@ -13,6 +13,7 @@ import {
     StyleSheet,
     Text,
     TextInput,
+    TouchableOpacity,
     View,
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
@@ -26,23 +27,20 @@ import {
 interface Group {
     id: number;
     name: string;
-    image: string | null; // Group images can be null
+    image: string | null;
 }
 
 type RootStackParamList = {
-    groups: undefined;
+    groups: { groupId: number };
 };
 
-type HomeScreenNavigationProp = StackNavigationProp<
-    RootStackParamList,
-    "groups"
->;
+type GroupsNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 
 export default function MatchScreen() {
-    const navigation = useNavigation<HomeScreenNavigationProp>();
-    const { userId, authToken } = useAuth(); // Get user ID and token from context
+    const navigation = useNavigation<GroupsNavigationProp>();
+    const { userId, authToken } = useAuth();
     const [groups, setGroups] = useState<Group[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -65,6 +63,7 @@ export default function MatchScreen() {
 
             const data = await response.json();
             setGroups(data);
+            console.log(data);
         } catch (error) {
             console.error("Error fetching groups:", error);
         } finally {
@@ -74,19 +73,17 @@ export default function MatchScreen() {
     }, [userId, authToken]);
 
     useEffect(() => {
-        fetchGroups(); // Fetch initial groups
-        connectWebSocket(userId); // Connect WebSocket
+        fetchGroups();
+        connectWebSocket(userId);
 
-        // Handle group updates
         onGroupUpdate(() => fetchGroups());
 
         return () => {
-            disconnectWebSocket(); // Disconnect WebSocket on unmount
+            disconnectWebSocket();
         };
     }, [fetchGroups, userId]);
 
-    const renderGroup = ({ item }: { item: Group }) => {
-        // Helper function to check if the string is a base64 image
+    const renderGroup = (item:  Group, navigation: any) => {
         const isBase64Image = (image: string | null): boolean => {
             if (!image) return false;
             const base64Pattern = /^data:image\/(png|jpg|jpeg);base64,/;
@@ -94,17 +91,23 @@ export default function MatchScreen() {
         };
 
         const imageSource =
-            item.image && item.image.trim() !== "" // Check if image is not empty
+            item.image && item.image.trim() !== ""
                 ? isBase64Image(item.image)
-                    ? { uri: item.image } // Base64 image
-                    : { uri: `data:image/jpeg;base64,${item.image}` } // Add prefix if missing
-                : require("../../assets/images/No-Image-Placeholder.png"); // Placeholder for empty image
+                    ? { uri: item.image }
+                    : { uri: `data:image/jpeg;base64,${item.image}` }
+                : require("../../assets/images/group_background.png");
 
         return (
-            <View style={styles.groupContainer}>
-                <Image source={imageSource} style={styles.groupImage} />
-                <Text style={styles.groupName}>{item.name}</Text>
-            </View>
+            <TouchableOpacity
+                onPress={() =>
+                    navigation.navigate("groups", { groupId: item.id })
+                }
+            >
+                <View style={styles.groupContainer}>
+                    <Image source={imageSource} style={styles.groupImage} />
+                    <Text style={styles.groupName}>{item.name}</Text>
+                </View>
+            </TouchableOpacity>
         );
     };
 
@@ -147,7 +150,7 @@ export default function MatchScreen() {
             >
                 <FlatList
                     data={groups}
-                    renderItem={renderGroup}
+                    renderItem={({ item }) => renderGroup(item, navigation)} // Pass navigation
                     keyExtractor={(item) => item.id.toString()}
                     horizontal
                     showsHorizontalScrollIndicator={false}
