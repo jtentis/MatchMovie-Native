@@ -5,7 +5,7 @@ import { URL_LOCALHOST } from "@/constants/Url";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Image,
@@ -13,10 +13,15 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    View
+    View,
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { useAuth } from "../contexts/AuthContext";
+import {
+    connectWebSocket,
+    disconnectWebSocket,
+    onGroupUpdate,
+} from "../services/websocket";
 
 interface Group {
     id: number;
@@ -42,40 +47,43 @@ export default function MatchScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-        const fetchGroups = async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}/groups`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${authToken}`,
-                        },
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch groups");
+    const fetchGroups = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch(
+                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}/groups`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                    },
                 }
+            );
 
-                const data = await response.json();
-                setGroups(data);
-            } catch (error) {
-                console.error("Error fetching groups:", error);
-            } finally {
-                setIsLoading(false);
-                setRefreshing(false);
+            if (!response.ok) {
+                throw new Error("Failed to fetch groups");
             }
-        };
-    
-    useEffect(() => {
-        fetchGroups();
+
+            const data = await response.json();
+            setGroups(data);
+        } catch (error) {
+            console.error("Error fetching groups:", error);
+        } finally {
+            setIsLoading(false);
+            setRefreshing(false);
+        }
     }, [userId, authToken]);
 
-    const onRefresh = () => {
-        setRefreshing(true);
-        fetchGroups();
-    };
+    useEffect(() => {
+        fetchGroups(); // Fetch initial groups
+        connectWebSocket(userId); // Connect WebSocket
+
+        // Handle group updates
+        onGroupUpdate(() => fetchGroups());
+
+        return () => {
+            disconnectWebSocket(); // Disconnect WebSocket on unmount
+        };
+    }, [fetchGroups, userId]);
 
     const renderGroup = ({ item }: { item: Group }) => {
         // Helper function to check if the string is a base64 image
@@ -84,19 +92,17 @@ export default function MatchScreen() {
             const base64Pattern = /^data:image\/(png|jpg|jpeg);base64,/;
             return base64Pattern.test(image);
         };
-    
-        const imageSource = item.image
-            ? isBase64Image(item.image)
-                ? { uri: item.image } // Base64 image
-                : { uri: `data:image/jpeg;base64,${item.image}` } // Add prefix if missing
-            : require("../../assets/images/No-Image-Placeholder.png");
-    
+
+        const imageSource =
+            item.image && item.image.trim() !== "" // Check if image is not empty
+                ? isBase64Image(item.image)
+                    ? { uri: item.image } // Base64 image
+                    : { uri: `data:image/jpeg;base64,${item.image}` } // Add prefix if missing
+                : require("../../assets/images/No-Image-Placeholder.png"); // Placeholder for empty image
+
         return (
             <View style={styles.groupContainer}>
-                <Image
-                    source={imageSource}
-                    style={styles.groupImage}
-                />
+                <Image source={imageSource} style={styles.groupImage} />
                 <Text style={styles.groupName}>{item.name}</Text>
             </View>
         );
@@ -105,13 +111,16 @@ export default function MatchScreen() {
     if (isLoading && !refreshing) {
         return (
             <View style={{}}>
-                <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} />
+                <ActivityIndicator
+                    size="large"
+                    color={Colors.dark.tabIconSelected}
+                />
             </View>
         );
     }
 
     return (
-        <SafeAreaView style={[styles.container, { flexDirection: "column" }]} >
+        <SafeAreaView style={[styles.container, { flexDirection: "column" }]}>
             <View
                 style={{
                     flex: 1,
@@ -221,7 +230,7 @@ export default function MatchScreen() {
                     </ThemedText>
                 </Pressable>
             </View>
-        </SafeAreaView >
+        </SafeAreaView>
     );
 }
 
@@ -297,7 +306,7 @@ const styles = StyleSheet.create({
     groupName: {
         fontSize: 16,
         color: Colors.dark.text,
-        alignSelf: 'flex-start',
-        fontWeight: '500'
+        alignSelf: "flex-start",
+        fontWeight: "500",
     },
 });

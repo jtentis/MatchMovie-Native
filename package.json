@@ -33,6 +33,7 @@
     "expo-app-loading": "^2.1.1",
     "expo-constants": "~16.0.2",
     "expo-font": "~12.0.10",
+    "expo-image-picker": "~15.0.7",
     "expo-linear-gradient": "^13.0.2",
     "expo-linking": "~6.3.1",
     "expo-router": "~3.5.16",
@@ -66,7 +67,7 @@
     "react-native-vector-icons": "^10.1.0",
     "react-native-web": "~0.19.10",
     "rn-faded-scrollview": "^1.0.13",
-    "expo-image-picker": "~15.0.7"
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
