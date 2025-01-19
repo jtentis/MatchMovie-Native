@@ -51,7 +51,7 @@ type Group = {
 };
 
 type RootStackParamList = {
-    history: undefined;
+    history: { groupId: number };
     groups: { groupId: number };
 };
 
@@ -300,7 +300,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         </ThemedText>
                     </Pressable>
                     <Pressable
-                        onPress={() => navigation.navigate("history")}
+                        onPress={() => navigation.navigate("history", {groupId})}
                         style={styles.buttonHistory}
                     >
                         <ThemedText type="title" style={{ fontSize: 18 }}>
