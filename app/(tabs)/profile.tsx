@@ -38,12 +38,12 @@ export default function ProfileScreen() {
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
     );
+    const [modalMessage, setModalMessage] = useState<string>("");
     const [name, setName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [userUpdate, setUserUpdate] = useState(false);
     const [username, setUsername] = useState("");
     const [second_name, setSecond_name] = useState("");
-    const [modalMessage, setModalMessage] = useState<string>("");
     const { userId, logout, handleTokenExpiration, authToken } = useAuth();
     const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);

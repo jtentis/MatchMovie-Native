@@ -117,8 +117,6 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
 
 const styles = StyleSheet.create({
     modalContent: {
-        flex: 1,
-        flexDirection: "row",
         padding: 16,
         justifyContent: "center",
         alignItems: "center",

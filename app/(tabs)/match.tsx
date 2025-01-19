@@ -1,3 +1,4 @@
+import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
@@ -21,6 +22,7 @@ import { useAuth } from "../contexts/AuthContext";
 import {
     connectWebSocket,
     disconnectWebSocket,
+    onGroupCreated,
     onGroupUpdate,
 } from "../services/websocket";
 
@@ -44,6 +46,13 @@ export default function MatchScreen() {
     const [groups, setGroups] = useState<Group[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [groupName, setGroupName] = useState("");
+    const [isCreating, setIsCreating] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<"error" | "success" | "alert">(
+        "alert"
+    );
+    const [modalMessage, setModalMessage] = useState<string>("");
 
     const fetchGroups = useCallback(async () => {
         try {
@@ -73,10 +82,18 @@ export default function MatchScreen() {
     }, [userId, authToken]);
 
     useEffect(() => {
+        if (!authToken || !userId) {
+            console.log("Usuário esta deslogado. Desconsiderando websockets.");
+            return;
+        }
+
         fetchGroups();
         connectWebSocket(userId);
 
         onGroupUpdate(() => fetchGroups());
+        onGroupCreated((newGroup) => {
+            setGroups((prevGroups) => [...prevGroups, newGroup]); // Add the new group to the list
+        });
 
         return () => {
             disconnectWebSocket();
@@ -84,16 +101,9 @@ export default function MatchScreen() {
     }, [fetchGroups, userId]);
 
     const renderGroup = (item: Group, navigation: any) => {
-        const isBase64Image = (image: string | null): boolean => {
-            if (!image) return false;
-            const base64Pattern = /^data:image\/(png|jpg|jpeg);base64,/;
-            return base64Pattern.test(image);
-        };
-
-        const imageSource =
-            item.image
-                ? { uri: item.image } // Render the Base64 image
-                : require('@/assets/images/group_background.png') // Fallback to a placeholder
+        const imageSource = item.image
+            ? { uri: item.image } // Render the Base64 image
+            : require("@/assets/images/group_background.png"); // Fallback to a placeholder
 
         return (
             <TouchableOpacity
@@ -107,6 +117,62 @@ export default function MatchScreen() {
                 </View>
             </TouchableOpacity>
         );
+    };
+
+    const createGroup = async () => {
+        if (!groupName.trim()) {
+            setModalType("error");
+            setModalMessage("Não pode estar vazio!");
+            setModalVisible(true);
+            return;
+        }
+
+        try {
+            setIsCreating(true);
+            console.log("Payload:", {
+                name: groupName,
+                userIds: [userId],
+            });
+
+            if (!userId) {
+                setModalType("error");
+                setModalMessage("Falha ao criar grupo!");
+                setModalVisible(true);
+                return;
+            }
+
+            const response = await fetch(`${URL_LOCALHOST}/groups`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({
+                    name: groupName,
+                    userIds: [parseInt(userId, 10)], // Send the logged-in user's ID as an array
+                }),
+            });
+
+            if (!response.ok) {
+                console.log(response);
+                throw new Error("Failed to create group");
+            }
+
+            const newGroup = await response.json();
+            setGroups((prevGroups) => [...prevGroups, newGroup]);
+            setModalType("success");
+            setModalMessage("Grupo criado com sucesso!");
+            setModalVisible(true);
+            setGroupName("");
+            navigation.navigate("groups", { groupId: newGroup.id })
+        } catch (error) {
+            console.error("Error creating group:", error);
+            setModalType("error");
+            setModalMessage("Falha ao criar grupo!");
+            setModalVisible(true);
+        } finally {
+            setIsCreating(false);
+        }
     };
 
     if (isLoading && !refreshing) {
@@ -179,17 +245,30 @@ export default function MatchScreen() {
                         style={styles.input}
                         placeholder="Nome da Sessão"
                         keyboardType="default"
+                        value={groupName}
+                        onChangeText={setGroupName}
+                        editable={!isCreating}
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                     />
-                    <Pressable style={styles.button}>
+                    <Pressable
+                        style={styles.button}
+                        onPress={createGroup}
+                        disabled={isCreating}
+                    >
                         <ThemedText
                             type={"defaultSemiBold"}
                             style={{ fontSize: Fonts.dark.buttonText }}
                         >
-                            Criar
+                            {isCreating ? "Criando..." : "Criar"}
                         </ThemedText>
                     </Pressable>
+                    <AlertModal
+                        type={modalType}
+                        message={modalMessage}
+                        visible={modalVisible}
+                        onClose={() => setModalVisible(false)}
+                    />
                 </View>
             </View>
         </SafeAreaView>
@@ -243,8 +322,8 @@ const styles = StyleSheet.create({
         marginLeft: 20,
     },
     button: {
-        right:0,
-        position:'absolute',
+        right: 0,
+        position: "absolute",
         justifyContent: "center",
         alignItems: "center",
         width: 100,

@@ -1,19 +1,22 @@
+import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Fonts";
 import * as ImagePicker from "expo-image-picker";
 import React, { forwardRef, useState } from "react";
 import {
     Alert,
-    Button,
     Image,
+    Pressable,
     StyleSheet,
     Text,
     TextInput,
     View,
 } from "react-native";
 import { Modalize } from "react-native-modalize";
+import { ThemedText } from "./ThemedText";
 
 type ChangeGroupBottomSheetProps = {
     groupId: number;
-    currentName: string;
+    currentName?: string;
     currentImage: string | null;
     onSave: (data: { name?: string; image?: string }) => void;
 };
@@ -22,7 +25,7 @@ export const ChangeGroupBottomSheet = forwardRef<
     Modalize,
     ChangeGroupBottomSheetProps
 >(({ groupId, currentName, currentImage, onSave }, ref) => {
-    const [name, setName] = useState<string>(currentName);
+    const [name, setName] = useState<string | any>(currentName);
     const [image, setImage] = useState<string | null>(currentImage);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -92,36 +95,55 @@ export const ChangeGroupBottomSheet = forwardRef<
             handleStyle={{
                 width: 100,
                 height: 5,
-                marginTop: 10,
+                marginTop: 30,
             }}
         >
+            <Text style={styles.modalTitle}>
+                Atualizar informações de grupo
+            </Text>
             <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Update Group</Text>
-
-                {/* Group Name Input */}
                 <TextInput
                     style={styles.input}
-                    placeholder="Enter new group name"
+                    placeholder="Digite o novo nome do grupo"
                     value={name}
                     onChangeText={setName}
+                    selectionColor={Colors.dark.tabIconSelected}
+                    placeholderTextColor={Colors.dark.textPlaceHolder}
                 />
-
-                {/* Image Preview */}
-                <View style={styles.imagePreview}>
-                    {image ? (
-                        <Image source={{ uri: image }} style={styles.image} />
-                    ) : (
-                        <Text>No image selected</Text>
-                    )}
+                <View style={{ flex: 1, flexDirection: "row", gap: 10, marginBottom: 30 }}>
+                    <View style={styles.imagePreview}>
+                        {image ? (
+                            <Image
+                                source={{ uri: image }}
+                                style={styles.image}
+                            />
+                        ) : (
+                            <Text style={styles.image_placeholder}> Nenhuma imagem selecionada</Text>
+                        )}
+                    </View>
+                    <View style={{ flex: 1, gap: 5 }}>
+                        <Pressable style={styles.button} onPress={pickImage}>
+                            <ThemedText
+                                type={"defaultSemiBold"}
+                                style={{ fontSize: Fonts.dark.buttonText }}
+                            >
+                                Escolha imagem
+                            </ThemedText>
+                        </Pressable>
+                        <Pressable
+                            style={styles.button2}
+                            onPress={saveChanges}
+                            disabled={isSaving}
+                        >
+                            <ThemedText
+                                type={"defaultSemiBold"}
+                                style={{ fontSize: Fonts.dark.buttonText }}
+                            >
+                                {isSaving ? "Salvando..." : "Salvar"}
+                            </ThemedText>
+                        </Pressable>
+                    </View>
                 </View>
-
-                {/* Buttons */}
-                <Button title="Pick Image" onPress={pickImage} />
-                <Button
-                    title={isSaving ? "Saving..." : "Save Changes"}
-                    onPress={saveChanges}
-                    disabled={isSaving}
-                />
             </View>
         </Modalize>
     );
@@ -129,6 +151,7 @@ export const ChangeGroupBottomSheet = forwardRef<
 
 const styles = StyleSheet.create({
     modalContent: {
+        gap: 40,
         padding: 16,
         justifyContent: "center",
         alignItems: "center",
@@ -137,26 +160,60 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: "bold",
         marginBottom: 16,
-        color: "#fff",
+        alignSelf: "center",
+        marginTop: 40,
+        color: "white",
     },
     input: {
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 5,
-        padding: 10,
-        marginBottom: 16,
-        width: "100%",
-        backgroundColor: "#fff",
+        width: 350,
+        height: 50,
+        backgroundColor: Colors.dark.input,
+        padding: 15,
+        borderRadius: 8,
+        elevation: 2,
+        color: Colors.dark.text,
     },
     imagePreview: {
-        width: 150,
-        height: 150,
+        width: 200,
+        height: 105,
         justifyContent: "center",
         alignItems: "center",
+        marginLeft: 6,
         borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        marginBottom: 16,
+        borderColor: Colors.dark.tabIconSelected,
+        borderRadius: 6,
     },
-    image: { width: "100%", height: "100%", borderRadius: 8 },
+    image: { 
+        width: "100%",
+        height: "100%",
+        borderRadius: 8,
+    },
+    image_placeholder:{
+        color:'white',
+        flexWrap:'wrap',
+        width:100,
+        textAlign:'center'
+    },
+    button: {
+        justifyContent: "center",
+        alignItems: "center",
+        width: 145,
+        height: 50,
+        backgroundColor: Colors.dark.background,
+        borderColor: Colors.dark.tabIconSelected,
+        borderWidth: 1,
+        borderRadius: 8,
+        elevation: 2,
+        fontSize: Fonts.dark.buttonText,
+    },
+    button2: {
+        justifyContent: "center",
+        alignItems: "center",
+        width: 145,
+        height: 50,
+        backgroundColor: Colors.dark.tabIconSelected,
+        borderRadius: 8,
+        elevation: 2,
+        fontSize: Fonts.dark.buttonText,
+    },
 });

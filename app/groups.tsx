@@ -204,6 +204,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         right: 19,
                         top: 70,
                         borderWidth: 1,
+                        borderColor: Colors.dark.background,
                         borderRadius: 5,
                         padding: 12,
                         backgroundColor: Colors.dark.background,
@@ -218,6 +219,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         right: 18,
                         top: 130,
                         borderWidth: 1,
+                        borderColor: Colors.dark.background,
                         borderRadius: 5,
                         padding: 12,
                         backgroundColor: Colors.dark.background,
@@ -315,7 +317,6 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
             <ChangeGroupBottomSheet
                 ref={changeImageModalRef}
                 groupId={group.id}
-                currentName={group.name}
                 currentImage={group.image}
                 onSave={handleSave}
             />

@@ -42,6 +42,18 @@ export const disconnectWebSocket = (forceDisconnect = true): void => {
     console.log('WebSocket disconnected.');
     socket = null;
   } else {
-    console.log('WebSocket connection preserved.');
+    console.log('WebSocket connection preserved.', socket?.id);
   }
+};
+
+export const onGroupCreated = (callback: (group: any) => void): void => {
+  if (!socket) {
+      console.error('WebSocket connection is not established.');
+      return;
+  }
+
+  socket.on('groupCreated', (group: any) => {
+      console.log('New group created:', group);
+      callback(group);
+  });
 };
