@@ -19,9 +19,7 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
         const [isAdding, setIsAdding] = useState(false);
         const { authToken } = useAuth();
         const [modalVisible, setModalVisible] = useState(false);
-        const [modalType, setModalType] = useState<
-            "error" | "success" | "alert"
-        >("alert");
+        const [modalType, setModalType] = useState<"error" | "success" | "alert">("alert");
         const [modalMessage, setModalMessage] = useState<string>("");
 
         const addUserToGroup = async () => {
@@ -43,16 +41,15 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
                         },
                     }
                 );
+
                 if (!userResponse.ok) {
-                    throw new Error("Username not found");
+                    setModalType("error");
+                    setModalMessage("Usuário não encontrado!");
+                    setModalVisible(true);
+                    return; // Ensure to return here to prevent further execution
                 }
 
-                const {
-                    id: userId,
-                    name,
-                    second_name,
-                    user,
-                } = await userResponse.json();
+                const { id: userId, name, second_name, user } = await userResponse.json();
 
                 const response = await fetch(
                     `${URL_LOCALHOST}/groups/${groupId}/users/${userId}`,
@@ -64,10 +61,6 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
                     }
                 );
 
-                if (!response.ok) {
-                    throw new Error("Failed to add user to group");
-                }
-
                 const newUser = {
                     id: Date.now(),
                     userId,
@@ -77,13 +70,24 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
 
                 onUserAdded(newUser);
                 setUsername("");
-                (ref as React.MutableRefObject<Modalize>).current?.close();
+                // Do not close Modalize here
+                setModalType("success");
+                setModalMessage("Usuário adicionado com sucesso!");
+                setModalVisible(true); // Show success message
             } catch (error: any) {
                 console.error("Error adding user to group:", error.message);
-                alert(error.message);
+                setModalType("error");
+                setModalMessage("Erro ao adicionar usuário!");
+                setModalVisible(true);
             } finally {
                 setIsAdding(false);
             }
+        };
+
+        const handleCloseAlert = () => {
+            setModalVisible(false);
+            // Close the Modalize when the alert is closed
+            (ref as React.MutableRefObject<Modalize>).current?.close();
         };
 
         return (
@@ -123,11 +127,11 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
                         </ThemedText>
                     </Pressable>
                     <AlertModal
-                    type={modalType}
-                    message={modalMessage}
-                    visible={modalVisible}
-                    onClose={() => setModalVisible(false)}
-                />
+                        type={modalType}
+                        message={modalMessage}
+                        visible={modalVisible}
+                        onClose={handleCloseAlert} // Close the Modalize when alert is closed
+                    />
                 </View>
             </Modalize>
         );

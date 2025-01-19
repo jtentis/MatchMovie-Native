@@ -3,6 +3,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
@@ -10,13 +11,14 @@ import {
     KeyboardType,
     ScrollView,
     StyleSheet,
+    Text,
     TextInput,
-    View
+    View,
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
- // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
- const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
+// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
+const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 
 const RegisterScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
@@ -33,6 +35,9 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         password: "",
         cpf: "",
         location: "",
+    });
+    const [fontsLoaded] = useFonts({
+        CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
     });
 
     const handleChange = (field: string, value: string) => {
@@ -163,6 +168,10 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
             setModalVisible(true);
         }
     };
+
+    if (!fontsLoaded) {
+        return <Text>Carregando fontes...</Text>;
+    }
 
     return (
         <>
@@ -317,7 +326,7 @@ const styles = StyleSheet.create({
         height: 50,
     },
     title: {
-        fontFamily: "Coiny-Regular",
+        fontFamily: "CoinyRegular",
         fontWeight: "400",
         fontSize: 32,
         padding: 20,

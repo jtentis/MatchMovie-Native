@@ -65,7 +65,7 @@ const TinyModal: React.FC<TinyModalProps> = ({ text, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 50,
+    bottom: 80,
     left: 60,
     right: 60,
     backgroundColor: '#333',

@@ -40,6 +40,7 @@ type GroupsNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 
+//TODO: metade da tela fica travada apos criar grupo e voltar. nao sei por diabos isso ta acontecendo.
 export default function MatchScreen() {
     const navigation = useNavigation<GroupsNavigationProp>();
     const { userId, authToken } = useAuth();
@@ -220,6 +221,11 @@ export default function MatchScreen() {
                     justifyContent: "center",
                 }}
             >
+                {groups.length === 0 ? (
+                <Text style={styles.noGroupsMessage}>
+                    Você não está em nenhum grupo.
+                </Text>
+            ) : (
                 <FlatList
                     data={groups}
                     renderItem={({ item }) => renderGroup(item, navigation)} // Pass navigation
@@ -228,6 +234,7 @@ export default function MatchScreen() {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.listContainer}
                 />
+            )}
             </SafeAreaView>
             <View
                 style={{
@@ -354,5 +361,16 @@ const styles = StyleSheet.create({
         color: Colors.dark.text,
         alignSelf: "flex-start",
         fontWeight: "500",
+    },
+    noGroupsMessage: {
+        width: 350,
+        height: 250,
+        fontSize: 36,
+        borderRadius: 8,
+        borderWidth: 1,
+        padding: 20,
+        color: 'gray', // Customize the color as needed
+        textAlign: 'center', // Center the message
+        marginLeft: 20 // Add some vertical margin
     },
 });

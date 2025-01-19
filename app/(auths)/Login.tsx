@@ -64,7 +64,7 @@ const LoginScreen = () => {
             } catch (error: any) {
                 console.error("Login error:", error);
                 setModalType("error");
-                setModalMessage(`Login Error", ${error.message} || "Erro inesperado!`);
+                setModalMessage(`Email ou senha incorretos.`);
                 setModalVisible(true);
             }
         }
