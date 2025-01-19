@@ -63,7 +63,7 @@ export default function MatchScreen() {
 
             const data = await response.json();
             setGroups(data);
-            console.log(data);
+            // console.log(data);
         } catch (error) {
             console.error("Error fetching groups:", error);
         } finally {
@@ -83,7 +83,7 @@ export default function MatchScreen() {
         };
     }, [fetchGroups, userId]);
 
-    const renderGroup = (item:  Group, navigation: any) => {
+    const renderGroup = (item: Group, navigation: any) => {
         const isBase64Image = (image: string | null): boolean => {
             if (!image) return false;
             const base64Pattern = /^data:image\/(png|jpg|jpeg);base64,/;
@@ -91,11 +91,9 @@ export default function MatchScreen() {
         };
 
         const imageSource =
-            item.image && item.image.trim() !== ""
-                ? isBase64Image(item.image)
-                    ? { uri: item.image }
-                    : { uri: `data:image/jpeg;base64,${item.image}` }
-                : require("../../assets/images/group_background.png");
+            item.image
+                ? { uri: item.image } // Render the Base64 image
+                : require('@/assets/images/group_background.png') // Fallback to a placeholder
 
         return (
             <TouchableOpacity
@@ -131,7 +129,7 @@ export default function MatchScreen() {
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "flex-start",
-                    paddingHorizontal: 16,
+                    paddingLeft: 25,
                     gap: 10,
                 }}
             >
@@ -159,79 +157,40 @@ export default function MatchScreen() {
             </SafeAreaView>
             <View
                 style={{
-                    flex: 3 / 4,
+                    flex: 2,
                     backgroundColor: Colors.dark.background,
-                    paddingLeft: 20,
-                    paddingTop: 20,
-                    flexDirection: "column",
                     alignItems: "flex-start",
-                    justifyContent: "space-between",
-                    gap: 10,
+                    justifyContent: "center",
+                    gap: 30,
                 }}
             >
-                <ThemedText
-                    type="subtitle"
-                    style={{
-                        position: "absolute",
-                        marginTop: 10,
-                        marginLeft: 20,
-                    }}
-                >
+                <ThemedText type="title" style={{ paddingLeft: 20 }}>
                     Criar nova sessão
                 </ThemedText>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Nome da Sessão"
-                    keyboardType="default"
-                    selectionColor={Colors.dark.tabIconSelected}
-                    placeholderTextColor={Colors.dark.textPlaceHolder}
-                />
-                <Pressable style={styles.button}>
-                    <ThemedText
-                        type={"defaultSemiBold"}
-                        style={{ fontSize: Fonts.dark.buttonText }}
-                    >
-                        Criar
-                    </ThemedText>
-                </Pressable>
-            </View>
-            <View
-                style={{
-                    flex: 1,
-                    backgroundColor: Colors.dark.background,
-                    paddingLeft: 20,
-                    paddingTop: 20,
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
-                    gap: 10,
-                }}
-            >
-                <ThemedText
-                    type="subtitle"
+                <View
                     style={{
-                        position: "absolute",
-                        marginTop: 10,
-                        marginLeft: 20,
+                        flexDirection: "row",
+                        backgroundColor: Colors.dark.background,
+                        alignItems: "center",
+                        justifyContent: "center",
                     }}
                 >
-                    Entrar em sessão existente
-                </ThemedText>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Endereço da Sessão"
-                    keyboardType="default"
-                    selectionColor={Colors.dark.tabIconSelected}
-                    placeholderTextColor={Colors.dark.textPlaceHolder}
-                />
-                <Pressable style={styles.button}>
-                    <ThemedText
-                        type={"defaultSemiBold"}
-                        style={{ fontSize: Fonts.dark.buttonText }}
-                    >
-                        Entrar
-                    </ThemedText>
-                </Pressable>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nome da Sessão"
+                        keyboardType="default"
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                    />
+                    <Pressable style={styles.button}>
+                        <ThemedText
+                            type={"defaultSemiBold"}
+                            style={{ fontSize: Fonts.dark.buttonText }}
+                        >
+                            Criar
+                        </ThemedText>
+                    </Pressable>
+                </View>
             </View>
         </SafeAreaView>
     );
@@ -254,7 +213,7 @@ const styles = StyleSheet.create({
     listContainer: {
         backgroundColor: Colors.dark.background,
         borderRadius: 8,
-        paddingLeft: 20,
+        paddingLeft: 25,
     },
     boxContainer: {
         flex: 1,
@@ -274,28 +233,25 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
     },
     input: {
-        width: 360,
+        width: 350,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
-        marginTop: 20,
         borderRadius: 8,
         elevation: 2,
         color: Colors.dark.text,
+        marginLeft: 20,
     },
     button: {
-        position: "absolute",
-        right: 12,
-        flex: 1,
+        right:0,
+        position:'absolute',
         justifyContent: "center",
         alignItems: "center",
         width: 100,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
-        padding: 0,
         borderRadius: 8,
         elevation: 2,
-        marginTop: 40,
         fontSize: Fonts.dark.buttonText,
     },
     backButton: {

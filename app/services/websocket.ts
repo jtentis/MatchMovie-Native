@@ -3,34 +3,45 @@ import { io, Socket } from 'socket.io-client';
 
 let socket: Socket | any = null;
 
-export const connectWebSocket = (userId: any): void => {
-    if (!socket) {
-      socket = io(URL_LOCALHOST); // Replace with your actual server URL
-  
-      socket.on('connect', () => {
-        console.log('WebSocket connected:', socket.id); // Log the socket ID after connection
-        socket.emit('joinRoom', `user_${userId}`); // Emit the correct room name
-      });
-  
-      socket.on('connect_error', (error:any) => {
-        console.error('WebSocket connection error:', error);
-      });
-    }
-  };
-  
+export const connectWebSocket = (userId: any): Socket => {
+  if (!socket) {
+    socket = io(URL_LOCALHOST);
 
-export const onGroupUpdate = (callback: (data: any) => void): void => {
-  if (socket) {
-    socket.on('groupUpdated', callback);
-  } else {
-    console.error('WebSocket connection is not established.');
+    socket.on('connect', () => {
+      console.log('WebSocket connected:', socket?.id);
+      socket?.emit('joinRoom', `user_${userId}`);
+    });
+
+    socket.on('connect_error', (error: any) => {
+      console.error('WebSocket connection error:', error);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('WebSocket disconnected.');
+    });
   }
+
+  return socket;
 };
 
-export const disconnectWebSocket = (): void => {
-  if (socket) {
+export const onGroupUpdate = (callback: (data: any) => void): void => {
+  if (!socket) {
+    console.error('WebSocket connection is not established.');
+    return;
+  }
+
+  socket.on('groupUpdated', (data: any) => {
+    console.log('Group updated event received:', data);
+    callback(data);
+  });
+};
+
+export const disconnectWebSocket = (forceDisconnect = true): void => {
+  if (socket && forceDisconnect) {
     socket.disconnect();
     console.log('WebSocket disconnected.');
     socket = null;
+  } else {
+    console.log('WebSocket connection preserved.');
   }
 };

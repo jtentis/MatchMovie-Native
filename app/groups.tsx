@@ -1,25 +1,31 @@
+import { AddUserBottomSheet } from "@/components/AddUserBottomSheet";
+import { ChangeGroupBottomSheet } from "@/components/ChangeGroupImageBottomSheet";
 import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Fonts";
 import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
-    Button,
     FlatList,
     Image,
     ImageBackground,
-    Modal,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
+import { Modalize } from "react-native-modalize";
 import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
+import {
+    connectWebSocket,
+    disconnectWebSocket,
+    onGroupUpdate,
+} from "./services/websocket";
 
 type User = {
     id: number;
@@ -52,23 +58,41 @@ type RootStackParamList = {
 type GroupsNavigationProp = RouteProp<RootStackParamList, "groups">;
 
 const GroupsScreen = ({ navigation }: { navigation: any }) => {
+    navigation = useNavigation();
     const route = useRoute<GroupsNavigationProp>();
     const { groupId } = route.params;
-    navigation = useNavigation();
-    const buttonNames = [
-        "Em Cartaz",
-        "Populares",
-        "Melhor Avaliados",
-        "Em Breve",
-    ];
-    const dropdownNames = ["Gênero", "Ano", "Nacionalidade"];
+    const { authToken } = useAuth();
     const [group, setGroup] = useState<Group | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const { userId, authToken } = useAuth();
-    const [newUserId, setNewUserId] = useState(""); // Input for new user ID
-    const [isAdding, setIsAdding] = useState(false);
-    const [username, setUsername] = useState("");
-    const [modalVisible, setModalVisible] = useState(false);
+    const addUserModalRef = useRef<Modalize>(null);
+    const changeImageModalRef = useRef<Modalize>(null);
+
+    const openAddUserModal = () => {
+        addUserModalRef.current?.open();
+    };
+    
+    const openChangeImageModal = () => {
+        changeImageModalRef.current?.open();
+    };
+
+    const handleSave = async (modalData: { name?: string; image?: string }) => {
+        const response = await fetch(`${URL_LOCALHOST}/groups/${groupId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify(modalData),
+        });
+
+        if (!response.ok) {
+            // console.log(response)
+            throw new Error("Failed to update the group");
+        }
+        // console.log(response)
+        const updatedGroup = await response.json();
+        setGroup(updatedGroup)
+    };
 
     useEffect(() => {
         const fetchGroup = async () => {
@@ -86,7 +110,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 }
                 const data: Group = await response.json();
                 setGroup(data);
-                console.log(data);
+                // console.log(data);
             } catch (error) {
                 console.error("Error fetching group:", error);
             } finally {
@@ -95,67 +119,41 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         };
 
         fetchGroup();
-        
+
+        const socket = connectWebSocket(groupId);
+
+        onGroupUpdate((data) => {
+            if (data.groupId === groupId) {
+                console.log("WebSocket: Group update received");
+                setGroup((prevGroup) => {
+                    if (!prevGroup) return prevGroup;
+                    return {
+                        ...prevGroup,
+                        users: [...prevGroup.users, data.newUser],
+                    };
+                });
+            }
+        });
+
+        return () => {
+            disconnectWebSocket(false);
+        };
     }, [groupId]);
 
-    const addUserToGroup = async () => {
-        if (!username.trim()) {
-            alert("Please enter a username");
-            return;
-        }
-
-        try {
-            setIsAdding(true);
-            // Fetch user ID by username
-            const userResponse = await fetch(
-                `${URL_LOCALHOST}/users/username/${username}`,{
-                    headers: {
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                }
-            );
-            if (!userResponse.ok) {
-                throw new Error("Failed to fetch user by username");
-            }
-
-            const { id: userFoundId } = await userResponse.json();
-
-            const response = await fetch(
-                `${URL_LOCALHOST}/groups/${groupId}/users/${userFoundId}`,
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error("Failed to add user to group");
-            }
-
-            const updatedGroup = await response.json();
-            setGroup(updatedGroup.group); // Update group state with the new data
-            setUsername(""); // Clear username field
-            setModalVisible(false); // Close modal
-        } catch (error) {
-            console.error("Error adding user to group:", error);
-            alert("Failed to add user to group");
-        } finally {
-            setIsAdding(false);
-        }
+    const handleUserAdded = (newUser: any) => {
+        setGroup((prevGroup) => {
+            if (!prevGroup) return prevGroup;
+            return { ...prevGroup, users: [...prevGroup.users, newUser] };
+        });
     };
 
-    const [selectedButtons, setSelectedButtons] = useState(
-        Array(buttonNames.length).fill(false)
-    );
+    if (isLoading) {
+        return <Text>Loading...</Text>;
+    }
 
-    const handlePress = (index: any) => {
-        console.log(groupId);
-        const newSelectedButtons = [...selectedButtons];
-        newSelectedButtons[index] = !newSelectedButtons[index];
-        setSelectedButtons(newSelectedButtons);
-    };
+    if (isLoading) {
+        return <Text>Loading...</Text>;
+    }
 
     if (isLoading) {
         return (
@@ -173,18 +171,9 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         );
     }
 
-    const isBase64Image = (image: string | null): boolean => {
-        if (!image) return false;
-        const base64Pattern = /^data:image\/(png|jpg|jpeg);base64,/;
-        return base64Pattern.test(image);
-    };
-
-    const imageSource =
-            group.image && group.image.trim() !== ""
-                ? isBase64Image(group.image)
-                    ? { uri: group.image }
-                    : { uri: `data:image/jpeg;base64,${group.image}` }
-                : require("@/assets/images/group_background.png");
+    const imageSource = group.image
+    ? { uri: group.image }
+    : require('@/assets/images/group_background.png')
 
     return (
         <>
@@ -209,50 +198,33 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                     </View>
                 </Pressable>
                 <TouchableOpacity
+                    onPress={openAddUserModal}
                     style={{
                         position: "absolute",
-                        right: 30,
+                        right: 19,
                         top: 70,
-                        elevation: 10,
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        padding: 12,
+                        backgroundColor: Colors.dark.background,
                     }}
                 >
-                    <FontAwesome
-                        size={25}
-                        name="plus"
-                        color={"white"}
-                        onPress={() => setModalVisible(true)}
-                    />
+                    <FontAwesome size={25} name="plus" color={"white"} />
                 </TouchableOpacity>
-                <Modal
-                    visible={modalVisible}
-                    animationType="slide"
-                    transparent={true}
+                <TouchableOpacity
+                    onPress={openChangeImageModal}
+                    style={{
+                        position: "absolute",
+                        right: 18,
+                        top: 130,
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        padding: 12,
+                        backgroundColor: Colors.dark.background,
+                    }}
                 >
-                    <View style={styles.modalContainer}>
-                        <View style={styles.modalContent}>
-                            <Text style={styles.modalTitle}>
-                                Add User by Username
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter username"
-                                value={username}
-                                onChangeText={setUsername}
-                            />
-                            <View style={styles.modalButtons}>
-                                <Button
-                                    title="Cancel"
-                                    onPress={() => setModalVisible(false)}
-                                />
-                                <Button
-                                    title={isAdding ? "Adding..." : "Add User"}
-                                    onPress={addUserToGroup}
-                                    disabled={isAdding}
-                                />
-                            </View>
-                        </View>
-                    </View>
-                </Modal>
+                    <FontAwesome size={25} name="pencil" color={"white"} />
+                </TouchableOpacity>
             </View>
             <View style={styles.mainContainer}>
                 <View
@@ -268,7 +240,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         Usuários do grupo
                     </ThemedText>
                     <FlatList
-                    contentContainerStyle={{gap:3}}
+                        contentContainerStyle={{ gap: 3 }}
                         data={group.users}
                         keyExtractor={(item) => item.id.toString()}
                         horizontal
@@ -310,81 +282,6 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         </View>
                     </View>
                 </View>
-                {/* <View
-                    style={{
-                        flex: 2,
-                        backgroundColor: Colors.dark.background,
-                        alignItems: "center",
-                        justifyContent: "flex-start",
-                        borderTopWidth: 1,
-                        borderColor: Colors.dark.light,
-                        gap: 10,
-                    }}
-                >
-                    <ThemedText
-                        type="defaultSemiBold"
-                        style={styles.subtitleFiltros}
-                    >
-                        Filtros da sessão
-                    </ThemedText>
-                    <View
-                        style={{
-                            width: 360,
-                            backgroundColor: Colors.dark.background,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexDirection: "row",
-                            gap: 5,
-                            flexWrap: "nowrap",
-                        }}
-                    >
-                        {dropdownNames.map((name, index) => (
-                            <Pressable
-                                key={index}
-                                style={[styles.button, styles.default]}
-                            >
-                                <ThemedText
-                                    type="default"
-                                    style={styles.buttonText}
-                                >
-                                    {name}{" "}
-                                    <FontAwesome size={12} name="caret-down" />
-                                </ThemedText>
-                            </Pressable>
-                        ))}
-                    </View>
-                    <View
-                        style={{
-                            width: 360,
-                            backgroundColor: Colors.dark.background,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexDirection: "row",
-                            gap: 5,
-                            flexWrap: "wrap",
-                        }}
-                    >
-                        {buttonNames.map((name, index) => (
-                            <Pressable
-                                key={index}
-                                style={[
-                                    styles.button,
-                                    selectedButtons[index]
-                                        ? styles.selected
-                                        : styles.default,
-                                ]}
-                                onPress={() => handlePress(index)}
-                            >
-                                <ThemedText
-                                    type="default"
-                                    style={styles.buttonText}
-                                >
-                                    {name}
-                                </ThemedText>
-                            </Pressable>
-                        ))}
-                    </View>
-                </View> */}
                 <View
                     style={{
                         flex: 2 / 1,
@@ -410,6 +307,18 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                     </Pressable>
                 </View>
             </View>
+            <AddUserBottomSheet
+                ref={addUserModalRef}
+                groupId={groupId}
+                onUserAdded={handleUserAdded}
+            />
+            <ChangeGroupBottomSheet
+                ref={changeImageModalRef}
+                groupId={group.id}
+                currentName={group.name}
+                currentImage={group.image}
+                onSave={handleSave}
+            />
         </>
     );
 };
@@ -473,11 +382,6 @@ const styles = StyleSheet.create({
         borderRadius: 10990,
         opacity: 0.8,
     },
-    button: {
-        padding: 8,
-        borderRadius: 5,
-        elevation: 5,
-    },
     selected: {
         backgroundColor: Colors.dark.tabIconSelected,
     },
@@ -531,24 +435,40 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: Colors.dark.text,
     },
-    modalContainer: {
+    modalContent: {
         flex: 1,
+        flexDirection: "row",
+        padding: 16,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
     },
-    modalContent: {
-        backgroundColor: "white",
-        padding: 16,
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        marginBottom: 16,
+        alignSelf: "center",
+        marginTop: 30,
+    },
+    input: {
+        width: 350,
+        height: 50,
+        backgroundColor: Colors.dark.input,
+        padding: 15,
         borderRadius: 8,
-        width: "80%",
+        elevation: 2,
+        color: Colors.dark.text,
     },
-    modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 8 },
-    input: { borderWidth: 1, padding: 8, marginVertical: 8, borderRadius: 4 },
-    modalButtons: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 16,
+    button: {
+        right: 20,
+        position: "absolute",
+        justifyContent: "center",
+        alignItems: "center",
+        width: 100,
+        height: 50,
+        backgroundColor: Colors.dark.tabIconSelected,
+        borderRadius: 8,
+        elevation: 2,
+        fontSize: Fonts.dark.buttonText,
     },
 });
 
