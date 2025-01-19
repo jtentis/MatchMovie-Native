@@ -7,12 +7,11 @@ import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
 import {
-    Alert,
     KeyboardType,
     ScrollView,
     StyleSheet,
     TextInput,
-    View,
+    View
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
@@ -152,10 +151,9 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                 }, 500);
             } else {
                 const errorData = await response.json();
-                Alert.alert(
-                    "Error",
-                    errorData.message || "Registration failed."
-                );
+                setModalType("error");
+                setModalMessage("Registro falhou");
+                setModalVisible(true);
                 console.log(errorData);
             }
         } catch (error) {

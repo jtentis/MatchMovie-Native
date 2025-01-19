@@ -5,6 +5,7 @@ import { URL_LOCALHOST } from "@/constants/Url";
 import React, { forwardRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Modalize } from "react-native-modalize";
+import AlertModal from "./ModalAlert";
 import { ThemedText } from "./ThemedText";
 
 type AddUserBottomSheetProps = {
@@ -17,10 +18,17 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
         const [username, setUsername] = useState("");
         const [isAdding, setIsAdding] = useState(false);
         const { authToken } = useAuth();
+        const [modalVisible, setModalVisible] = useState(false);
+        const [modalType, setModalType] = useState<
+            "error" | "success" | "alert"
+        >("alert");
+        const [modalMessage, setModalMessage] = useState<string>("");
 
         const addUserToGroup = async () => {
             if (!username.trim()) {
-                alert("Please enter a username");
+                setModalType("error");
+                setModalMessage("Digite um username!");
+                setModalVisible(true);
                 return;
             }
 
@@ -28,7 +36,8 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
                 setIsAdding(true);
 
                 const userResponse = await fetch(
-                    `${URL_LOCALHOST}/users/username/${username}`,{
+                    `${URL_LOCALHOST}/users/username/${username}`,
+                    {
                         headers: {
                             Authorization: `Bearer ${authToken}`,
                         },
@@ -86,8 +95,8 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
                 handleStyle={{
                     width: 100,
                     height: 5,
-                    marginTop:30
-                  }}
+                    marginTop: 30,
+                }}
             >
                 <Text style={styles.modalTitle}>
                     Adicionar pessoas no grupo
@@ -101,14 +110,24 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                     />
-                    <Pressable style={styles.button} onPress={addUserToGroup} disabled={isAdding}>
+                    <Pressable
+                        style={styles.button}
+                        onPress={addUserToGroup}
+                        disabled={isAdding}
+                    >
                         <ThemedText
                             type={"defaultSemiBold"}
                             style={{ fontSize: Fonts.dark.buttonText }}
                         >
-                            {isAdding ? 'Adicionando...' : 'Adicionar'}
+                            {isAdding ? "Adicionando..." : "Adicionar"}
                         </ThemedText>
                     </Pressable>
+                    <AlertModal
+                    type={modalType}
+                    message={modalMessage}
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                />
                 </View>
             </Modalize>
         );
@@ -127,7 +146,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         alignSelf: "center",
         marginTop: 40,
-        color:'white'
+        color: "white",
     },
     input: {
         width: 350,

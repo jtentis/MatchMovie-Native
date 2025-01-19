@@ -3,15 +3,15 @@ import { Fonts } from "@/constants/Fonts";
 import * as ImagePicker from "expo-image-picker";
 import React, { forwardRef, useState } from "react";
 import {
-    Alert,
     Image,
     Pressable,
     StyleSheet,
     Text,
     TextInput,
-    View,
+    View
 } from "react-native";
 import { Modalize } from "react-native-modalize";
+import AlertModal from "./ModalAlert";
 import { ThemedText } from "./ThemedText";
 
 type ChangeGroupBottomSheetProps = {
@@ -28,16 +28,20 @@ export const ChangeGroupBottomSheet = forwardRef<
     const [name, setName] = useState<string | any>(currentName);
     const [image, setImage] = useState<string | null>(currentImage);
     const [isSaving, setIsSaving] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState<string>("");
+    const [modalType, setModalType] = useState<"error" | "success" | "alert">(
+        "alert"
+    );
 
     const pickImage = async () => {
         const permissionResult =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (!permissionResult.granted) {
-            Alert.alert(
-                "Permission Required",
-                "Permission to access the gallery is required."
-            );
+            setModalType("error");
+            setModalMessage("É necessário permissão para acessar galeria!");
+            setModalVisible(true);
             return;
         }
 
@@ -53,17 +57,15 @@ export const ChangeGroupBottomSheet = forwardRef<
                 const base64Image = `data:${result.assets[0].type};base64,${result.assets[0].base64}`;
                 setImage(base64Image);
             } else {
-                Alert.alert(
-                    "No Image Selected",
-                    "Please select an image to update."
-                );
+                setModalType("error");
+                setModalMessage("Nenhuma imagem selecionada!");
+                setModalVisible(true);
             }
         } catch (error) {
             console.error("Error picking image:", error);
-            Alert.alert(
-                "Error",
-                "An error occurred while selecting the image."
-            );
+            setModalType("error");
+            setModalMessage("Ocorreu um erro ao selecionar imagem!");
+            setModalVisible(true);
         }
     };
 
@@ -77,14 +79,24 @@ export const ChangeGroupBottomSheet = forwardRef<
 
             await onSave(data);
 
-            Alert.alert("Success", "Group updated successfully!");
-            (ref as React.MutableRefObject<Modalize>).current?.close();
+            setModalType("success");
+            setModalMessage("Grupo atualizado com sucesso!");
+            setModalVisible(true);
+            // Do not close Modalize here
         } catch (error) {
             console.error("Error saving changes:", error);
-            Alert.alert("Error", "Failed to update the group.");
+            setModalType("error");
+            setModalMessage("Erro ao atualizar imagem!");
+            setModalVisible(true);
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleCloseAlert = () => {
+        setModalVisible(false);
+        // Close the Modalize when the alert is closed
+        (ref as React.MutableRefObject<Modalize>).current?.close();
     };
 
     return (
@@ -110,7 +122,14 @@ export const ChangeGroupBottomSheet = forwardRef<
                     selectionColor={Colors.dark.tabIconSelected}
                     placeholderTextColor={Colors.dark.textPlaceHolder}
                 />
-                <View style={{ flex: 1, flexDirection: "row", gap: 10, marginBottom: 30 }}>
+                <View
+                    style={{
+                        flex: 1,
+                        flexDirection: "row",
+                        gap: 10,
+                        marginBottom: 30,
+                    }}
+                >
                     <View style={styles.imagePreview}>
                         {image ? (
                             <Image
@@ -118,7 +137,10 @@ export const ChangeGroupBottomSheet = forwardRef<
                                 style={styles.image}
                             />
                         ) : (
-                            <Text style={styles.image_placeholder}> Nenhuma imagem selecionada</Text>
+                            <Text style={styles.image_placeholder}>
+                                {" "}
+                                Nenhuma imagem selecionada
+                            </Text>
                         )}
                     </View>
                     <View style={{ flex: 1, gap: 5 }}>
@@ -144,6 +166,12 @@ export const ChangeGroupBottomSheet = forwardRef<
                         </Pressable>
                     </View>
                 </View>
+                <AlertModal
+                    type={modalType}
+                    message={modalMessage}
+                    visible={modalVisible}
+                    onClose={handleCloseAlert} // Close the Modalize when alert is closed
+                />
             </View>
         </Modalize>
     );
@@ -183,16 +211,16 @@ const styles = StyleSheet.create({
         borderColor: Colors.dark.tabIconSelected,
         borderRadius: 6,
     },
-    image: { 
+    image: {
         width: "100%",
         height: "100%",
         borderRadius: 8,
     },
-    image_placeholder:{
-        color:'white',
-        flexWrap:'wrap',
-        width:100,
-        textAlign:'center'
+    image_placeholder: {
+        color: "white",
+        flexWrap: "wrap",
+        width: 100,
+        textAlign: "center",
     },
     button: {
         justifyContent: "center",

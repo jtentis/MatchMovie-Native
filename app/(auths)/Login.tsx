@@ -7,7 +7,7 @@ import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -45,28 +45,29 @@ const LoginScreen = () => {
     };
 
     const handleLogin = async () => {
-        console.log('clicado')
+        console.log("clicado");
         if (!email.trim() || !password.trim()) {
             setModalType("alert");
             setModalMessage(
                 "Email e senha não podem conter espaços em branco."
             );
             setModalVisible(true);
-        }else{
+        } else {
             try {
                 await login(email, password);
                 console.log("Login feito com sucesso!");
-    
+
                 navigation.reset({
                     index: 0,
                     routes: [{ name: "(tabs)" }],
                 });
             } catch (error: any) {
                 console.error("Login error:", error);
-                Alert.alert("Login Error", error.message || "Erro inesperado!");
+                setModalType("error");
+                setModalMessage(`Login Error", ${error.message} || "Erro inesperado!`);
+                setModalVisible(true);
             }
         }
-
     };
 
     return (
