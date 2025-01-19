@@ -26,6 +26,8 @@ import { useAuth } from "./contexts/AuthContext";
 import {
     connectWebSocket,
     disconnectWebSocket,
+    joinGroupRoom,
+    leaveGroupRoom,
     onGroupUpdate,
 } from "./services/websocket";
 
@@ -56,6 +58,7 @@ type Group = {
 type RootStackParamList = {
     history: { groupId: number };
     groups: { groupId: number };
+    match_voting: { groupId: number };
 };
 
 type GroupsNavigationProp = RouteProp<RootStackParamList, "groups">;
@@ -64,7 +67,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
     const route = useRoute<GroupsNavigationProp>();
     const { groupId } = route.params;
-    const { authToken } = useAuth();
+    const { authToken, userId } = useAuth();
     const [group, setGroup] = useState<Group | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const addUserModalRef = useRef<Modalize>(null);
@@ -96,6 +99,12 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
             const updatedGroup = await response.json();
             setGroup(updatedGroup);
             setSelectedMovie(movie); // Update the selected movie in state
+
+            onGroupUpdate((data) => {
+                if (data.groupId === groupId) {
+                    setGroup(data);
+                }
+            });
         } catch (error) {
             console.error("Error updating group with selected movie:", error);
         } finally {
@@ -131,6 +140,12 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         // console.log(response)
         const updatedGroup = await response.json();
         setGroup(updatedGroup);
+
+        onGroupUpdate((data) => {
+            if (data.groupId === groupId) {
+                setGroup(data);
+            }
+        });
     };
 
     useEffect(() => {
@@ -160,7 +175,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         if (poster_path) {
                             setSelectedMovie({ poster_path: poster_path });
                         }
-                        console.log(movieData.poster_path)
+                        console.log(movieData.poster_path);
                     } else {
                         console.error("Failed to fetch movie details");
                     }
@@ -174,7 +189,8 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
         fetchGroup();
 
-        const socket = connectWebSocket(groupId);
+        const socket = connectWebSocket(userId); // Connect the WebSocket
+        joinGroupRoom(groupId); // Join the specific group room
 
         onGroupUpdate((data) => {
             if (data.groupId === groupId) {
@@ -183,7 +199,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                     if (!prevGroup) return prevGroup;
                     return {
                         ...prevGroup,
-                        users: [...prevGroup.users, data.newUser],
+                        ...data,
                     };
                 });
             }
@@ -191,13 +207,26 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
         return () => {
             disconnectWebSocket(false);
+            leaveGroupRoom(groupId); // Leave the room when navigating away
+            disconnectWebSocket();
         };
-    }, [groupId]);
+    }, [groupId, userId]);
 
     const handleUserAdded = (newUser: any) => {
         setGroup((prevGroup) => {
             if (!prevGroup) return prevGroup;
             return { ...prevGroup, users: [...prevGroup.users, newUser] };
+        });
+    };
+
+    const handleStartMatch = () => {
+        if (!group?.movieId) {
+            console.error("No movieId set for this group.");
+            return;
+        }
+        navigation.navigate("match_voting", {
+            groupId,
+            movieId: group.movieId,
         });
     };
 
@@ -336,8 +365,11 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                             <View>
                                 <Image
                                     source={
-                                        selectedMovie && selectedMovie.poster_path
-                                            ? { uri: `https://image.tmdb.org/t/p/w500${selectedMovie?.poster_path}` }
+                                        selectedMovie &&
+                                        selectedMovie.poster_path
+                                            ? {
+                                                  uri: `https://image.tmdb.org/t/p/w500${selectedMovie?.poster_path}`,
+                                              }
                                             : require("@/assets/images/No-Image-Placeholder.png")
                                     }
                                     style={styles.poster}
@@ -356,7 +388,10 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         gap: 5,
                     }}
                 >
-                    <Pressable style={styles.buttonMatch}>
+                    <Pressable
+                        style={styles.buttonMatch}
+                        onPress={() => handleStartMatch()}
+                    >
                         <ThemedText type="title" style={{ fontSize: 18 }}>
                             Iniciar Match
                         </ThemedText>
