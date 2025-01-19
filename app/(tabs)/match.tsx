@@ -120,6 +120,7 @@ export default function MatchScreen() {
     };
 
     const createGroup = async () => {
+        console.log(groups.map((group) => group.id));
         if (!groupName.trim()) {
             setModalType("error");
             setModalMessage("Não pode estar vazio!");
@@ -159,7 +160,14 @@ export default function MatchScreen() {
             }
 
             const newGroup = await response.json();
-            setGroups((prevGroups) => [...prevGroups, newGroup]);
+            setGroups((prevGroups) => {
+                const groupExists = prevGroups.some((g) => g.id === newGroup.id);
+                if (!groupExists) {
+                    return [...prevGroups, newGroup];
+                }
+                return prevGroups; // Return the previous state if the group already exists
+            });
+            
             setModalType("success");
             setModalMessage("Grupo criado com sucesso!");
             setModalVisible(true);
