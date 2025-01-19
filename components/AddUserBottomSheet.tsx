@@ -90,12 +90,12 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
                   }}
             >
                 <Text style={styles.modalTitle}>
-                    Adicione um usuário pelo ser username
+                    Adicionar pessoas no grupo
                 </Text>
                 <View style={styles.modalContent}>
                     <TextInput
                         style={styles.input}
-                        placeholder="Escreva o nome do usuário"
+                        placeholder="Escreva o username do usuário"
                         value={username}
                         onChangeText={(text) => setUsername(text)}
                         selectionColor={Colors.dark.tabIconSelected}

@@ -18,12 +18,6 @@
       ]
     ]
     },
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "center",
-      "backgroundColor": "#343637",
-      "text": "MatchMovie"
-    },
     "ios": {
       "supportsTablet": true
     },

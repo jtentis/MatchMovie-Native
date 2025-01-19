@@ -212,7 +212,7 @@ const MovieDetailsScreen = () => {
     };
 
     if (isLoadingDetails && isLoadingProviders) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
+        return <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} style={{flex:1, alignContent:'center', backgroundColor:Colors.dark.background}} />;
     }
 
     if (!movieWatchProviders) {
