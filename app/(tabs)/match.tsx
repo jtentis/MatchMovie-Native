@@ -190,6 +190,7 @@ export default function MatchScreen() {
                 <ActivityIndicator
                     size="large"
                     color={Colors.dark.tabIconSelected}
+                    style={{flex:1, alignContent:'center', backgroundColor:Colors.dark.background}}
                 />
             </View>
         );

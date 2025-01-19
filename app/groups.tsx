@@ -1,5 +1,6 @@
 import { AddUserBottomSheet } from "@/components/AddUserBottomSheet";
 import { ChangeGroupBottomSheet } from "@/components/ChangeGroupImageBottomSheet";
+import MovieSelectionModal from "@/components/MovieSelectionBottomSheet";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
 import { URL_LOCALHOST } from "@/constants/Url";
@@ -18,6 +19,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { Modalize } from "react-native-modalize";
 import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
@@ -47,6 +49,7 @@ type Group = {
     image: string | null;
     createdAt: string;
     updatedAt: string;
+    movieId: number | null;
     users: GroupUser[];
 };
 
@@ -66,11 +69,47 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
     const [isLoading, setIsLoading] = useState(true);
     const addUserModalRef = useRef<Modalize>(null);
     const changeImageModalRef = useRef<Modalize>(null);
+    const movieSelectionModalRef = useRef<Modalize>(null);
+    const [selectedMovie, setSelectedMovie] = useState<any>(null);
+
+    const openMovieSelectionModal = () => {
+        movieSelectionModalRef.current?.open();
+    };
+
+    const handleMovieSelect = async (movie: any) => {
+        try {
+            // Send the selected movieId to the backend
+            const response = await fetch(`${URL_LOCALHOST}/groups/${groupId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({ movieId: movie.id }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update group with selected movie");
+            }
+
+            // Update the group state with the new data from the backend
+            const updatedGroup = await response.json();
+            setGroup(updatedGroup);
+            setSelectedMovie(movie); // Update the selected movie in state
+        } catch (error) {
+            console.error("Error updating group with selected movie:", error);
+        } finally {
+            // Close the modal after movie selection
+            if (movieSelectionModalRef && "current" in movieSelectionModalRef) {
+                movieSelectionModalRef.current?.close();
+            }
+        }
+    };
 
     const openAddUserModal = () => {
         addUserModalRef.current?.open();
     };
-    
+
     const openChangeImageModal = () => {
         changeImageModalRef.current?.open();
     };
@@ -91,7 +130,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         }
         // console.log(response)
         const updatedGroup = await response.json();
-        setGroup(updatedGroup)
+        setGroup(updatedGroup);
     };
 
     useEffect(() => {
@@ -110,7 +149,22 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 }
                 const data: Group = await response.json();
                 setGroup(data);
-                // console.log(data);
+                console.log(data.movieId);
+                if (data.movieId) {
+                    const movieResponse = await fetch(
+                        `${URL_LOCALHOST}/movies/${data.movieId}/details`
+                    );
+                    if (movieResponse.ok) {
+                        const movieData = await movieResponse.json();
+                        const poster_path = movieData.poster_path;
+                        if (poster_path) {
+                            setSelectedMovie({ poster_path: poster_path });
+                        }
+                        console.log(movieData.poster_path)
+                    } else {
+                        console.error("Failed to fetch movie details");
+                    }
+                }
             } catch (error) {
                 console.error("Error fetching group:", error);
             } finally {
@@ -172,8 +226,8 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
     }
 
     const imageSource = group.image
-    ? { uri: group.image }
-    : require('@/assets/images/group_background.png')
+        ? { uri: group.image }
+        : require("@/assets/images/group_background.png");
 
     return (
         <>
@@ -257,7 +311,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 </View>
                 <View
                     style={{
-                        flex: 3 / 1,
+                        flex: 4,
                         backgroundColor: Colors.dark.background,
                         alignItems: "center",
                         justifyContent: "flex-start",
@@ -276,17 +330,25 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                             gap: 5,
                         }}
                     >
-                        <View style={styles.poster}>
-                            <Image
-                                source={require("@/assets/images/movie-poster.jpg")}
-                                style={styles.poster}
-                            ></Image>
-                        </View>
+                        <TouchableWithoutFeedback
+                            onPress={openMovieSelectionModal}
+                        >
+                            <View>
+                                <Image
+                                    source={
+                                        selectedMovie && selectedMovie.poster_path
+                                            ? { uri: `https://image.tmdb.org/t/p/w500${selectedMovie?.poster_path}` }
+                                            : require("@/assets/images/No-Image-Placeholder.png")
+                                    }
+                                    style={styles.poster}
+                                />
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
                 </View>
                 <View
                     style={{
-                        flex: 2 / 1,
+                        flex: 1.5,
                         backgroundColor: Colors.dark.background,
                         flexDirection: "row",
                         alignItems: "center",
@@ -300,7 +362,9 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         </ThemedText>
                     </Pressable>
                     <Pressable
-                        onPress={() => navigation.navigate("history", {groupId})}
+                        onPress={() =>
+                            navigation.navigate("history", { groupId })
+                        }
                         style={styles.buttonHistory}
                     >
                         <ThemedText type="title" style={{ fontSize: 18 }}>
@@ -319,6 +383,11 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 groupId={group.id}
                 currentImage={group.image}
                 onSave={handleSave}
+            />
+            <MovieSelectionModal
+                ref={movieSelectionModalRef}
+                onMovieSelect={handleMovieSelect}
+                groupId={groupId}
             />
         </>
     );
@@ -363,8 +432,8 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     poster: {
-        width: 120,
-        height: 160,
+        width: 160,
+        height: 210,
         borderRadius: 5,
         elevation: 10,
     },
