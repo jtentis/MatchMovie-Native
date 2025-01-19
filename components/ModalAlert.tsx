@@ -91,13 +91,11 @@ const styles = StyleSheet.create({
     },
     container: {
         width: "80%",
-        backgroundColor: "#FFFDFA",
+        backgroundColor: "#434343",
         borderRadius: 10,
         padding: 20,
         paddingHorizontal: 30,
         alignItems: "center",
-        borderWidth: 1,
-        borderColor: Colors.dark.input,
     },
     icon: {
         marginBottom: 20,
@@ -107,7 +105,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginBottom: 40,
         fontWeight: "500",
-        color: Colors.dark.tint,
+        color: Colors.dark.text,
     },
     button: {
         backgroundColor: "transparent",

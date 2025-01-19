@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
+import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import Constants from "expo-constants";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useState } from "react";
 import {
@@ -17,10 +17,7 @@ import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
 
 // const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const uri =
-    Constants.expoConfig?.hostUri?.split(":").shift()?.concat(":3000") ??
-    "yourapi.com";
-const EXPO_PUBLIC_BASE_NGROK = `http://${uri}`;
+const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST
 
 type RootStackParamList = {
     details: { movieId: number };
@@ -76,7 +73,7 @@ const MovieDetailsScreen = () => {
         useState<WatchProvider | null>(null);
     const [isLoadingProviders, setIsLoadingProviders] = useState<boolean>(true);
     const navigation = useNavigation();
-    const { userId } = useAuth();
+    const { userId, authToken } = useAuth();
     const [isFavorited, setIsFavorited] = useState<boolean>(false);
     const [isWatched, setIsWatched] = useState<boolean>(false);
     const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
@@ -93,7 +90,7 @@ const MovieDetailsScreen = () => {
                     await responseMovieDetails.json();
                 setMovieDetails(dataMovieDetails);
                 const responseWatchProviders = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/watch_providers`
+                    `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/watch_providers`,
                 );
                 const dataWatchProviders: WatchProvider =
                     await responseWatchProviders.json();
@@ -109,7 +106,11 @@ const MovieDetailsScreen = () => {
         const fetchFavoriteState = async () => {
             try {
                 const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/favorites/isFavorite/${userId}/${movieId}`
+                    `${EXPO_PUBLIC_BASE_NGROK}/favorites/isFavorite/${userId}/${movieId}`,{
+                        headers: {
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
                 );
                 const data = await response.json();
                 console.log("Estado de favorito recebido:", data);
@@ -122,7 +123,11 @@ const MovieDetailsScreen = () => {
         const fetchWatchedState = async () => {
             try {
                 const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/watched/isWatched/${userId}/${movieId}`
+                    `${EXPO_PUBLIC_BASE_NGROK}/watched/isWatched/${userId}/${movieId}`,{
+                        headers: {
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
                 );
                 const data = await response.json();
                 console.log("Estado de visto recebido:", data);
@@ -146,6 +151,7 @@ const MovieDetailsScreen = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${authToken}`,
                     },
                     body: JSON.stringify({
                         userId: userId,
@@ -179,6 +185,7 @@ const MovieDetailsScreen = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
                 },
                 body: JSON.stringify({
                     userId: userId,
@@ -205,7 +212,7 @@ const MovieDetailsScreen = () => {
     };
 
     if (isLoadingDetails && isLoadingProviders) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
+        return <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} style={{flex:1, alignContent:'center', backgroundColor:Colors.dark.background}} />;
     }
 
     if (!movieWatchProviders) {
