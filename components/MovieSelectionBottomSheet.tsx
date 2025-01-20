@@ -115,7 +115,7 @@ const MovieSelectionModal = React.forwardRef<
                                 source={{
                                     uri: item.poster_path
                                         ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                                        : "https://via.placeholder.com/150", // Fallback image
+                                        : "@/assets/images/No-Image-Placeholder.png", // Fallback image
                                 }}
                                 style={styles.poster}
                             />

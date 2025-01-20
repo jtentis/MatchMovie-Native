@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
     },
     input: {
-        width: 205,
+        width: Dimensions.get('screen').width - 190,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,

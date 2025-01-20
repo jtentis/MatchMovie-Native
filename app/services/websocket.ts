@@ -24,28 +24,6 @@ export const connectWebSocket = (userId: any): Socket => {
   return socket;
 };
 
-export const connectWebSocketGroup = (userId: any, groupId: any): Socket => {
-  if (!socket) {
-    socket = io(URL_LOCALHOST);
-
-    socket.on('connect', () => {
-      console.log('WebSocket connected:', socket?.id);
-      socket?.emit('joinRoom', `user_${userId}`);
-      socket?.emit('joinGroupRoom', groupId); // Join group-specific room
-    });
-
-    socket.on('connect_error', (error: any) => {
-      console.error('WebSocket connection error:', error);
-    });
-
-    socket.on('disconnect', () => {
-      console.log('WebSocket disconnected.');
-    });
-  }
-
-  return socket;
-};
-
 export const onGroupUpdate = (callback: (data: any) => void): void => {
   if (!socket) {
     console.error('WebSocket connection is not established.');
@@ -80,39 +58,6 @@ export const onGroupCreated = (callback: (group: any) => void): void => {
   });
 };
 
-export const onVoteUpdate = (callback: (data: any) => void): void => {
-  if (socket) {
-    socket.on("voteUpdate", (data: any) => {
-      console.log("Vote update received:", data);
-      callback(data);
-    });
-  } else {
-    console.error("WebSocket connection is not established.");
-  }
-};
-
-export const onMatchStart = (callback: (data: any) => void): void => {
-  if (socket) {
-    socket.on("gameStarted", (data: any) => {
-      console.log("Match started:", data);
-      callback(data);
-    });
-  } else {
-    console.error("WebSocket connection is not established.");
-  }
-};
-
-export const onMovieRecommendations = (callback: (data: any) => void): void => {
-  if (socket) {
-    socket.on("movieRecommendations", (data: any) => {
-      console.log("Movie recommendations received:", data);
-      callback(data);
-    });
-  } else {
-    console.error("WebSocket connection is not established.");
-  }
-}
-
 export const onWinnerReceived = (callback: (winnerData: any) => void): void => {
   if (socket) {
     socket.on('gameWinner', callback);
@@ -123,7 +68,7 @@ export const onWinnerReceived = (callback: (winnerData: any) => void): void => {
 
 export const joinGroupRoom = (groupId: number): void => {
   if (socket) {
-    socket.emit('joinGroupRoom', groupId); // Notify the server to join the room
+    socket.emit('joinGroupRoom', groupId);
     console.log(`Joined group room: group_${groupId}`);
   } else {
     console.error('WebSocket connection is not established.');
@@ -132,7 +77,7 @@ export const joinGroupRoom = (groupId: number): void => {
 
 export const leaveGroupRoom = (groupId: number): void => {
   if (socket) {
-    socket.emit('leaveGroupRoom', groupId); // Notify the server to leave the room
+    socket.emit('leaveGroupRoom', groupId);
     console.log(`Left group room: group_${groupId}`);
   } else {
     console.error('WebSocket connection is not established.');
