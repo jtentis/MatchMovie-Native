@@ -189,7 +189,8 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
         fetchGroup();
 
-        const socket = connectWebSocket(userId); // Connect the WebSocket
+        connectWebSocket(userId);
+
         joinGroupRoom(groupId); // Join the specific group room
 
         onGroupUpdate((data) => {

@@ -13,7 +13,9 @@ import { useAuth } from "./contexts/AuthContext";
 import {
     connectWebSocket,
     disconnectWebSocket,
-    onWinnerReceived
+    joinGroupRoom,
+    leaveGroupRoom,
+    onWinnerReceived,
 } from "./services/websocket";
 
 type Movie = {
@@ -82,13 +84,13 @@ const MatchVotingScreen = () => {
             console.log("Match already completed. No more votes allowed.");
             return; // Prevent voting after the match is completed
         }
-    
+
         try {
             const nextIndex =
                 recommendations.findIndex(
                     (movie) => movie.id === currentMovie?.id
                 ) + 1;
-    
+
             const response = await fetch(
                 `${URL_LOCALHOST}/match/${groupId}/vote`,
                 {
@@ -105,12 +107,12 @@ const MatchVotingScreen = () => {
                     }),
                 }
             );
-    
+
             if (!response.ok) {
                 console.log(response);
                 throw new Error("Failed to vote for movie");
             }
-    
+
             const voteResult = await response.json();
             if (voteResult.winner) {
                 setWinner(voteResult.winner);
@@ -123,20 +125,24 @@ const MatchVotingScreen = () => {
             console.error("Error voting:", error);
         }
     };
-    
+
     useEffect(() => {
         const socket = connectWebSocket(userId);
-    
+
+        joinGroupRoom(groupId);
+
         onWinnerReceived((winnerData) => {
             console.log("Winner received:", winnerData);
             setWinner(winnerData); // Set the winner in state for all users
             setRecommendations([]); // Clear remaining recommendations
         });
-    
+
         fetchRecommendations();
-    
+
         return () => {
+            leaveGroupRoom(groupId); // Leave the room when navigating away
             disconnectWebSocket();
+            disconnectWebSocket(false);
         };
     }, [movieId, groupId]);
 
