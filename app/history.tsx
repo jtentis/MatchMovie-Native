@@ -1,3 +1,5 @@
+import AlertModal from "@/components/ModalAlert";
+import ConfirmModal from "@/components/ModalAlertConfirm";
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -9,32 +11,23 @@ import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
 
-type User = {
+type Match = {
     id: number;
-    name: string;
-    second_name: string;
-    user: string;
-};
-
-type GroupUser = {
-    id: number;
-    userId: number;
     groupId: number;
-    user: User;
+    movieId: number;
+    createdAt: string;
 };
 
-type Group = {
+type Movie = {
     id: number;
-    name: string;
-    image: string | null;
-    createdAt: string;
-    updatedAt: string;
-    users: GroupUser[];
+    title: string;
+    poster_path: string | null;
 };
 
 type RootStackParamList = {
     history: { groupId: number };
     groups: { groupId: number };
+    match_voting: { groupId: number };
 };
 
 type GroupsNavigationProp = RouteProp<RootStackParamList, "groups">;
@@ -43,48 +36,117 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
     const route = useRoute<GroupsNavigationProp>();
     const { groupId } = route.params;
     const { authToken } = useAuth();
-    const [group, setGroup] = useState<Group | null>(null);
+    const [groupName, setGroupName] = useState<string>("");
+    const [groupImage, setGroupImage] = useState<string | null>(null);
+    const [matches, setMatches] = useState<Match[]>([]);
+    const [movies, setMovies] = useState<Record<number, Movie>>({});
     const [isLoading, setIsLoading] = useState(true);
-    console.log(groupId);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<"error" | "success" | "alert">(
+        "alert"
+    );
+    const [modalMessage, setModalMessage] = useState<string>("");
+    const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+    const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
+
     navigation = useNavigation();
 
     useEffect(() => {
-        const fetchGroup = async () => {
+        const fetchHistory = async () => {
             try {
-                const response = await fetch(
+                const groupResponse = await fetch(
                     `${URL_LOCALHOST}/groups/${groupId}`,
                     {
-                        headers: {
-                            Authorization: `Bearer ${authToken}`,
-                        },
+                        headers: { Authorization: `Bearer ${authToken}` },
                     }
                 );
-                if (!response.ok) {
+                if (!groupResponse.ok) {
                     throw new Error("Failed to fetch group data");
                 }
-                const data: Group = await response.json();
-                setGroup(data);
-                // console.log(data);
+                const groupData = await groupResponse.json();
+                setGroupName(groupData.name);
+                setGroupImage(groupData.image);
+
+                const matchesResponse = await fetch(
+                    `${URL_LOCALHOST}/match/${groupId}/history`,
+                    {
+                        headers: { Authorization: `Bearer ${authToken}` },
+                    }
+                );
+                if (!matchesResponse.ok) {
+                    throw new Error("Failed to fetch match history");
+                }
+                const matchesData: Match[] = await matchesResponse.json();
+                setMatches(matchesData);
+
+                // Fetch movie details for each match
+                const movieDetails: any = {};
+                for (const match of matchesData) {
+                    const movieResponse = await fetch(
+                        `${URL_LOCALHOST}/movies/${match.movieId}/details`,
+                        {
+                            headers: { Authorization: `Bearer ${authToken}` },
+                        }
+                    );
+                    if (movieResponse.ok) {
+                        const movieData: Movie = await movieResponse.json();
+                        movieDetails[match.movieId] = movieData;
+                    }
+                }
+                setMovies(movieDetails);
             } catch (error) {
-                console.error("Error fetching group:", error);
+                console.error("Error fetching history:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchGroup();
+        fetchHistory();
     }, [groupId]);
 
-    if (!group) {
+    const handleDelete = async () => {
+        if (!selectedMatchId) return;
+
+        try {
+            const response = await fetch(
+                `${URL_LOCALHOST}/match/${selectedMatchId}`,
+                {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${authToken}` },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to delete match");
+            }
+
+            // Update local state after successful deletion
+            setMatches((prev) =>
+                prev.filter((match) => match.id !== selectedMatchId)
+            );
+            setIsConfirmVisible(false);
+            setSelectedMatchId(null);
+        } catch (error) {
+            console.error("Error deleting match:", error);
+        }
+    };
+
+    if (isLoading) {
         return (
-            <View style={{}}>
-                <Text>Grupo não econtrado.</Text>
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Text>Loading...</Text>
             </View>
         );
     }
 
-    const imageSource = group.image
-        ? { uri: group.image }
+    const imageSource = groupImage
+        ? { uri: groupImage }
         : require("@/assets/images/group_background.png");
 
     return (
@@ -109,14 +171,16 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
                         color={Colors.dark.text}
                     />
                 </Pressable>
-                <View style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "flex-end",
-                    backgroundColor: Colors.dark.background,
-                }}>
+                <View
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                        backgroundColor: Colors.dark.background,
+                    }}
+                >
                     <ThemedText type="subtitle" style={styles.groupName}>
-                        {group.name}
+                        {groupName}
                     </ThemedText>
                     <View style={styles.groupImage}>
                         <Image
@@ -146,39 +210,83 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
                     }}
                     showsVerticalScrollIndicator={false}
                 >
-                    <View style={styles.card}>
-                        <View style={styles.poster}>
-                            <Image
-                                source={require("@/assets/images/movie-poster.jpg")}
-                                style={styles.poster}
-                            ></Image>
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <ThemedText type="default" style={styles.text}>
-                                Filme: Nada de Novo no Front
-                            </ThemedText>
-                            <ThemedText type="default" style={styles.text}>
-                                Grupo: Escola
-                            </ThemedText>
+                    {matches.length === 0 ? (
+                        <View style={{ alignItems: "center", marginTop: 20 }}>
                             <ThemedText
                                 type="default"
-                                style={styles.text}
-                            ></ThemedText>
-                            <ThemedText
-                                type="default"
-                                style={styles.text}
-                            ></ThemedText>
-                            <ThemedText type="default" style={styles.endText}>
-                                Data do Match: 16/04/2024
+                                style={{ color: Colors.dark.text }}
+                            >
+                                Nenhum Match concluído. Sem histórico
+                                disponível.
                             </ThemedText>
-                            <FontAwesome
-                                size={20}
-                                name="trash"
-                                style={styles.trash}
-                            />
                         </View>
-                    </View>
+                    ) : (
+                        matches.map((match) => {
+                            const movie = movies[match.movieId];
+                            return (
+                                <View key={match.id} style={styles.card}>
+                                    <View style={styles.poster}>
+                                        <Image
+                                            source={
+                                                movie?.poster_path
+                                                    ? {
+                                                          uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+                                                      }
+                                                    : require("@/assets/images/movie-poster.jpg")
+                                            }
+                                            style={styles.poster}
+                                        />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <ThemedText
+                                            type="default"
+                                            style={styles.text}
+                                        >
+                                            Filme:{" "}
+                                            {movie?.title ||
+                                                "Título Desconhecido"}
+                                        </ThemedText>
+                                        <ThemedText
+                                            type="default"
+                                            style={styles.text}
+                                        >
+                                            Data do Match:{" "}
+                                            {new Date(
+                                                match.createdAt
+                                            ).toLocaleDateString("pt-BR", {
+                                                day: "2-digit",
+                                                month: "2-digit",
+                                                year: "numeric",
+                                            })}
+                                        </ThemedText>
+                                        <FontAwesome
+                                            size={20}
+                                            name="trash"
+                                            style={styles.trash}
+                                            onPress={() => {
+                                                setSelectedMatchId(match.id);
+                                                setIsConfirmVisible(true);
+                                            }}
+                                        />
+                                    </View>
+                                </View>
+                            );
+                        })
+                    )}
                 </ScrollView>
+                <AlertModal
+                    type={modalType}
+                    message={modalMessage}
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                />
+                <ConfirmModal
+                    type="alert"
+                    visible={isConfirmVisible}
+                    onConfirm={handleDelete}
+                    onCancel={() => setIsConfirmVisible(false)}
+                    message="Tem certeza que deseja excluir este match?"
+                />
             </View>
         </View>
     );
@@ -192,14 +300,14 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     backButton: {
-      width: 50,
-      height: 50,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: Colors.dark.background,
-      borderTopRightRadius: 8,
-      borderBottomRightRadius: 8,
-  },
+        width: 50,
+        height: 50,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: Colors.dark.background,
+        borderTopRightRadius: 8,
+        borderBottomRightRadius: 8,
+    },
     groupImage: {
         width: 50,
         height: 50,
@@ -207,13 +315,13 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 5,
         elevation: 2,
     },
-    groupName:{
-      height: 50,
-      paddingVertical: 14,
-      paddingHorizontal: 10,
-      borderTopLeftRadius: 5,
-      borderBottomLeftRadius: 5,
-      backgroundColor: Colors.dark.tabIconSelected,
+    groupName: {
+        height: 50,
+        paddingVertical: 13,
+        paddingHorizontal: 10,
+        borderTopLeftRadius: 5,
+        borderBottomLeftRadius: 5,
+        backgroundColor: Colors.dark.tabIconSelected,
     },
     poster: {
         width: 70,
@@ -232,13 +340,6 @@ const styles = StyleSheet.create({
     },
     text: {
         marginLeft: 10,
-    },
-    endText: {
-        marginRight: 5,
-        marginTop: 5,
-        textAlign: "right",
-        opacity: 0.5,
-        fontSize: 10,
     },
     trash: {
         position: "absolute",

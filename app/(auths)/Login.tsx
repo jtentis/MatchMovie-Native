@@ -7,7 +7,7 @@ import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
         color: "white",
         alignSelf: "center",
         justifyContent: "center",
-        width: 130,
+        width: Dimensions.get('screen').width / 2,
         textAlign: "center",
         backgroundColor: Colors.dark.background,
         fontFamily: "CoinyRegular",

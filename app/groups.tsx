@@ -1,10 +1,12 @@
 import { AddUserBottomSheet } from "@/components/AddUserBottomSheet";
 import { ChangeGroupBottomSheet } from "@/components/ChangeGroupImageBottomSheet";
+import AlertModal from "@/components/ModalAlert";
+import MovieSelectionModal from "@/components/MovieSelectionBottomSheet";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
 import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { CommonActions, RouteProp, useRoute } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useRef, useState } from "react";
@@ -18,12 +20,15 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { Modalize } from "react-native-modalize";
 import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
 import {
     connectWebSocket,
     disconnectWebSocket,
+    joinGroupRoom,
+    leaveGroupRoom,
     onGroupUpdate,
 } from "./services/websocket";
 
@@ -47,12 +52,14 @@ type Group = {
     image: string | null;
     createdAt: string;
     updatedAt: string;
+    movieId: number | null;
     users: GroupUser[];
 };
 
 type RootStackParamList = {
     history: { groupId: number };
     groups: { groupId: number };
+    match_voting: { groupId: number };
 };
 
 type GroupsNavigationProp = RouteProp<RootStackParamList, "groups">;
@@ -61,16 +68,74 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
     const route = useRoute<GroupsNavigationProp>();
     const { groupId } = route.params;
-    const { authToken } = useAuth();
+    const { authToken, userId } = useAuth();
     const [group, setGroup] = useState<Group | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const addUserModalRef = useRef<Modalize>(null);
     const changeImageModalRef = useRef<Modalize>(null);
+    const movieSelectionModalRef = useRef<Modalize>(null);
+    const [selectedMovie, setSelectedMovie] = useState<any>(null);
+    const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<"error" | "success" | "alert">(
+        "alert"
+    );
+    const [modalMessage, setModalMessage] = useState<string>("");
+
+    const openMovieSelectionModal = () => {
+        movieSelectionModalRef.current?.open();
+    };
+
+    const handleFilterSelect = (filter: string) => {
+        if (selectedFilter === filter) {
+            setSelectedFilter(null);
+        } else {
+            setSelectedFilter(filter);
+        }
+        setSelectedMovie(null);
+    };
+
+    const handleMovieSelect = async (movie: any) => {
+        try {
+            // Send the selected movieId to the backend
+            const response = await fetch(`${URL_LOCALHOST}/groups/${groupId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({ movieId: movie.id }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update group with selected movie");
+            }
+
+            // Update the group state with the new data from the backend
+            const updatedGroup = await response.json();
+            setGroup(updatedGroup);
+            setSelectedMovie(movie); // Update the selected movie in state
+            setSelectedFilter(null);
+
+            onGroupUpdate((data) => {
+                if (data.groupId === groupId) {
+                    setGroup(data);
+                }
+            });
+        } catch (error) {
+            console.error("Error updating group with selected movie:", error);
+        } finally {
+            // Close the modal after movie selection
+            if (movieSelectionModalRef && "current" in movieSelectionModalRef) {
+                movieSelectionModalRef.current?.close();
+            }
+        }
+    };
 
     const openAddUserModal = () => {
         addUserModalRef.current?.open();
     };
-    
+
     const openChangeImageModal = () => {
         changeImageModalRef.current?.open();
     };
@@ -91,7 +156,13 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         }
         // console.log(response)
         const updatedGroup = await response.json();
-        setGroup(updatedGroup)
+        setGroup(updatedGroup);
+
+        onGroupUpdate((data) => {
+            if (data.groupId === groupId) {
+                setGroup(data);
+            }
+        });
     };
 
     useEffect(() => {
@@ -110,7 +181,25 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 }
                 const data: Group = await response.json();
                 setGroup(data);
-                // console.log(data);
+                console.log(data.movieId);
+                if (data.movieId) {
+                    const movieResponse = await fetch(
+                        `${URL_LOCALHOST}/movies/${data.movieId}/details`
+                    );
+                    if (movieResponse.ok) {
+                        const movieData = await movieResponse.json();
+                        const poster_path = movieData.poster_path;
+                        if (selectedFilter) {
+                            return;
+                        }
+                        if (poster_path) {
+                            setSelectedMovie({ poster_path: poster_path });
+                        }
+                        console.log(movieData.poster_path);
+                    } else {
+                        console.error("Failed to fetch movie details");
+                    }
+                }
             } catch (error) {
                 console.error("Error fetching group:", error);
             } finally {
@@ -120,7 +209,9 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
         fetchGroup();
 
-        const socket = connectWebSocket(groupId);
+        connectWebSocket(userId);
+
+        joinGroupRoom(groupId); // Join the specific group room
 
         onGroupUpdate((data) => {
             if (data.groupId === groupId) {
@@ -129,22 +220,50 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                     if (!prevGroup) return prevGroup;
                     return {
                         ...prevGroup,
-                        users: [...prevGroup.users, data.newUser],
+                        ...data,
                     };
                 });
             }
         });
 
+        console.log("Selected Filter Updated:", selectedFilter);
+        console.log("Selected Movie:", selectedMovie);
         return () => {
             disconnectWebSocket(false);
+            leaveGroupRoom(groupId); // Leave the room when navigating away
         };
-    }, [groupId]);
+    }, [groupId, userId, selectedFilter]);
 
     const handleUserAdded = (newUser: any) => {
         setGroup((prevGroup) => {
             if (!prevGroup) return prevGroup;
             return { ...prevGroup, users: [...prevGroup.users, newUser] };
         });
+    };
+
+    const handleStartMatch = () => {
+        if (!selectedMovie && !selectedFilter) {
+            setModalType("error");
+            setModalMessage("Selecione um filme ou um filtro!");
+            setModalVisible(true);
+            return;
+        }
+
+        // Pass either the movieId or the filter to the match_voting screen
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [
+                    {
+                        name: "match_voting",
+                        params: {
+                            groupId,
+                            filter: selectedFilter || null,
+                        },
+                    },
+                ],
+            })
+        );
     };
 
     if (isLoading) {
@@ -171,9 +290,17 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         );
     }
 
+    const infoModal = () => {
+        setModalType("alert");
+        setModalVisible(true);
+        setModalMessage(
+            "Para iniciar o match, escolha um filtro ou um filme. Caso o filtro escolhido seja Popular, o usuário poderá ser redirecionado para o ingresso.com."
+        );
+    };
+
     const imageSource = group.image
-    ? { uri: group.image }
-    : require('@/assets/images/group_background.png')
+        ? { uri: group.image }
+        : require("@/assets/images/group_background.png");
 
     return (
         <>
@@ -257,14 +384,27 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 </View>
                 <View
                     style={{
-                        flex: 3 / 1,
+                        flex: 4,
                         backgroundColor: Colors.dark.background,
                         alignItems: "center",
                         justifyContent: "flex-start",
                     }}
                 >
                     <ThemedText type="defaultSemiBold" style={styles.subtitle}>
-                        Filme de referência para votação
+                        <Text style={{ color: Colors.dark.tabIconSelected }}>
+                            Filme
+                        </Text>{" "}
+                        de referência ou{" "}
+                        <Text style={{ color: Colors.dark.tabIconSelected }}>
+                            filtro
+                        </Text>{" "}
+                        para votação{" "}
+                        <FontAwesome
+                            size={20}
+                            name="info-circle"
+                            color={"white"}
+                            onPress={() => infoModal()}
+                        />
                     </ThemedText>
                     <View
                         style={{
@@ -276,17 +416,56 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                             gap: 5,
                         }}
                     >
-                        <View style={styles.poster}>
-                            <Image
-                                source={require("@/assets/images/movie-poster.jpg")}
-                                style={styles.poster}
-                            ></Image>
+                        <TouchableWithoutFeedback
+                            onPress={openMovieSelectionModal}
+                        >
+                            <View>
+                                <Image
+                                    source={
+                                        selectedMovie &&
+                                        selectedMovie.poster_path
+                                            ? {
+                                                  uri: `https://image.tmdb.org/t/p/w500${selectedMovie?.poster_path}`,
+                                              }
+                                            : require("@/assets/images/No-Image-Placeholder.png")
+                                    }
+                                    style={styles.poster}
+                                />
+                            </View>
+                        </TouchableWithoutFeedback>
+                        <View style={styles.filterButtons}>
+                            {[
+                                { key: "popular", label: "Populares" },
+                                { key: "now_playing", label: "Em Cartaz" },
+                                {
+                                    key: "top_rated",
+                                    label: "Melhor avaliados",
+                                },
+                                {
+                                    key: "upcoming",
+                                    label: "Em breve",
+                                },
+                            ].map(({ key, label }) => (
+                                <TouchableOpacity
+                                    key={key}
+                                    style={[
+                                        styles.filterButton,
+                                        selectedFilter === key &&
+                                            styles.filterButtonSelected,
+                                    ]}
+                                    onPress={() => handleFilterSelect(key)}
+                                >
+                                    <Text style={styles.filterButtonText}>
+                                        {label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
                         </View>
                     </View>
                 </View>
                 <View
                     style={{
-                        flex: 2 / 1,
+                        flex: 0.9,
                         backgroundColor: Colors.dark.background,
                         flexDirection: "row",
                         alignItems: "center",
@@ -294,13 +473,18 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         gap: 5,
                     }}
                 >
-                    <Pressable style={styles.buttonMatch}>
+                    <Pressable
+                        style={styles.buttonMatch}
+                        onPress={() => handleStartMatch()}
+                    >
                         <ThemedText type="title" style={{ fontSize: 18 }}>
                             Iniciar Match
                         </ThemedText>
                     </Pressable>
                     <Pressable
-                        onPress={() => navigation.navigate("history", {groupId})}
+                        onPress={() =>
+                            navigation.navigate("history", { groupId })
+                        }
                         style={styles.buttonHistory}
                     >
                         <ThemedText type="title" style={{ fontSize: 18 }}>
@@ -319,6 +503,17 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 groupId={group.id}
                 currentImage={group.image}
                 onSave={handleSave}
+            />
+            <MovieSelectionModal
+                ref={movieSelectionModalRef}
+                onMovieSelect={handleMovieSelect}
+                groupId={groupId}
+            />
+            <AlertModal
+                type={modalType}
+                message={modalMessage}
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
             />
         </>
     );
@@ -356,6 +551,8 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: "white",
         marginTop: 10,
+        flexWrap: "wrap",
+        textAlign: "center",
     },
     subtitleFiltros: {
         fontSize: 24,
@@ -363,8 +560,8 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     poster: {
-        width: 120,
-        height: 160,
+        width: 150,
+        height: 190,
         borderRadius: 5,
         elevation: 10,
     },
@@ -429,7 +626,7 @@ const styles = StyleSheet.create({
     },
     userName: {
         borderWidth: 1,
-        padding: 10,
+        padding: 5,
         borderRadius: 5,
         borderColor: Colors.dark.tabIconSelected,
         backgroundColor: Colors.dark.tabIconSelected,
@@ -471,6 +668,22 @@ const styles = StyleSheet.create({
         elevation: 2,
         fontSize: Fonts.dark.buttonText,
     },
+    filterButtons: {
+        width: 140,
+        height: 190,
+        justifyContent: "space-between",
+    },
+    filterButton: {
+        backgroundColor: Colors.dark.input,
+        padding: 12,
+        marginHorizontal: 5,
+        borderRadius: 8,
+        alignItems: "center",
+    },
+    filterButtonSelected: {
+        backgroundColor: Colors.dark.tabIconSelected,
+    },
+    filterButtonText: { color: "white", fontWeight: "bold", fontSize: 16 },
 });
 
 export default GroupsScreen;

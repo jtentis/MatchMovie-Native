@@ -11,6 +11,7 @@ import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    Dimensions,
     Image,
     StyleSheet,
     Text,
@@ -352,12 +353,13 @@ export default function ProfileScreen() {
             </View>
             <View
                 style={{
-                    width: 360,
+                    width: Dimensions.get('screen').width - 28,
                     height: 160,
                     backgroundColor: Colors.dark.background,
-                    justifyContent: "space-between",
+                    justifyContent: "space-around",
                     alignItems: "center",
                     flexDirection: "row",
+                    gap: 5
                 }}
             >
                 <Pressable style={styles.markAsBox}>
@@ -500,7 +502,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
     input: {
-        width: 360,
+        width: Dimensions.get('screen').width - 28,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -524,7 +526,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     inputHalf: {
-        width: 175,
+        width: Dimensions.get('screen').width / 2.2,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -536,7 +538,7 @@ const styles = StyleSheet.create({
     button: {
         justifyContent: "center",
         alignItems: "center",
-        width: 175,
+        width: Dimensions.get('screen').width / 2.21,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
@@ -546,7 +548,7 @@ const styles = StyleSheet.create({
     button2: {
         justifyContent: "center",
         alignItems: "center",
-        width: 175,
+        width: Dimensions.get('screen').width / 2.22,
         height: 50,
         backgroundColor: Colors.dark.background,
         padding: 0,

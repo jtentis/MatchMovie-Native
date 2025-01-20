@@ -9,6 +9,7 @@ import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    Dimensions,
     Image,
     SafeAreaView,
     StyleSheet,
@@ -190,6 +191,7 @@ export default function MatchScreen() {
                 <ActivityIndicator
                     size="large"
                     color={Colors.dark.tabIconSelected}
+                    style={{flex:1, alignContent:'center', backgroundColor:Colors.dark.background}}
                 />
             </View>
         );
@@ -327,7 +329,7 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
     },
     input: {
-        width: 350,
+        width: Dimensions.get('screen').width - 40,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,

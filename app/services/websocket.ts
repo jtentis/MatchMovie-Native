@@ -48,12 +48,38 @@ export const disconnectWebSocket = (forceDisconnect = true): void => {
 
 export const onGroupCreated = (callback: (group: any) => void): void => {
   if (!socket) {
-      console.error('WebSocket connection is not established.');
-      return;
+    console.error('WebSocket connection is not established.');
+    return;
   }
 
   socket.on('groupCreated', (group: any) => {
-      console.log('New group created:', group);
-      callback(group);
+    console.log('New group created:', group);
+    callback(group);
   });
+};
+
+export const onWinnerReceived = (callback: (winnerData: any) => void): void => {
+  if (socket) {
+    socket.on('gameWinner', callback);
+  } else {
+    console.error('WebSocket connection is not established.');
+  }
+};
+
+export const joinGroupRoom = (groupId: number): void => {
+  if (socket) {
+    socket.emit('joinGroupRoom', groupId);
+    console.log(`Joined group room: group_${groupId}`);
+  } else {
+    console.error('WebSocket connection is not established.');
+  }
+};
+
+export const leaveGroupRoom = (groupId: number): void => {
+  if (socket) {
+    socket.emit('leaveGroupRoom', groupId);
+    console.log(`Left group room: group_${groupId}`);
+  } else {
+    console.error('WebSocket connection is not established.');
+  }
 };
