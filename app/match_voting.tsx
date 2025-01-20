@@ -1,14 +1,20 @@
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import { FontAwesome } from "@expo/vector-icons";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Image,
+    Pressable,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
+import { Modalize } from "react-native-modalize";
 import { useAuth } from "./contexts/AuthContext";
 import {
     connectWebSocket,
@@ -30,8 +36,16 @@ type MatchRouteParams = {
     movieId: number;
 };
 
-const MatchVotingScreen = () => {
-    const navigation = useNavigation();
+type RootStackParamList = {
+    history: { groupId: number };
+    groups: { groupId: number };
+    match_voting: { groupId: number };
+};
+
+type GroupsNavigationProp = RouteProp<RootStackParamList, "groups">;
+
+const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
+    navigation = useNavigation();
     const route = useRoute();
     const { groupId, movieId } = route.params as MatchRouteParams;
     const { authToken, userId } = useAuth();
@@ -40,6 +54,12 @@ const MatchVotingScreen = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [recommendations, setRecommendations] = useState<Movie[]>([]);
     const [winner, setWinner] = useState<Movie | null>(null);
+    const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
+    const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+    const modalizeRef = useRef<Modalize>(null);
+    const [fontsLoaded] = useFonts({
+        CoinyRegular: require("../assets/fonts/Coiny-Regular.ttf"),
+    });
 
     // Fetch movie recommendations
 
@@ -146,6 +166,12 @@ const MatchVotingScreen = () => {
         };
     }, [movieId, groupId]);
 
+    const openMovieDetailsModal = (movie: Movie) => {
+        console.log(movie);
+        setSelectedMovie(movie); // Set the selected movie
+        setModalVisible(true); // Open the modal
+    };
+
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
@@ -154,17 +180,32 @@ const MatchVotingScreen = () => {
         );
     }
 
+    if (!fontsLoaded) {
+        return <Text>Carregando fontes...</Text>;
+    }
+
+    const homePage = () => {
+        navigation.navigate("(tabs)");
+    }
+
     if (winner) {
         return (
-            <View style={styles.winnerContainer}>
-                <Text style={styles.winnerText}>🎉 The winner is:</Text>
+            <View style={styles.container}>
+                <Text style={styles.winnerText}>O FILME VENCEDOR É:</Text>
                 <Image
                     source={{
                         uri: `https://image.tmdb.org/t/p/w500${winner.poster_path}`,
                     }}
-                    style={styles.winnerImage}
+                    style={styles.poster}
                 />
-                <Text style={styles.winnerTitle}>{winner.title}</Text>
+                <Pressable
+                        style={styles.buttonMatch}
+                        onPress={() => homePage()}
+                    >
+                        <ThemedText type="title" style={{ fontSize: 24 }}>
+                            Finalizar 
+                        </ThemedText>
+                    </Pressable>
             </View>
         );
     }
@@ -187,22 +228,63 @@ const MatchVotingScreen = () => {
                 }}
                 style={styles.poster}
             />
-            <Text style={styles.title}>{currentMovie.title}</Text>
-            <Text style={styles.description}>{currentMovie.overview}</Text>
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                    style={[styles.button, styles.dislikeButton]}
+                    style={styles.button}
                     onPress={() => handleVote(false)}
                 >
-                    <Text style={styles.buttonText}>👎 Dislike</Text>
+                    <FontAwesome
+                        size={30}
+                        name="times"
+                        color={Colors.dark.background}
+                    />
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={[styles.button, styles.likeButton]}
+                    style={styles.infoButton}
+                    onPress={() => openMovieDetailsModal(currentMovie)} // Open modal on info button press
+                >
+                    <FontAwesome
+                        size={20}
+                        name="info"
+                        color={Colors.dark.background}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.button}
                     onPress={() => handleVote(true)}
                 >
-                    <Text style={styles.buttonText}>👍 Like</Text>
+                    <FontAwesome
+                        size={30}
+                        name="check"
+                        color={Colors.dark.background}
+                    />
                 </TouchableOpacity>
             </View>
+
+            {/* Movie Details Modal */}
+            <Modalize
+                ref={modalizeRef}
+                onClosed={() => setModalVisible(false)} // Close modal when done
+                adjustToContentHeight
+                modalStyle={{ backgroundColor: "#343637" }}
+            >
+                {selectedMovie && (
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>
+                            {selectedMovie.title}
+                        </Text>
+                        <Image
+                            source={{
+                                uri: `https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`,
+                            }}
+                            style={styles.modalPoster}
+                        />
+                        <Text style={styles.modalOverview}>
+                            {selectedMovie.overview}
+                        </Text>
+                    </View>
+                )}
+            </Modalize>
         </View>
     );
 };
@@ -210,10 +292,10 @@ const MatchVotingScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
+        padding: 5,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#121212",
+        backgroundColor: Colors.dark.background,
     },
     loadingContainer: {
         flex: 1,
@@ -221,10 +303,19 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     poster: {
-        width: 300,
-        height: 450,
+        width: 380,
+        height: 600,
         borderRadius: 10,
-        marginBottom: 20,
+        marginBottom: 60,
+        elevation: 10,
+    },
+    buttonMatch: {
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: Colors.dark.tabIconSelected,
+        padding: 12,
+        borderRadius: 8,
+        elevation: 10,
     },
     title: {
         fontSize: 24,
@@ -240,20 +331,28 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "space-around",
         width: "100%",
     },
     button: {
-        padding: 15,
-        borderRadius: 10,
-        width: "45%",
+        width: 70,
+        height: 70,
+        elevation: 10,
+        borderRadius: 75,
         alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: Colors.dark.tabIconSelected,
     },
-    likeButton: {
-        backgroundColor: "#4CAF50",
-    },
-    dislikeButton: {
-        backgroundColor: "#F44336",
+    infoButton: {
+        width: 40,
+        height: 40,
+        elevation: 5,
+        opacity: 0.8,
+        borderRadius: 75,
+        marginTop: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: Colors.dark.text,
     },
     buttonText: {
         color: "#fff",
@@ -266,10 +365,11 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     winnerText: {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: "#fff",
-        marginBottom: 20,
+        fontSize: 36,
+        color: Colors.dark.tabIconSelected,
+        fontFamily:"CoinyRegular",
+        marginBottom: 5,
+        marginTop: 20,
     },
     winnerImage: {
         width: 300,
@@ -278,9 +378,8 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     winnerTitle: {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: "#4CAF50",
+        fontSize: 36,
+        fontFamily: "CoinyRegular",
     },
     noMoviesContainer: {
         flex: 1,
@@ -290,6 +389,26 @@ const styles = StyleSheet.create({
     noMoviesText: {
         fontSize: 18,
         color: "#fff",
+    },
+    modalContent: {
+        padding: 20,
+        alignItems: "center",
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "white",
+        marginBottom: 10,
+    },
+    modalPoster: {
+        width: 200,
+        height: 300,
+        borderRadius: 10,
+        marginBottom: 10,
+    },
+    modalOverview: {
+        color: "white",
+        textAlign: "center",
     },
 });
 

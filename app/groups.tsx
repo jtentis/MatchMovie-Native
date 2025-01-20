@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
 import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { CommonActions, RouteProp, useRoute } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useRef, useState } from "react";
@@ -225,10 +225,15 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
             console.error("No movieId set for this group.");
             return;
         }
-        navigation.navigate("match_voting", {
-            groupId,
-            movieId: group.movieId,
-        });
+        
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [
+                    { name: 'match_voting', params: { groupId, movieId: group.movieId } },
+                ],
+            })
+        );
     };
 
     if (isLoading) {
