@@ -120,7 +120,7 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
                 throw new Error("Failed to delete match");
             }
 
-            // Update local state after successful deletion
+            // atualiza state local apos deletar
             setMatches((prev) =>
                 prev.filter((match) => match.id !== selectedMatchId)
             );
@@ -232,7 +232,7 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
                                                     ? {
                                                           uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
                                                       }
-                                                    : require("@/assets/images/movie-poster.jpg")
+                                                    : require("@/assets/images/No-Image-Placeholder.png")
                                             }
                                             style={styles.poster}
                                         />

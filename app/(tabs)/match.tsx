@@ -94,7 +94,7 @@ export default function MatchScreen() {
 
         onGroupUpdate(() => fetchGroups());
         onGroupCreated((newGroup) => {
-            setGroups((prevGroups) => [...prevGroups, newGroup]); // Add the new group to the list
+            setGroups((prevGroups) => [...prevGroups, newGroup]);
         });
 
         return () => {
@@ -104,8 +104,8 @@ export default function MatchScreen() {
 
     const renderGroup = (item: Group, navigation: any) => {
         const imageSource = item.image
-            ? { uri: item.image } // Render the Base64 image
-            : require("@/assets/images/group_background.png"); // Fallback to a placeholder
+            ? { uri: item.image }
+            : require("@/assets/images/group_background.png");
 
         return (
             <TouchableOpacity
@@ -152,7 +152,7 @@ export default function MatchScreen() {
                 },
                 body: JSON.stringify({
                     name: groupName,
-                    userIds: [parseInt(userId, 10)], // Send the logged-in user's ID as an array
+                    userIds: [parseInt(userId, 10)],
                 }),
             });
 
@@ -167,7 +167,7 @@ export default function MatchScreen() {
                 if (!groupExists) {
                     return [...prevGroups, newGroup];
                 }
-                return prevGroups; // Return the previous state if the group already exists
+                return prevGroups;
             });
             
             setModalType("success");
@@ -371,8 +371,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderWidth: 1,
         padding: 20,
-        color: 'gray', // Customize the color as needed
-        textAlign: 'center', // Center the message
-        marginLeft: 20 // Add some vertical margin
+        color: 'gray',
+        textAlign: 'center',
+        marginLeft: 20
     },
 });

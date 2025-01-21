@@ -97,7 +97,6 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
     const handleMovieSelect = async (movie: any) => {
         try {
-            // Send the selected movieId to the backend
             const response = await fetch(`${URL_LOCALHOST}/groups/${groupId}`, {
                 method: "PATCH",
                 headers: {
@@ -111,10 +110,10 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 throw new Error("Failed to update group with selected movie");
             }
 
-            // Update the group state with the new data from the backend
+            // atualizando group state com o novo filme
             const updatedGroup = await response.json();
             setGroup(updatedGroup);
-            setSelectedMovie(movie); // Update the selected movie in state
+            setSelectedMovie(movie);
             setSelectedFilter(null);
 
             onGroupUpdate((data) => {
@@ -125,7 +124,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         } catch (error) {
             console.error("Error updating group with selected movie:", error);
         } finally {
-            // Close the modal after movie selection
+            // fechando o modal dps de selecionar filme
             if (movieSelectionModalRef && "current" in movieSelectionModalRef) {
                 movieSelectionModalRef.current?.close();
             }
@@ -211,7 +210,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
         connectWebSocket(userId);
 
-        joinGroupRoom(groupId); // Join the specific group room
+        joinGroupRoom(groupId); // joinando sala de grupo
 
         onGroupUpdate((data) => {
             if (data.groupId === groupId) {
@@ -230,7 +229,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         console.log("Selected Movie:", selectedMovie);
         return () => {
             disconnectWebSocket(false);
-            leaveGroupRoom(groupId); // Leave the room when navigating away
+            leaveGroupRoom(groupId);
         };
     }, [groupId, userId, selectedFilter]);
 
@@ -249,7 +248,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
             return;
         }
 
-        // Pass either the movieId or the filter to the match_voting screen
+        // passando o groupId para tela de votação
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,

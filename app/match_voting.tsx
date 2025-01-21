@@ -75,9 +75,9 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     const [fontsLoaded] = useFonts({
         CoinyRegular: require("../assets/fonts/Coiny-Regular.ttf"),
     });
-    const [isPosterLoading, setIsPosterLoading] = useState(true); // State to track poster loading
+    const [isPosterLoading, setIsPosterLoading] = useState(true);
 
-    // Fetch movie recommendations
+    // Fpega recomendacao de filmes ou filtro
 
     const fetchRecommendations = async (page: number) => {
         try {
@@ -112,8 +112,8 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             }
 
             setRecommendations((prev) => [...prev, ...movieArray]);
-            setCurrentMovie(movieArray[0] || null); // Set the first movie if not set
-            setTotalPages(data.total_pages || 1); // Update total pages if available
+            setCurrentMovie(movieArray[0] || null);
+            setTotalPages(data.total_pages || 1); // paginacao
         } catch (error) {
             console.error("Error fetching recommendations:", error);
         } finally {
@@ -130,11 +130,10 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         }
     };
 
-    // Handle voting
     const handleVote = async (liked: boolean) => {
         if (winner) {
-            console.log("Match already completed. No more votes allowed.");
-            return; // Prevent voting after the match is completed
+            console.log("Votação concluida.");
+            return; // para a votacao apos concluir
         }
 
         try {
@@ -146,9 +145,9 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             if (nextIndex < recommendations.length) {
                 setCurrentMovie(recommendations[nextIndex]);
             } else if (currentPage < totalPages) {
-                loadMoreMovies(); // Fetch the next page if available
+                loadMoreMovies();
             } else {
-                setCurrentMovie(null); // No more movies to vote on
+                setCurrentMovie(null);
             }
 
             const response = await fetch(
@@ -199,10 +198,8 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
 
                 const data = await response.json();
 
-                // Debug: Log the actual response structure
-                console.log("Ingresso.com API response:", data);
+                // console.log("Ingresso.com API response:", data);
 
-                // Adjust based on the response structure
                 const movies = Array.isArray(data) ? data : data.items;
 
                 if (!movies || !Array.isArray(movies)) {
@@ -211,7 +208,6 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                     );
                 }
 
-                // Find the matching movie by title
                 const matchedMovie = data.find(
                     (movie: any) =>
                         movie.title.toLowerCase() === winner.title.toLowerCase()
@@ -242,17 +238,17 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
 
         onWinnerReceived((winnerData) => {
             console.log("Winner received:", winnerData);
-            setWinner(winnerData); // Set the winner in state for all users
-            setRecommendations([]); // Clear remaining recommendations
+            setWinner(winnerData); // setar o ganhador
+            setRecommendations([]); // apagar recomendações q restam
         });
 
-        setCurrentPage(1); // Reset to page 1 when component mounts
-        setRecommendations([]); // Clear previous recommendations
+        setCurrentPage(1); // resetar para pagina 1
+        setRecommendations([]);
         fetchRecommendations(1);
         fetchIngressoURL();
 
         return () => {
-            leaveGroupRoom(groupId); // Leave the room when navigating away
+            leaveGroupRoom(groupId);
             disconnectWebSocket();
             disconnectWebSocket(false);
         };
@@ -260,8 +256,8 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
 
     const openMovieDetailsModal = (movie: Movie) => {
         console.log(movie);
-        setSelectedMovie(movie); // Set the selected movie
-        modalizeRef.current?.open(); // Use the ref to open the Modalize modal
+        setSelectedMovie(movie);
+        modalizeRef.current?.open();
     };
 
     if (isLoading) {
@@ -309,7 +305,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                         style={styles.buttonIngresso}
                         onPress={() => {
                             if (ingressoURL) {
-                                // Open the URL in the user's browser
+                                // abrir url no navegador
                                 Linking.openURL(ingressoURL);
                             }
                         }}
@@ -371,7 +367,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.infoButton}
-                    onPress={() => openMovieDetailsModal(currentMovie)} // Open modal on info button press
+                    onPress={() => openMovieDetailsModal(currentMovie)}
                 >
                     <FontAwesome
                         size={20}
