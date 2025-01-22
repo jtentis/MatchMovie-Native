@@ -305,6 +305,8 @@ const styles = StyleSheet.create({
         width: 170,
         height: 260,
         elevation: 10,
+        borderWidth: 2,
+        borderColor: Colors.dark.input
     },
     listContainer: {
         backgroundColor: Colors.dark.background,
@@ -313,17 +315,6 @@ const styles = StyleSheet.create({
     },
     boxContainer: {
         flex: 1,
-    },
-    card: {
-        flex: 1,
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 160,
-        height: 230,
-        borderRadius: 8,
-        margin: 8,
-        elevation: 10,
     },
     elevated: {
         backgroundColor: "white",
@@ -363,6 +354,8 @@ const styles = StyleSheet.create({
         color: Colors.dark.text,
         alignSelf: "flex-start",
         fontWeight: "500",
+        flexWrap:'wrap',
+        maxWidth: 170
     },
     noGroupsMessage: {
         width: 350,

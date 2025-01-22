@@ -27,6 +27,7 @@ import {
     onWinnerReceived,
 } from "./services/websocket";
 
+
 type Movie = {
     id: number;
     title: string;
@@ -76,6 +77,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         CoinyRegular: require("../assets/fonts/Coiny-Regular.ttf"),
     });
     const [isPosterLoading, setIsPosterLoading] = useState(true);
+    const [isIngressoLoading, setIsIngressoLoading] = useState(false);
 
     // Fpega recomendacao de filmes ou filtro
 
@@ -185,48 +187,144 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         }
     };
 
-    const fetchIngressoURL = async () => {
-        if (filter === "now_playing" && winner) {
+    const fetchGroupLatLng = async (
+        groupId: number
+    ): Promise<{ lat: number; lng: number } | null> => {
+        try {
+            const response = await fetch(
+                `${URL_LOCALHOST}/groups/${groupId}/midpoint`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                console.log("Failed to fetch group's latitude and longitude.")
+                // throw new Error(
+                //     "Failed to fetch group's latitude and longitude."
+                // );
+            }
+
+            const data = await response.json();
+            return data.midpoint;
+        } catch (error: any) {
+            console.log(
+                "Error fetching group's latitude and longitude:",
+                error.message
+            );
+            return null;
+        }
+    };
+
+    const fetchCityId = async (
+        lat: number,
+        lng: number
+    ): Promise<string | null> => {
+        try {
+            const url = `${URL_LOCALHOST}/movies/ingressoURL/lat/${lat}/lng/${lng}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch city ID.");
+            }
+
+            const data = await response.json();
+
+            if (Array.isArray(data) && data.length > 0) {
+                return data[0].id;
+            }
+
+            return null;
+        } catch (error: any) {
+            console.error("Error fetching city ID:", error.message);
+            return null;
+        }
+    };
+
+    const fetchIngressoURL = async (groupId: number) => {
+        if (filter === "now_playing" && winner && winner.title) {
             try {
+                setIsIngressoLoading(true);
+                const groupLatLng = await fetchGroupLatLng(groupId);
+
+                if (!groupLatLng) {
+                    throw new Error(
+                        "Não foi possível pegar latitude e longitude."
+                    );
+                }
+
+                const cityId = await fetchCityId(
+                    groupLatLng.lat,
+                    groupLatLng.lng
+                );
+
+                if (!cityId) {
+                    throw new Error("Não foi possivel pegar ID de cidade.");
+                }
+
                 const response = await fetch(
-                    `${URL_LOCALHOST}/movies/ingressoURL`
+                    `${URL_LOCALHOST}/movies/ingressoURL/city/${cityId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
                 );
 
                 if (!response.ok) {
-                    throw new Error("Failed to fetch ingresso.com data");
+                    throw new Error("Failed to fetch data from ingresso.com.");
                 }
 
                 const data = await response.json();
 
-                // console.log("Ingresso.com API response:", data);
-
-                const movies = Array.isArray(data) ? data : data.items;
-
-                if (!movies || !Array.isArray(movies)) {
-                    throw new Error(
-                        "Invalid data structure from ingresso.com API"
-                    );
+                if (!Array.isArray(data)) {
+                    throw new Error("Invalid data from ingresso.com.");
                 }
 
                 const matchedMovie = data.find(
-                    (movie: any) =>
-                        movie.title.toLowerCase() === winner.title.toLowerCase()
+                    (item) =>
+                        item.event &&
+                        item.event.title &&
+                        item.event.title.toLowerCase().trim() ===
+                            winner.title.toLowerCase().trim()
                 );
 
                 if (matchedMovie) {
-                    setIngressoURL(
-                        `https://www.ingresso.com/filme/${matchedMovie.urlKey}?city=rio-de-janeiro&partnership=3213asd12eqsdad&ing_source=api&ing_medium=link-filme&ing_campaign=3213asd12eqsdad&ing_content=${matchedMovie.urlKey}`
-                    );
+                    const { siteURL, urlKey } = matchedMovie.event;
+                    setIngressoURL(siteURL);
                 } else {
                     setModalMessageAlert(
-                        "Filme não encontrado no ingresso.com para redirecionamento! 🫤"
+                        "Filme não encontrado no ingresso.com."
                     );
-                    setModalTypeAlert("error");
+                    setModalTypeAlert("alert");
                     setModalVisibleAlert(true);
-                    console.log("No matching movie found on ingresso.com");
+                    return false;
                 }
-            } catch (error) {
-                console.error("Error fetching ingresso.com data:", error);
+            } catch (error: any) {
+                console.error(
+                    "Error fetching ingresso.com data:",
+                    error.message
+                );
+
+                const fallbackUrlKey = winner?.title
+                    ?.toLowerCase()
+                    .replace(/\s+/g, "-")
+                    .replace(/:/g, "");
+                setIngressoURL(
+                    `https://www.ingresso.com/filme/${
+                        fallbackUrlKey || "unknown"
+                    }?partnership=home`
+                );
+                console.log(fallbackUrlKey)
+                setModalMessageAlert(
+                    "Erro calcular sua localização, redirecionando para página padrão do ingresso.com."
+                );
+                setModalTypeAlert("alert");
+                setModalVisibleAlert(true);
+            } finally {
+                setIsIngressoLoading(false);
             }
         }
     };
@@ -239,20 +337,20 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         onWinnerReceived((winnerData) => {
             console.log("Winner received:", winnerData);
             setWinner(winnerData); // setar o ganhador
-            setRecommendations([]); // apagar recomendações q restam
+            setRecommendations([]); // apagar recomendações restantes
         });
 
         setCurrentPage(1); // resetar para pagina 1
         setRecommendations([]);
         fetchRecommendations(1);
-        fetchIngressoURL();
+
+        fetchIngressoURL(groupId); // usando group id para pegar usuarios e calcular lat long e dps usar pra pegar cityId e usar no endpoint do ingresso.com
 
         return () => {
             leaveGroupRoom(groupId);
             disconnectWebSocket();
-            disconnectWebSocket(false);
         };
-    }, [movieId, filter, groupId, filter, winner]);
+    }, [movieId, filter, groupId, winner]);
 
     const openMovieDetailsModal = (movie: Movie) => {
         console.log(movie);
@@ -263,7 +361,10 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator
+                    size="large"
+                    color={Colors.dark.tabIconSelected}
+                />
             </View>
         );
     }
@@ -273,9 +374,28 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     }
 
     const homePage = () => {
-        navigation.navigate("(tabs)");
+        navigation.reset({
+            index: 0,
+            routes: [{ name: "(tabs)" }],
+        });
     };
 
+    const ingressoRedirect = (url: any) => {
+        Linking.openURL(url);
+        navigation.reset({
+            index: 0,
+            routes: [{ name: "(tabs)" }],
+        });
+    };
+
+    if (isIngressoLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} />
+            </View>
+        );
+    }
+    
     if (winner) {
         return (
             <View style={styles.container}>
@@ -295,26 +415,29 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                     onLoad={() => setIsPosterLoading(false)}
                     style={styles.poster}
                 />
-                <Pressable style={styles.buttonEnd} onPress={() => homePage()}>
-                    <ThemedText type="title" style={{ fontSize: 24 }}>
-                        Finalizar
-                    </ThemedText>
-                </Pressable>
-                {ingressoURL && (
+                <View style={styles.buttonContainer}>
                     <Pressable
-                        style={styles.buttonIngresso}
-                        onPress={() => {
-                            if (ingressoURL) {
-                                // abrir url no navegador
-                                Linking.openURL(ingressoURL);
-                            }
-                        }}
+                        style={[
+                            styles.buttonEnd,
+                            ingressoURL ? styles.buttonEndHalf : undefined,
+                        ]}
+                        onPress={() => homePage()}
                     >
-                        <ThemedText type="title" style={{ fontSize: 18 }}>
-                            Comprar Ingresso
+                        <ThemedText type="title" style={{ fontSize: 24 }}>
+                            Finalizar
                         </ThemedText>
                     </Pressable>
-                )}
+                    {ingressoURL && (
+                        <Pressable
+                            style={styles.buttonIngresso}
+                            onPress={() => ingressoRedirect(ingressoURL)}
+                        >
+                            <ThemedText type="title" style={{ fontSize: 18 }}>
+                                Ingresso
+                            </ThemedText>
+                        </Pressable>
+                    )}
+                </View>
                 <AlertModal
                     type={modalTypeAlert}
                     message={modalMessageAlert}
@@ -324,6 +447,19 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             </View>
         );
     }
+    
+    if (!currentMovie) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator
+                    style={styles.posterLoader}
+                    size="large"
+                    color={Colors.dark.tabIconSelected}
+                />
+            </View>
+        );
+    }
+    
 
     if (!currentMovie) {
         return (
@@ -483,6 +619,10 @@ const styles = StyleSheet.create({
         elevation: 10,
         width: Dimensions.get("window").width - 20,
     },
+    buttonEndHalf: {
+        flex: 1,
+        marginLeft: 5,
+    },
     title: {
         fontSize: 24,
         fontWeight: "bold",
@@ -541,10 +681,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: Colors.dark.tabIconSelected,
+        backgroundColor: Colors.dark.background,
         padding: 10,
         borderRadius: 8,
-        elevation: 10,
+        borderWidth: 1,
+        borderColor: Colors.dark.tabIconSelected,
         marginHorizontal: 5,
     },
     winnerImage: {

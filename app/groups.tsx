@@ -673,6 +673,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     filterButton: {
+        fontSize: 14,
         backgroundColor: Colors.dark.input,
         padding: 12,
         marginHorizontal: 5,
