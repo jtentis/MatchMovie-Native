@@ -24,6 +24,7 @@ import {
     connectWebSocket,
     disconnectWebSocket,
     onGroupCreated,
+    onGroupDeleted,
     onGroupUpdate,
 } from "../services/websocket";
 
@@ -96,6 +97,15 @@ export default function MatchScreen() {
         onGroupCreated((newGroup) => {
             setGroups((prevGroups) => [...prevGroups, newGroup]);
         });
+
+        const handleGroupDeleted = (data: any) => {
+            console.log(`Group deleted: ${data.groupId}`);
+            setGroups((prevGroups) =>
+                prevGroups.filter((group) => group.id !== data.groupId)
+            ); // atualizar o grupo deletado para todos os usuarios
+        };
+
+        onGroupDeleted(handleGroupDeleted);
 
         return () => {
             disconnectWebSocket();
@@ -170,9 +180,9 @@ export default function MatchScreen() {
                 return prevGroups;
             });
             
-            setModalType("success");
-            setModalMessage("Grupo criado com sucesso!");
-            setModalVisible(true);
+            // setModalType("success");
+            // setModalMessage("Grupo criado com sucesso!");
+            // setModalVisible(true);
             setGroupName("");
             navigation.navigate("groups", { groupId: newGroup.id })
         } catch (error) {

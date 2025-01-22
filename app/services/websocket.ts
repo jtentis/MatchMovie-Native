@@ -46,6 +46,14 @@ export const disconnectWebSocket = (forceDisconnect = true): void => {
   }
 };
 
+export const onGroupDeleted = (callback: (data: { groupId: number; message: string }) => void): void => {
+  if (socket) {
+      socket.on("groupDeleted", callback);
+  } else {
+      console.error("WebSocket connection is not established.");
+  }
+};
+
 export const onGroupCreated = (callback: (group: any) => void): void => {
   if (!socket) {
     console.error('WebSocket connection is not established.');

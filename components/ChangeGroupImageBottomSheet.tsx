@@ -1,17 +1,22 @@
+import { useAuth } from "@/app/contexts/AuthContext";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
+import { URL_LOCALHOST } from "@/constants/Url";
 import * as ImagePicker from "expo-image-picker";
+import { useNavigation } from "expo-router";
 import React, { forwardRef, useState } from "react";
 import {
+    Dimensions,
     Image,
     Pressable,
     StyleSheet,
     Text,
     TextInput,
-    View
+    View,
 } from "react-native";
 import { Modalize } from "react-native-modalize";
 import AlertModal from "./ModalAlert";
+import ConfirmModal from "./ModalAlertConfirm";
 import { ThemedText } from "./ThemedText";
 
 type ChangeGroupBottomSheetProps = {
@@ -21,6 +26,12 @@ type ChangeGroupBottomSheetProps = {
     onSave: (data: { name?: string; image?: string }) => void;
 };
 
+interface Group {
+    id: number;
+    name: string;
+    image: string | null;
+}
+
 export const ChangeGroupBottomSheet = forwardRef<
     Modalize,
     ChangeGroupBottomSheetProps
@@ -28,8 +39,12 @@ export const ChangeGroupBottomSheet = forwardRef<
     const [name, setName] = useState<string | any>(currentName);
     const [image, setImage] = useState<string | null>(currentImage);
     const [isSaving, setIsSaving] = useState(false);
+    const { authToken, userId } = useAuth();
+    const [groups, setGroups] = useState<Group[]>([]);
+    const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalMessage, setModalMessage] = useState<string>("");
+    const navigation: any = useNavigation();
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
     );
@@ -93,9 +108,40 @@ export const ChangeGroupBottomSheet = forwardRef<
         }
     };
 
+    const handleDeleteCloseAlert = () => {
+        setModalVisible(false);
+        (ref as React.MutableRefObject<Modalize>).current?.close();
+    };
+
+    const handleDeleteGroup = async () => {
+        try {
+            const response = await fetch(`${URL_LOCALHOST}/groups/${groupId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${authToken}`, // Pass the token
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete group");
+            }
+
+            setModalType("success"); //modal de cofirmação só pra quem excluiu o grupo
+            setModalMessage("Grupo excluido com sucesso!");
+            setModalVisible(true);
+            setTimeout(() => {
+                (ref as React.MutableRefObject<Modalize>).current?.close();
+            }, 2000);
+        } catch (error) {
+            console.error("Error deleting group:", error);
+            setModalType("error");
+            setModalMessage("Erro ao excluir o grupo!");
+            setModalVisible(true);
+        }
+    };
+
     const handleCloseAlert = () => {
         setModalVisible(false);
-        // Close the Modalize when the alert is closed
         (ref as React.MutableRefObject<Modalize>).current?.close();
     };
 
@@ -114,6 +160,7 @@ export const ChangeGroupBottomSheet = forwardRef<
                 Atualizar informações de grupo
             </Text>
             <View style={styles.modalContent}>
+                {/* Existing UI for name and image */}
                 <TextInput
                     style={styles.input}
                     placeholder="Digite o novo nome do grupo"
@@ -127,7 +174,6 @@ export const ChangeGroupBottomSheet = forwardRef<
                         flex: 1,
                         flexDirection: "row",
                         gap: 10,
-                        marginBottom: 30,
                     }}
                 >
                     <View style={styles.imagePreview}>
@@ -138,7 +184,6 @@ export const ChangeGroupBottomSheet = forwardRef<
                             />
                         ) : (
                             <Text style={styles.image_placeholder}>
-                                {" "}
                                 Nenhuma imagem selecionada
                             </Text>
                         )}
@@ -166,11 +211,35 @@ export const ChangeGroupBottomSheet = forwardRef<
                         </Pressable>
                     </View>
                 </View>
+                <Pressable
+                    style={[
+                        styles.buttonDelete,
+                        { backgroundColor: Colors.dark.tabIconSelected },
+                    ]}
+                    onPress={() => setConfirmDeleteVisible(true)}
+                >
+                    <ThemedText
+                        type={"defaultSemiBold"}
+                        style={{
+                            fontSize: Fonts.dark.buttonText,
+                            color: "white",
+                        }}
+                    >
+                        Excluir Grupo
+                    </ThemedText>
+                </Pressable>
                 <AlertModal
                     type={modalType}
                     message={modalMessage}
                     visible={modalVisible}
-                    onClose={handleCloseAlert} // Close the Modalize when alert is closed
+                    onClose={handleCloseAlert}
+                />
+                <ConfirmModal
+                    type="alert"
+                    visible={confirmDeleteVisible}
+                    onConfirm={handleDeleteGroup}
+                    onCancel={() => setConfirmDeleteVisible(false)}
+                    message="Tem certeza que deseja excluir este grupo?"
                 />
             </View>
         </Modalize>
@@ -226,6 +295,18 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         width: 145,
+        height: 50,
+        backgroundColor: Colors.dark.background,
+        borderColor: Colors.dark.tabIconSelected,
+        borderWidth: 1,
+        borderRadius: 8,
+        elevation: 2,
+        fontSize: Fonts.dark.buttonText,
+    },
+    buttonDelete: {
+        justifyContent: "center",
+        alignItems: "center",
+        width: Dimensions.get("screen").width - 40,
         height: 50,
         backgroundColor: Colors.dark.background,
         borderColor: Colors.dark.tabIconSelected,

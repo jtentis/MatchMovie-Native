@@ -1,6 +1,7 @@
 import { AddUserBottomSheet } from "@/components/AddUserBottomSheet";
 import { ChangeGroupBottomSheet } from "@/components/ChangeGroupImageBottomSheet";
 import AlertModal from "@/components/ModalAlert";
+import ConfirmModal from "@/components/ModalAlertConfirm";
 import MovieSelectionModal from "@/components/MovieSelectionBottomSheet";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
@@ -29,7 +30,8 @@ import {
     disconnectWebSocket,
     joinGroupRoom,
     leaveGroupRoom,
-    onGroupUpdate,
+    onGroupDeleted,
+    onGroupUpdate
 } from "./services/websocket";
 
 type User = {
@@ -60,6 +62,7 @@ type RootStackParamList = {
     history: { groupId: number };
     groups: { groupId: number };
     match_voting: { groupId: number };
+    '(tabs)' : {screen: 'match'}
 };
 
 type GroupsNavigationProp = RouteProp<RootStackParamList, "groups">;
@@ -77,6 +80,9 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
     const [selectedMovie, setSelectedMovie] = useState<any>(null);
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+    const [isConfirmUserVisible, setIsConfirmUserVisible] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState<number | any>(null);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
     );
@@ -84,6 +90,54 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
     const openMovieSelectionModal = () => {
         movieSelectionModalRef.current?.open();
+    };
+
+    const handleDelete = async () => {
+        if (!groupId || !selectedUserId) return;
+
+        if(selectedUserId == userId){
+            setIsConfirmUserVisible(false);
+            setModalType("error");
+            setModalMessage("Você não pode se excluir do grupo.");
+            setModalVisible(true);
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${URL_LOCALHOST}/groups/${groupId}/users/${selectedUserId}`,
+                {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${authToken}` },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Falha.");
+            }
+
+            // Update group state after deletion
+            setGroup((prevGroup) => {
+                if (!prevGroup) return prevGroup;
+                return {
+                    ...prevGroup,
+                    users: prevGroup.users.filter(
+                        (user) => user.userId !== selectedUserId
+                    ),
+                };
+            });
+
+            setIsConfirmUserVisible(false);
+            setSelectedUserId(null);
+        } catch (error) {
+            console.error("Error deleting user:", error);
+        }
+    };
+
+    // Trigger modal on long press
+    const handleLongPress = (userId: number) => {
+        setSelectedUserId(userId);
+        setIsConfirmUserVisible(true);
     };
 
     const handleFilterSelect = (filter: string) => {
@@ -224,6 +278,15 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 });
             }
         });
+
+        const handleGroupDeleted = (data: any) => {
+            console.log(`Group deleted: ${data.groupId}`);
+            setTimeout(() => {
+                navigation.goBack(); // atualizar e retornar todos os usuários que estao dentro da pagina do grupo
+            }, 2000);
+        };
+
+        onGroupDeleted(handleGroupDeleted);
 
         console.log("Selected Filter Updated:", selectedFilter);
         console.log("Selected Movie:", selectedMovie);
@@ -373,11 +436,16 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         keyExtractor={(item) => item.id.toString()}
                         horizontal
                         renderItem={({ item }) => (
-                            <View>
-                                <Text style={styles.userName}>
-                                    @{item.user.user}
-                                </Text>
-                            </View>
+                            <TouchableOpacity
+                                onLongPress={() => handleLongPress(item.userId)}
+                                delayLongPress={150} // 1 second long press
+                            >
+                                <View>
+                                    <Text style={styles.userName}>
+                                        @{item.user.user}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
                         )}
                     />
                 </View>
@@ -513,6 +581,13 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 message={modalMessage}
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
+            />
+            <ConfirmModal
+                type="alert"
+                visible={isConfirmUserVisible}
+                onConfirm={handleDelete}
+                onCancel={() => setIsConfirmUserVisible(false)}
+                message="Tem certeza que deseja remover este usuário do grupo?"
             />
         </>
     );
