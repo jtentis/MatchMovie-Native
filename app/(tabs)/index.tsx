@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
+import { FontAwesome } from "@expo/vector-icons";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Pressable } from "expo-router/build/views/Pressable";
@@ -297,9 +298,9 @@ const HomeScreen = () => {
             <View style={styles.searchDiv}>
                 <Icon
                     fill="#D46162"
-                    viewBox={"0 0 34 35"}
-                    width={54}
-                    height={50}
+                    viewBox={"0 0 36 36"}
+                    width={58}
+                    height={54}
                     style={styles.icon}
                 />
                 <View style={{ flexDirection: "row" }}>
@@ -313,19 +314,7 @@ const HomeScreen = () => {
                         selectionColor={Colors.dark.tabIconSelected}
                     />
                     <Pressable style={styles.button} onPress={searchMovies}>
-                        <Text
-                            style={{
-                                fontSize: 12,
-                                lineHeight: 20,
-                                fontWeight: "bold",
-                                letterSpacing: 0.5,
-                                color: "white",
-                                flex: 1,
-                                alignSelf: "center",
-                            }}
-                        >
-                            Procurar
-                        </Text>
+                        <FontAwesome name={'search'} size={16} color={'white'}></FontAwesome>
                     </Pressable>
                 </View>
             </View>
@@ -416,11 +405,13 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
     },
     input: {
-        width: Dimensions.get('screen').width - 190,
+        width: Dimensions.get('screen').width - 155,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
         marginTop: 30,
+        borderWidth: 1,
+        borderColor: Colors.dark.tabIconSelected,
         borderBottomLeftRadius: 8,
         borderTopLeftRadius: 8,
         elevation: 10,
@@ -428,7 +419,7 @@ const styles = StyleSheet.create({
         color: Colors.dark.text,
     },
     button: {
-        width: 85,
+        width: 50,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 15,

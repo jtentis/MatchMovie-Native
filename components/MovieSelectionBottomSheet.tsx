@@ -1,6 +1,7 @@
 import { useAuth } from "@/app/contexts/AuthContext";
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
@@ -151,7 +152,7 @@ const MovieSelectionModal = React.forwardRef<
                                 style={styles.searchButton}
                                 onPress={() => fetchMovies(searchQuery)}
                             >
-                                <Text style={styles.searchButtonText}>🔍</Text>
+                                <Text style={styles.searchButtonText}><FontAwesome name={'search'} size={16}></FontAwesome></Text>
                             </TouchableOpacity>
                         </View>
                     </View>
