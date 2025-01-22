@@ -4,7 +4,6 @@ import AlertModal from "@/components/ModalAlert";
 import ConfirmModal from "@/components/ModalAlertConfirm";
 import MovieSelectionModal from "@/components/MovieSelectionBottomSheet";
 import { Colors } from "@/constants/Colors";
-import { Fonts } from "@/constants/Fonts";
 import { URL_LOCALHOST } from "@/constants/Url";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { CommonActions, RouteProp, useRoute } from "@react-navigation/native";
@@ -13,6 +12,7 @@ import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
+    Dimensions,
     FlatList,
     Image,
     ImageBackground,
@@ -31,7 +31,7 @@ import {
     joinGroupRoom,
     leaveGroupRoom,
     onGroupDeleted,
-    onGroupUpdate
+    onGroupUpdate,
 } from "./services/websocket";
 
 type User = {
@@ -62,7 +62,7 @@ type RootStackParamList = {
     history: { groupId: number };
     groups: { groupId: number };
     match_voting: { groupId: number };
-    '(tabs)' : {screen: 'match'}
+    "(tabs)": { screen: "match" };
 };
 
 type GroupsNavigationProp = RouteProp<RootStackParamList, "groups">;
@@ -95,7 +95,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
     const handleDelete = async () => {
         if (!groupId || !selectedUserId) return;
 
-        if(selectedUserId == userId){
+        if (selectedUserId == userId) {
             setIsConfirmUserVisible(false);
             setModalType("error");
             setModalMessage("Você não pode se excluir do grupo.");
@@ -266,6 +266,8 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
         joinGroupRoom(groupId); // joinando sala de grupo
 
+        onGroupUpdate(() => fetchGroup()); // toda vez q grupo for atulizado, vai chamar a funcao dnv
+
         onGroupUpdate((data) => {
             if (data.groupId === groupId) {
                 console.log("WebSocket: Group update received");
@@ -356,7 +358,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         setModalType("alert");
         setModalVisible(true);
         setModalMessage(
-            "Para iniciar o match, escolha um filtro ou um filme. Caso o filtro escolhido seja Popular, o usuário poderá ser redirecionado para o ingresso.com."
+            "Para iniciar o match, escolha um filtro ou um filme. Caso o filtro escolhido seja em cartaz, o usuário poderá ser redirecionado para o ingresso.com."
         );
     };
 
@@ -388,31 +390,13 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 </Pressable>
                 <TouchableOpacity
                     onPress={openAddUserModal}
-                    style={{
-                        position: "absolute",
-                        right: 19,
-                        top: 70,
-                        borderWidth: 1,
-                        borderColor: Colors.dark.background,
-                        borderRadius: 5,
-                        padding: 12,
-                        backgroundColor: Colors.dark.background,
-                    }}
+                    style={styles.addButton}
                 >
                     <FontAwesome size={25} name="plus" color={"white"} />
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={openChangeImageModal}
-                    style={{
-                        position: "absolute",
-                        right: 18,
-                        top: 130,
-                        borderWidth: 1,
-                        borderColor: Colors.dark.background,
-                        borderRadius: 5,
-                        padding: 12,
-                        backgroundColor: Colors.dark.background,
-                    }}
+                    style={[styles.addButton, styles.editButton]}
                 >
                     <FontAwesome size={25} name="pencil" color={"white"} />
                 </TouchableOpacity>
@@ -420,11 +404,11 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
             <View style={styles.mainContainer}>
                 <View
                     style={{
-                        flex: 4 / 3,
+                        flex: 4 / 5,
                         backgroundColor: Colors.dark.background,
                         alignItems: "center",
                         justifyContent: "center",
-                        gap: 10,
+                        marginTop: 20,
                     }}
                 >
                     <ThemedText type="defaultSemiBold" style={styles.subtitle}>
@@ -451,10 +435,10 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 </View>
                 <View
                     style={{
-                        flex: 4,
+                        width: Dimensions.get("screen").width - 40,
                         backgroundColor: Colors.dark.background,
                         alignItems: "center",
-                        justifyContent: "flex-start",
+                        justifyContent: "center",
                     }}
                 >
                     <ThemedText type="defaultSemiBold" style={styles.subtitle}>
@@ -475,11 +459,11 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                     </ThemedText>
                     <View
                         style={{
+                            width: Dimensions.get("screen").width - 40,
                             backgroundColor: Colors.dark.background,
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            padding: 20,
                             flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
                             gap: 5,
                         }}
                     >
@@ -494,7 +478,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                                             ? {
                                                   uri: `https://image.tmdb.org/t/p/w500${selectedMovie?.poster_path}`,
                                               }
-                                            : require("@/assets/images/No-Image-Placeholder.png")
+                                            : require("@/assets/images/place-holder-movies.png")
                                     }
                                     style={styles.poster}
                                 />
@@ -503,7 +487,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         <View style={styles.filterButtons}>
                             {[
                                 { key: "popular", label: "Populares" },
-                                { key: "now_playing", label: "Em Cartaz" },
+                                { key: "now_playing", label: "Em cartaz" },
                                 {
                                     key: "top_rated",
                                     label: "Melhor avaliados",
@@ -532,12 +516,12 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 </View>
                 <View
                     style={{
-                        flex: 0.9,
+                        width: Dimensions.get("screen").width - 40,
                         backgroundColor: Colors.dark.background,
-                        flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
-                        gap: 5,
+                        flexDirection: "row",
+                        height: 80,
                     }}
                 >
                     <Pressable
@@ -598,7 +582,7 @@ const styles = StyleSheet.create({
         flex: 3 / 1,
         alignContent: "center",
         justifyContent: "center",
-        padding: 27,
+        alignItems: "center",
         backgroundColor: Colors.dark.background,
         gap: 15,
         borderTopWidth: 1,
@@ -624,17 +608,12 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: 24,
         color: "white",
-        marginTop: 10,
+        marginBottom: 10,
         flexWrap: "wrap",
         textAlign: "center",
     },
-    subtitleFiltros: {
-        fontSize: 24,
-        color: "white",
-        marginTop: 15,
-    },
     poster: {
-        width: 150,
+        width: Dimensions.get("screen").width / 3.2,
         height: 190,
         borderRadius: 5,
         elevation: 10,
@@ -654,32 +633,27 @@ const styles = StyleSheet.create({
         borderRadius: 10990,
         opacity: 0.8,
     },
-    selected: {
-        backgroundColor: Colors.dark.tabIconSelected,
-    },
-    default: {
-        backgroundColor: Colors.dark.input,
-    },
-    buttonText: {
-        fontSize: 12,
-        color: "white",
-    },
     buttonMatch: {
+        width: Dimensions.get("screen").width / 3.2,
+        height: 50,
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: Colors.dark.tabIconSelected,
-        padding: 12,
+        padding: 10,
         borderRadius: 8,
         elevation: 10,
     },
     buttonHistory: {
+        width: Dimensions.get("screen").width / 3.2,
+        height: 50,
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: Colors.dark.background,
-        padding: 12,
+        padding: 10,
         borderRadius: 8,
         elevation: 2,
         borderWidth: 1,
+        marginLeft: 5,
         borderColor: Colors.dark.tabIconSelected,
     },
     backButton: {
@@ -692,6 +666,22 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
         borderTopRightRadius: 8,
         borderBottomRightRadius: 8,
+    },
+    addButton: {
+        position: "absolute",
+        right: 19,
+        top: 60,
+        borderWidth: 1,
+        borderColor: Colors.dark.background,
+        borderRadius: 5,
+        width: 55,
+        height: 55,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: Colors.dark.background,
+    },
+    editButton: {
+        top: 130,
     },
     errorContainer: {
         flex: 1,
@@ -707,58 +697,27 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: Colors.dark.text,
     },
-    modalContent: {
-        flex: 1,
-        flexDirection: "row",
-        padding: 16,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 16,
-        alignSelf: "center",
-        marginTop: 30,
-    },
-    input: {
-        width: 350,
-        height: 50,
-        backgroundColor: Colors.dark.input,
-        padding: 15,
-        borderRadius: 8,
-        elevation: 2,
-        color: Colors.dark.text,
-    },
-    button: {
-        right: 20,
-        position: "absolute",
-        justifyContent: "center",
-        alignItems: "center",
-        width: 100,
-        height: 50,
-        backgroundColor: Colors.dark.tabIconSelected,
-        borderRadius: 8,
-        elevation: 2,
-        fontSize: Fonts.dark.buttonText,
-    },
     filterButtons: {
-        width: 140,
+        width: Dimensions.get("screen").width / 3.2,
+        backgroundColor: Colors.dark.background,
         height: 190,
         justifyContent: "space-between",
     },
     filterButton: {
         fontSize: 14,
-        backgroundColor: Colors.dark.input,
-        padding: 12,
-        marginHorizontal: 5,
+        backgroundColor: Colors.dark.background,
+        borderWidth: 1,
+        borderColor: Colors.dark.tabIconSelected,
+        width: Dimensions.get("screen").width / 3.2,
+        height: 40,
         borderRadius: 8,
         alignItems: "center",
+        justifyContent: "center",
     },
     filterButtonSelected: {
         backgroundColor: Colors.dark.tabIconSelected,
     },
-    filterButtonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+    filterButtonText: { color: "white", fontWeight: "semibold", fontSize: 14 },
 });
 
 export default GroupsScreen;

@@ -27,7 +27,6 @@ import {
     onWinnerReceived,
 } from "./services/websocket";
 
-
 type Movie = {
     id: number;
     title: string;
@@ -201,7 +200,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             );
 
             if (!response.ok) {
-                console.log("Failed to fetch group's latitude and longitude.")
+                console.log("Failed to fetch group's latitude and longitude.");
                 // throw new Error(
                 //     "Failed to fetch group's latitude and longitude."
                 // );
@@ -294,6 +293,11 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                 if (matchedMovie) {
                     const { siteURL, urlKey } = matchedMovie.event;
                     setIngressoURL(siteURL);
+                    setModalMessageAlert(
+                        "Localização com cinemas próximos! Clique em Ingresso para saber mais!"
+                    );
+                    setModalTypeAlert("success");
+                    setModalVisibleAlert(true);
                 } else {
                     setModalMessageAlert(
                         "Filme não encontrado no ingresso.com."
@@ -317,7 +321,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                         fallbackUrlKey || "unknown"
                     }?partnership=home`
                 );
-                console.log(fallbackUrlKey)
+                console.log(fallbackUrlKey);
                 setModalMessageAlert(
                     "Erro calcular sua localização, redirecionando para página padrão do ingresso.com."
                 );
@@ -330,7 +334,13 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     };
 
     useEffect(() => {
-        connectWebSocket(userId);
+        const socketInstance = connectWebSocket(userId);
+
+        if (socketInstance.connected) {
+            joinGroupRoom(groupId);
+        } else {
+            console.error("WebSocket connection failed to establish.");
+        }
 
         joinGroupRoom(groupId);
 
@@ -391,11 +401,14 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     if (isIngressoLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} />
+                <ActivityIndicator
+                    size="large"
+                    color={Colors.dark.tabIconSelected}
+                />
             </View>
         );
     }
-    
+
     if (winner) {
         return (
             <View style={styles.container}>
@@ -447,7 +460,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             </View>
         );
     }
-    
+
     if (!currentMovie) {
         return (
             <View style={styles.container}>
@@ -459,7 +472,6 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             </View>
         );
     }
-    
 
     if (!currentMovie) {
         return (
