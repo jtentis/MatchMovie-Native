@@ -2,6 +2,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
 import { URL_LOCALHOST } from "@/constants/Url";
+import { FontAwesome } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "expo-router";
 import React, { forwardRef, useState } from "react";
@@ -160,15 +161,25 @@ export const ChangeGroupBottomSheet = forwardRef<
                 Atualizar informações de grupo
             </Text>
             <View style={styles.modalContent}>
-                {/* Existing UI for name and image */}
-                <TextInput
-                    style={styles.input}
-                    placeholder="Digite o novo nome do grupo"
-                    value={name}
-                    onChangeText={setName}
-                    selectionColor={Colors.dark.tabIconSelected}
-                    placeholderTextColor={Colors.dark.textPlaceHolder}
-                />
+                <View style={{
+                        width: Dimensions.get('screen').width - 40,
+                        alignSelf:'flex-start',
+                        flexDirection: "row",
+                        justifyContent: 'space-between',
+                        alignItems:'center',
+                    }}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Digite o novo nome do grupo"
+                        value={name}
+                        onChangeText={setName}
+                        selectionColor={Colors.dark.tabIconSelected}
+                        placeholderTextColor={Colors.dark.textPlaceHolder}
+                    />
+                    <Pressable onPress={() => setConfirmDeleteVisible(true)}>
+                        <FontAwesome name={'trash'} size={40} color={Colors.dark.tabIconSelected}></FontAwesome>
+                    </Pressable>
+                </View>
                 <View
                     style={{
                         flex: 1,
@@ -188,7 +199,7 @@ export const ChangeGroupBottomSheet = forwardRef<
                             </Text>
                         )}
                     </View>
-                    <View style={{ flex: 1, gap: 5 }}>
+                    <View style={{ flex: 1, gap: 5, marginBottom: 30 }}>
                         <Pressable style={styles.button} onPress={pickImage}>
                             <ThemedText
                                 type={"defaultSemiBold"}
@@ -211,23 +222,6 @@ export const ChangeGroupBottomSheet = forwardRef<
                         </Pressable>
                     </View>
                 </View>
-                <Pressable
-                    style={[
-                        styles.buttonDelete,
-                        { backgroundColor: Colors.dark.tabIconSelected },
-                    ]}
-                    onPress={() => setConfirmDeleteVisible(true)}
-                >
-                    <ThemedText
-                        type={"defaultSemiBold"}
-                        style={{
-                            fontSize: Fonts.dark.buttonText,
-                            color: "white",
-                        }}
-                    >
-                        Excluir Grupo
-                    </ThemedText>
-                </Pressable>
                 <AlertModal
                     type={modalType}
                     message={modalMessage}
@@ -262,7 +256,8 @@ const styles = StyleSheet.create({
         color: "white",
     },
     input: {
-        width: 350,
+        width: Dimensions.get("screen").width - 85,
+        alignSelf: 'flex-start',
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -275,7 +270,6 @@ const styles = StyleSheet.create({
         height: 105,
         justifyContent: "center",
         alignItems: "center",
-        marginLeft: 6,
         borderWidth: 1,
         borderColor: Colors.dark.tabIconSelected,
         borderRadius: 6,
@@ -295,18 +289,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         width: 145,
-        height: 50,
-        backgroundColor: Colors.dark.background,
-        borderColor: Colors.dark.tabIconSelected,
-        borderWidth: 1,
-        borderRadius: 8,
-        elevation: 2,
-        fontSize: Fonts.dark.buttonText,
-    },
-    buttonDelete: {
-        justifyContent: "center",
-        alignItems: "center",
-        width: Dimensions.get("screen").width - 40,
         height: 50,
         backgroundColor: Colors.dark.background,
         borderColor: Colors.dark.tabIconSelected,
