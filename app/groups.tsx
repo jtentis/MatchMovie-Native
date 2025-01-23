@@ -283,9 +283,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
         const handleGroupDeleted = (data: any) => {
             console.log(`Group deleted: ${data.groupId}`);
-            setTimeout(() => {
-                navigation.goBack(); // atualizar e retornar todos os usuários que estao dentro da pagina do grupo
-            }, 2000);
+            navigation.goBack(); // atualizar e retornar todos os usuários que estao dentro da pagina do grupo
         };
 
         onGroupDeleted(handleGroupDeleted);
