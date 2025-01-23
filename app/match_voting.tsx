@@ -191,7 +191,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     ): Promise<{ lat: number; lng: number } | null> => {
         try {
             const response = await fetch(
-                `${URL_LOCALHOST}/groups/${groupId}/midpoint`,
+                `${URL_LOCALHOST}/geolocation/${groupId}/midpoint`,
                 {
                     headers: {
                         Authorization: `Bearer ${authToken}`,
@@ -222,7 +222,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         lng: number
     ): Promise<string | null> => {
         try {
-            const url = `${URL_LOCALHOST}/movies/ingressoURL/lat/${lat}/lng/${lng}`;
+            const url = `${URL_LOCALHOST}/ingresso/lat/${lat}/lng/${lng}`;
             const response = await fetch(url);
 
             if (!response.ok) {
@@ -264,7 +264,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                 }
 
                 const response = await fetch(
-                    `${URL_LOCALHOST}/movies/ingressoURL/city/${cityId}`,
+                    `${URL_LOCALHOST}/ingresso/city/${cityId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${authToken}`,
