@@ -88,20 +88,8 @@ export const joinGroupRoom = (groupId: number): void => {
 };
 
 export const leaveGroupRoom = (groupId: number, retryCount = 0): void => {
-  const maxRetries = 5; // Maximum number of retries
-  const retryDelay = 1000; // Delay between retries in milliseconds
-
   if (socket && socket.connected) {
     socket.emit('leaveGroupRoom', groupId);
     console.log(`Left group room: group_${groupId}`);
-  } else {
-    if (retryCount < maxRetries) {
-      console.error(
-        `WebSocket connection is not established. Retrying... (${retryCount + 1}/${maxRetries})`
-      );
-      setTimeout(() => leaveGroupRoom(groupId, retryCount + 1), retryDelay);
-    } else {
-      console.error('Failed to leave group room after multiple retries.');
-    }
   }
 };
