@@ -17,6 +17,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
 import { Modalize } from "react-native-modalize";
 import { useAuth } from "./contexts/AuthContext";
 import {
@@ -60,12 +61,11 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     const route = useRoute();
     const { groupId, movieId, filter } = route.params as MatchRouteParams;
     const { authToken, userId } = useAuth();
-    const screenWidth = Dimensions.get("window").width;
+    const [showConfetti, setShowConfetti] = useState(false);
     const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [recommendations, setRecommendations] = useState<Movie[]>([]);
     const [winner, setWinner] = useState<Movie | null>(null);
-    const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const modalizeRef = useRef<Modalize>(null);
     const [ingressoURL, setIngressoURL] = useState<string | null>(null);
@@ -277,21 +277,22 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                 }
 
                 const data = await response.json();
+                const items = data.items;
+                // console.log('teste', items)
 
-                if (!Array.isArray(data)) {
+                if (!Array.isArray(items)) {
                     throw new Error("Invalid data from ingresso.com.");
                 }
 
-                const matchedMovie = data.find(
+                const matchedMovie = items.find(
                     (item) =>
-                        item.event &&
-                        item.event.title &&
-                        item.event.title.toLowerCase().trim() ===
+                        item.title &&
+                        item.title.toLowerCase().trim() ===
                             winner.title.toLowerCase().trim()
                 );
 
                 if (matchedMovie) {
-                    const { siteURL, urlKey } = matchedMovie.event;
+                    const { siteURL, urlKey } = matchedMovie;
                     setIngressoURL(siteURL);
                     setModalMessageAlert(
                         "Localização com cinemas próximos! Clique em Ingresso para saber mais!"
@@ -334,13 +335,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     };
 
     useEffect(() => {
-        const socketInstance = connectWebSocket(userId);
-
-        if (socketInstance.connected) {
-            joinGroupRoom(groupId);
-        } else {
-            console.error("WebSocket connection failed to establish.");
-        }
+        connectWebSocket(userId);
 
         joinGroupRoom(groupId);
 
@@ -355,6 +350,10 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         fetchRecommendations(1);
 
         fetchIngressoURL(groupId); // usando group id para pegar usuarios e calcular lat long e dps usar pra pegar cityId e usar no endpoint do ingresso.com
+
+        if (winner) {
+            setShowConfetti(true);
+        }
 
         return () => {
             leaveGroupRoom(groupId);
@@ -412,51 +411,72 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     if (winner) {
         return (
             <View style={styles.container}>
-                <Text style={styles.winnerText}>MATCH ENCONTRADO</Text>
-                {isPosterLoading && (
-                    <ActivityIndicator
-                        style={styles.posterLoader}
-                        size="large"
-                        color={Colors.dark.tabIconSelected}
+                <View style={styles.confettiContainer}>
+                    <ConfettiCannon
+                        count={50}
+                        origin={{ x: -10, y: 0 }}
+                        fadeOut={true}
                     />
-                )}
-                <Image
-                    source={{
-                        uri: `https://image.tmdb.org/t/p/w500${winner.poster_path}`,
-                    }}
-                    onLoadStart={() => setIsPosterLoading(true)}
-                    onLoad={() => setIsPosterLoading(false)}
-                    style={styles.poster}
-                />
-                <View style={styles.buttonContainer}>
-                    <Pressable
-                        style={[
-                            styles.buttonEnd,
-                            ingressoURL ? styles.buttonEndHalf : undefined,
-                        ]}
-                        onPress={() => homePage()}
-                    >
-                        <ThemedText type="title" style={{ fontSize: 24 }}>
-                            Finalizar
-                        </ThemedText>
-                    </Pressable>
-                    {ingressoURL && (
-                        <Pressable
-                            style={styles.buttonIngresso}
-                            onPress={() => ingressoRedirect(ingressoURL)}
-                        >
-                            <ThemedText type="title" style={{ fontSize: 18 }}>
-                                Ingresso
-                            </ThemedText>
-                        </Pressable>
-                    )}
                 </View>
-                <AlertModal
-                    type={modalTypeAlert}
-                    message={modalMessageAlert}
-                    visible={modalVisibleAlert}
-                    onClose={() => setModalVisibleAlert(false)}
-                />
+                {winner && (
+                    <>
+                        <Text style={styles.winnerText}>MATCH ENCONTRADO</Text>
+                        {isPosterLoading && (
+                            <ActivityIndicator
+                                style={styles.posterLoader}
+                                size="large"
+                                color={Colors.dark.tabIconSelected}
+                            />
+                        )}
+                        <Image
+                            source={{
+                                uri: `https://image.tmdb.org/t/p/w500${winner.poster_path}`,
+                            }}
+                            onLoadStart={() => setIsPosterLoading(true)}
+                            onLoad={() => setIsPosterLoading(false)}
+                            style={styles.poster}
+                        />
+                        <View style={styles.buttonContainer}>
+                            <Pressable
+                                style={[
+                                    styles.buttonEnd,
+                                    ingressoURL
+                                        ? styles.buttonEndHalf
+                                        : undefined,
+                                ]}
+                                onPress={() => homePage()}
+                            >
+                                <ThemedText
+                                    type="title"
+                                    style={{ fontSize: 24 }}
+                                >
+                                    Finalizar
+                                </ThemedText>
+                            </Pressable>
+                            {ingressoURL && (
+                                <Pressable
+                                    style={styles.buttonIngresso}
+                                    onPress={() =>
+                                        ingressoRedirect(ingressoURL)
+                                    }
+                                >
+                                    <ThemedText
+                                        type="title"
+                                        style={{ fontSize: 18 }}
+                                    >
+                                        Ingresso
+                                    </ThemedText>
+                                </Pressable>
+                            )}
+                        </View>
+                        <AlertModal
+                            type={modalTypeAlert}
+                            message={modalMessageAlert}
+                            visible={modalVisibleAlert}
+                            onClose={() => setModalVisibleAlert(false)}
+                        />
+                    </>
+                )}
             </View>
         );
     }
@@ -758,6 +778,15 @@ const styles = StyleSheet.create({
         top: "50%",
         zIndex: 1,
         color: Colors.dark.tabIconSelected,
+    },
+    confettiContainer: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 111,
+        pointerEvents: 'none'
     },
 });
 
