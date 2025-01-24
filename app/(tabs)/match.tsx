@@ -24,6 +24,7 @@ import {
     connectWebSocket,
     disconnectWebSocket,
     onGroupCreated,
+    onGroupDeleted,
     onGroupUpdate,
 } from "../services/websocket";
 
@@ -94,8 +95,17 @@ export default function MatchScreen() {
 
         onGroupUpdate(() => fetchGroups());
         onGroupCreated((newGroup) => {
-            setGroups((prevGroups) => [...prevGroups, newGroup]); // Add the new group to the list
+            setGroups((prevGroups) => [...prevGroups, newGroup]);
         });
+
+        const handleGroupDeleted = (data: any) => {
+            console.log(`Group deleted: ${data.groupId}`);
+            setGroups((prevGroups) =>
+                prevGroups.filter((group) => group.id !== data.groupId)
+            ); // atualizar o grupo deletado para todos os usuarios
+        };
+
+        onGroupDeleted(handleGroupDeleted);
 
         return () => {
             disconnectWebSocket();
@@ -104,8 +114,8 @@ export default function MatchScreen() {
 
     const renderGroup = (item: Group, navigation: any) => {
         const imageSource = item.image
-            ? { uri: item.image } // Render the Base64 image
-            : require("@/assets/images/group_background.png"); // Fallback to a placeholder
+            ? { uri: item.image }
+            : require("@/assets/images/group_background.png");
 
         return (
             <TouchableOpacity
@@ -152,7 +162,7 @@ export default function MatchScreen() {
                 },
                 body: JSON.stringify({
                     name: groupName,
-                    userIds: [parseInt(userId, 10)], // Send the logged-in user's ID as an array
+                    userIds: [parseInt(userId, 10)],
                 }),
             });
 
@@ -163,18 +173,20 @@ export default function MatchScreen() {
 
             const newGroup = await response.json();
             setGroups((prevGroups) => {
-                const groupExists = prevGroups.some((g) => g.id === newGroup.id);
+                const groupExists = prevGroups.some(
+                    (g) => g.id === newGroup.id
+                );
                 if (!groupExists) {
                     return [...prevGroups, newGroup];
                 }
-                return prevGroups; // Return the previous state if the group already exists
+                return prevGroups;
             });
-            
-            setModalType("success");
-            setModalMessage("Grupo criado com sucesso!");
-            setModalVisible(true);
+
+            // setModalType("success");
+            // setModalMessage("Grupo criado com sucesso!");
+            // setModalVisible(true);
             setGroupName("");
-            navigation.navigate("groups", { groupId: newGroup.id })
+            navigation.navigate("groups", { groupId: newGroup.id });
         } catch (error) {
             console.error("Error creating group:", error);
             setModalType("error");
@@ -185,18 +197,20 @@ export default function MatchScreen() {
         }
     };
 
-    if (isLoading && !refreshing) {
+    if (isLoading) {
         return (
-            <View style={{}}>
-                <ActivityIndicator
-                    size="large"
-                    color={Colors.dark.tabIconSelected}
-                    style={{flex:1, alignContent:'center', backgroundColor:Colors.dark.background}}
-                />
-            </View>
+            <ActivityIndicator
+                size="large"
+                color={Colors.dark.tabIconSelected}
+                style={{
+                    flex: 1,
+                    alignContent: "center",
+                    backgroundColor: Colors.dark.background,
+                }}
+            />
         );
     }
-
+    
     return (
         <SafeAreaView style={[styles.container, { flexDirection: "column" }]}>
             <View
@@ -224,19 +238,19 @@ export default function MatchScreen() {
                 }}
             >
                 {groups.length === 0 ? (
-                <Text style={styles.noGroupsMessage}>
-                    Você não está em nenhum grupo.
-                </Text>
-            ) : (
-                <FlatList
-                    data={groups}
-                    renderItem={({ item }) => renderGroup(item, navigation)} // Pass navigation
-                    keyExtractor={(item) => item.id.toString()}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.listContainer}
-                />
-            )}
+                    <Text style={styles.noGroupsMessage}>
+                        Você não está em nenhum grupo.
+                    </Text>
+                ) : (
+                    <FlatList
+                        data={groups}
+                        renderItem={({ item }) => renderGroup(item, navigation)} // Pass navigation
+                        keyExtractor={(item) => item.id.toString()}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.listContainer}
+                    />
+                )}
             </SafeAreaView>
             <View
                 style={{
@@ -305,6 +319,8 @@ const styles = StyleSheet.create({
         width: 170,
         height: 260,
         elevation: 10,
+        borderWidth: 2,
+        borderColor: Colors.dark.input,
     },
     listContainer: {
         backgroundColor: Colors.dark.background,
@@ -314,24 +330,15 @@ const styles = StyleSheet.create({
     boxContainer: {
         flex: 1,
     },
-    card: {
-        flex: 1,
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 160,
-        height: 230,
-        borderRadius: 8,
-        margin: 8,
-        elevation: 10,
-    },
     elevated: {
         backgroundColor: "white",
     },
     input: {
-        width: Dimensions.get('screen').width - 40,
+        width: Dimensions.get("screen").width - 40,
         height: 50,
         backgroundColor: Colors.dark.input,
+        borderColor: Colors.dark.tabIconSelected,
+        borderWidth: 1,
         padding: 15,
         borderRadius: 8,
         elevation: 2,
@@ -346,7 +353,8 @@ const styles = StyleSheet.create({
         width: 100,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
-        borderRadius: 8,
+        borderTopRightRadius: 8,
+        borderBottomRightRadius: 8,
         elevation: 2,
         fontSize: Fonts.dark.buttonText,
     },
@@ -363,6 +371,8 @@ const styles = StyleSheet.create({
         color: Colors.dark.text,
         alignSelf: "flex-start",
         fontWeight: "500",
+        flexWrap: "wrap",
+        maxWidth: 170,
     },
     noGroupsMessage: {
         width: 350,
@@ -371,8 +381,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderWidth: 1,
         padding: 20,
-        color: 'gray', // Customize the color as needed
-        textAlign: 'center', // Center the message
-        marginLeft: 20 // Add some vertical margin
+        color: "gray",
+        textAlign: "center",
+        marginLeft: 20,
     },
 });

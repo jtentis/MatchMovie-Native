@@ -1,6 +1,6 @@
-// App.tsx
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
+import { FontAwesome } from "@expo/vector-icons";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Pressable } from "expo-router/build/views/Pressable";
@@ -31,15 +31,7 @@ const TOP_RATED_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/top_rated`;
 const UPCOMING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/upcoming`;
 const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
 const MOVIE_POSTER_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies`;
-// const BASE_URL = "https://api.themoviedb.org/3";
-// const API_KEY = process.env.TMDB_API_KEY;
-// const POPULAR_MOVIES_URL = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`;
-// const NOW_PLAYING_MOVIES_URL = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=pt-BR`;
-// const TOP_RATED_MOVIES_URL = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=pt-BR`;
-// const UPCOMING_MOVIES_URL = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=pt-BR`;
-// const SEARCH_MOVIE_URL = `${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-BR`;
 
-// const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient)
 
 interface Movie {
     id: number;
@@ -66,7 +58,7 @@ const HomeScreen = () => {
     // const [modalText, setModalText] = useState<string>("");
     useEffect(() => {
         const checkAuth = async () => {
-            // SecureStore.deleteItemAsync("authToken");
+            // SecureStore.deleteItemAsync("authToken"); caso precise resetar
             const token = await SecureStore.getItemAsync("authToken");
             if (!token) {
                 navigation.reset({
@@ -163,7 +155,7 @@ const HomeScreen = () => {
         } else {
             url = FILTER_URLS[filterType];
             Animated.timing(underlinePosition, {
-                toValue: index * underlineWidth, // Move underline to the selected filter
+                toValue: index * underlineWidth, //muda pro filtro
                 duration: 150,
                 useNativeDriver: false,
             }).start();
@@ -177,7 +169,7 @@ const HomeScreen = () => {
         const layout = event.nativeEvent.layout;
         setFilterLayouts((prev) => {
             const updatedLayouts = [...prev];
-            updatedLayouts[index] = layout; // Update layout array
+            updatedLayouts[index] = layout;
             return updatedLayouts;
         });
     };
@@ -205,18 +197,18 @@ const HomeScreen = () => {
 
     useEffect(() => {
         const fetchPosters = async () => {
-            // Define the type for newPosters
+
             const newPosters: { [id: number]: string | null } = {};
 
             await Promise.all(
                 movies.map(async (movie) => {
-                    // Check the cache first
+
                     if (posterCache[movie.id]) {
                         newPosters[movie.id] = posterCache[movie.id];
                         return;
                     }
 
-                    // Format the poster path
+                    // formatando pq nao sei pq caralhos essa porra adiciona isso no inicio
                     const formattedPosterPath = movie.poster_path
                         ? `${movie.poster_path[0]}%2F${movie.poster_path.slice(
                               1
@@ -224,16 +216,16 @@ const HomeScreen = () => {
                         : "";
 
                     try {
-                        // Fetch the poster data
+                        
                         const response = await fetch(
                             `${MOVIE_POSTER_URL_API}${formattedPosterPath}/poster`
                         );
 
                         if (response.ok) {
                             const base64Image = await response.text();
-                            newPosters[movie.id] = base64Image; // Cache the poster
+                            newPosters[movie.id] = base64Image; // Cache do poster
                         } else {
-                            newPosters[movie.id] = null; // Handle failed fetch
+                            newPosters[movie.id] = null;
                         }
                     } catch (error) {
                         console.error(
@@ -241,12 +233,11 @@ const HomeScreen = () => {
                             movie.id,
                             error
                         );
-                        newPosters[movie.id] = null; // Handle errors
+                        newPosters[movie.id] = null;
                     }
                 })
             );
 
-            // Update the state with the new posters
             setPosterCache((prevCache) => ({ ...prevCache, ...newPosters }));
             setPosters(newPosters);
         };
@@ -307,9 +298,9 @@ const HomeScreen = () => {
             <View style={styles.searchDiv}>
                 <Icon
                     fill="#D46162"
-                    viewBox={"0 0 34 35"}
-                    width={54}
-                    height={50}
+                    viewBox={"0 0 36 36"}
+                    width={58}
+                    height={54}
                     style={styles.icon}
                 />
                 <View style={{ flexDirection: "row" }}>
@@ -323,19 +314,7 @@ const HomeScreen = () => {
                         selectionColor={Colors.dark.tabIconSelected}
                     />
                     <Pressable style={styles.button} onPress={searchMovies}>
-                        <Text
-                            style={{
-                                fontSize: 12,
-                                lineHeight: 20,
-                                fontWeight: "bold",
-                                letterSpacing: 0.5,
-                                color: "white",
-                                flex: 1,
-                                alignSelf: "center",
-                            }}
-                        >
-                            Procurar
-                        </Text>
+                        <FontAwesome name={'search'} size={16} color={'white'}></FontAwesome>
                     </Pressable>
                 </View>
             </View>
@@ -351,7 +330,7 @@ const HomeScreen = () => {
                             key={filterType}
                             onLayout={(event) => onFilterLayout(event, index)}
                             onPress={() => applyFilter(index)}
-                            style={{flex: 1/4, paddingBottom: 10, paddingTop: 8,}} // Capture layout for this filter
+                            style={{flex: 1/4, paddingBottom: 10, paddingTop: 8,}}
                         >
                             <Text style={getFilterButtonStyle(filterType)}>
                                 {filterTranslations[filterType].replace(
@@ -426,11 +405,13 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
     },
     input: {
-        width: Dimensions.get('screen').width - 190,
+        width: Dimensions.get('screen').width - 155,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
         marginTop: 30,
+        borderWidth: 1,
+        borderColor: Colors.dark.tabIconSelected,
         borderBottomLeftRadius: 8,
         borderTopLeftRadius: 8,
         elevation: 10,
@@ -438,7 +419,7 @@ const styles = StyleSheet.create({
         color: Colors.dark.text,
     },
     button: {
-        width: 85,
+        width: 50,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 15,

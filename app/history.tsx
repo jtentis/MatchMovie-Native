@@ -7,7 +7,7 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from "react-native";
 import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
 
@@ -120,7 +120,7 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
                 throw new Error("Failed to delete match");
             }
 
-            // Update local state after successful deletion
+            // atualiza state local apos deletar
             setMatches((prev) =>
                 prev.filter((match) => match.id !== selectedMatchId)
             );
@@ -132,17 +132,7 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
     };
 
     if (isLoading) {
-        return (
-            <View
-                style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                <Text>Loading...</Text>
-            </View>
-        );
+        return <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} style={{flex:1, alignContent:'center', backgroundColor:Colors.dark.background}} />;
     }
 
     const imageSource = groupImage
@@ -232,7 +222,7 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
                                                     ? {
                                                           uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
                                                       }
-                                                    : require("@/assets/images/movie-poster.jpg")
+                                                    : require("@/assets/images/No-Image-Placeholder.png")
                                             }
                                             style={styles.poster}
                                         />
@@ -248,7 +238,7 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
                                         </ThemedText>
                                         <ThemedText
                                             type="default"
-                                            style={styles.text}
+                                            style={styles.date}
                                         >
                                             Data do Match:{" "}
                                             {new Date(
@@ -338,7 +328,17 @@ const styles = StyleSheet.create({
         elevation: 5,
         borderRadius: 5,
     },
+    date:{
+        fontSize: 12,
+        position:'absolute',
+        opacity: .7,
+        alignSelf: 'flex-end',
+        bottom: 1,
+        right: 5,
+    },
     text: {
+        flexWrap: 'wrap',
+        maxWidth: 250,
         marginLeft: 10,
     },
     trash: {

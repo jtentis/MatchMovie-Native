@@ -2,11 +2,11 @@ import TinyModal from "@/components/ModalAlertTiny";
 import { URL_LOCALHOST } from "@/constants/Url";
 import * as SecureStore from "expo-secure-store";
 import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState,
 } from "react";
 
 interface AuthContextData {
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 await SecureStore.setItemAsync("authToken", accessToken);
                 await SecureStore.setItemAsync("userId", userId.toString());
 
-                // Update context state
+                // atualizar context
                 showModal("Login efetuado com sucesso!");
                 setAuthToken(accessToken);
                 setUserId(userId.toString());

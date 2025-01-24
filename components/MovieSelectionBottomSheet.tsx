@@ -1,6 +1,7 @@
 import { useAuth } from "@/app/contexts/AuthContext";
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
@@ -41,24 +42,33 @@ const MovieSelectionModal = React.forwardRef<
     const { userId, authToken } = useAuth();
 
     const fetchMovies = async (query: string) => {
-        if (!query.trim()) return;
+        if (!query.trim() || query.trim().length < 3) {
+            console.warn("Search query too short.");
+            setMovies([]);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
             const response = await fetch(
-                `${SEARCH_MOVIES_URL_API}?search=${query}&page=${1}`
+                `${SEARCH_MOVIES_URL_API}?search=${query}&page=1`
             );
             const data = await response.json();
 
-            if (data.results) {
+            if (Array.isArray(data.results)) {
                 const validatedMovies = data.results.map((movie: any) => ({
                     ...movie,
-                    poster_path: movie.poster_path || null, // Ensure poster_path is explicitly set
+                    poster_path: movie.poster_path || null,
                 }));
                 setMovies(validatedMovies);
+            } else {
+                console.error("Unexpected API response:", data);
+                setMovies([]);
             }
         } catch (error) {
             console.error("Error fetching movies:", error);
+            setMovies([]);
         } finally {
             setIsLoading(false);
         }
@@ -128,15 +138,23 @@ const MovieSelectionModal = React.forwardRef<
                         <Text style={styles.modalTitle}>
                             Selecione um filme para o grupo
                         </Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Digite o nome do filme..."
-                            placeholderTextColor={Colors.dark.text}
-                            cursorColor={Colors.dark.tabIconSelected}
-                            value={searchQuery}
-                            onChangeText={(text) => setSearchQuery(text)}
-                            onSubmitEditing={() => fetchMovies(searchQuery)}
-                        />
+                        <View style={styles.inputContainer}>
+                            <TextInput
+                                style={styles.inputWithButton}
+                                placeholder="Digite o nome do filme..."
+                                placeholderTextColor={Colors.dark.text}
+                                cursorColor={Colors.dark.tabIconSelected}
+                                value={searchQuery}
+                                onChangeText={(text) => setSearchQuery(text)}
+                                onSubmitEditing={() => fetchMovies(searchQuery)}
+                            />
+                            <TouchableOpacity
+                                style={styles.searchButton}
+                                onPress={() => fetchMovies(searchQuery)}
+                            >
+                                <Text style={styles.searchButtonText}><FontAwesome name={'search'} size={16}></FontAwesome></Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 ),
                 ListEmptyComponent: isLoading ? (
@@ -200,6 +218,38 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         color: "white",
         opacity: 0.4,
+    },
+    inputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: Colors.dark.input,
+        borderRadius: 8,
+        borderColor: Colors.dark.tabIconSelected,
+        borderWidth: 1,
+        elevation: 2,
+        marginBottom: 20,
+        overflow: "hidden",
+    },
+    
+    inputWithButton: {
+        flex: 1,
+        height: 50,
+        paddingHorizontal: 15,
+        color: "white",
+    },
+    
+    searchButton: {
+        height: 50,
+        width: 50,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: Colors.dark.tabIconSelected,
+    },
+    
+    searchButtonText: {
+        color: "white",
+        fontSize: 18,
+        fontWeight: "bold",
     },
 });
 

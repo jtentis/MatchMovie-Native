@@ -144,7 +144,7 @@ export default function ProfileScreen() {
                 {
                     method: "PATCH",
                     headers: {
-                        "Content-Type": "application/json", // Ensure JSON content type
+                        "Content-Type": "application/json",
                         Authorization: `Bearer ${authToken}`,
                     },
                     body: JSON.stringify(updatedFields),
@@ -165,7 +165,7 @@ export default function ProfileScreen() {
             setName("");
             setUsername("");
             setSecond_name("");
-            // setUser(updatedUser); // Update the UI with new user data
+            // setUser(updatedUser);
             setModalType("success");
             setModalMessage("Perfil salvo com sucesso.");
             setModalVisible(true);
@@ -196,7 +196,7 @@ export default function ProfileScreen() {
     };
 
     const pickImage = async () => {
-        // Ask for permissions
+        // peermissao pra abrir galeria
         const permissionResult =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
 

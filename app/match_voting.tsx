@@ -5,11 +5,12 @@ import { URL_LOCALHOST } from "@/constants/Url";
 import { FontAwesome } from "@expo/vector-icons";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useFonts } from "expo-font";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Dimensions,
-    Image,
+    ImageBackground,
     Linking,
     Pressable,
     StyleSheet,
@@ -17,6 +18,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
 import { Modalize } from "react-native-modalize";
 import { useAuth } from "./contexts/AuthContext";
 import {
@@ -57,16 +59,17 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         "error" | "success" | "alert"
     >("alert");
     const [modalMessageAlert, setModalMessageAlert] = useState<string>("");
+    const [ingressoText, setIngressoText] = useState<string>("");
+    const [ingressoTextPadding, setIngressoTextPadding] = useState<number>(30);
     const route = useRoute();
     const { groupId, movieId, filter } = route.params as MatchRouteParams;
     const { authToken, userId } = useAuth();
-    const screenWidth = Dimensions.get("window").width;
+    const [showConfetti, setShowConfetti] = useState(false);
     const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [recommendations, setRecommendations] = useState<Movie[]>([]);
     const [winner, setWinner] = useState<Movie | null>(null);
-    const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
-    const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+    const [selectedMovie, setSelectedMovie] = useState<Movie | any>(null);
     const modalizeRef = useRef<Modalize>(null);
     const [ingressoURL, setIngressoURL] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -75,9 +78,10 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     const [fontsLoaded] = useFonts({
         CoinyRegular: require("../assets/fonts/Coiny-Regular.ttf"),
     });
-    const [isPosterLoading, setIsPosterLoading] = useState(true); // State to track poster loading
+    const [isPosterLoading, setIsPosterLoading] = useState(true);
+    const [isIngressoLoading, setIsIngressoLoading] = useState(false);
 
-    // Fetch movie recommendations
+    // Fpega recomendacao de filmes ou filtro
 
     const fetchRecommendations = async (page: number) => {
         try {
@@ -112,8 +116,8 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             }
 
             setRecommendations((prev) => [...prev, ...movieArray]);
-            setCurrentMovie(movieArray[0] || null); // Set the first movie if not set
-            setTotalPages(data.total_pages || 1); // Update total pages if available
+            setCurrentMovie(movieArray[0] || null);
+            setTotalPages(data.total_pages || 1); // paginacao
         } catch (error) {
             console.error("Error fetching recommendations:", error);
         } finally {
@@ -130,11 +134,10 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         }
     };
 
-    // Handle voting
     const handleVote = async (liked: boolean) => {
         if (winner) {
-            console.log("Match already completed. No more votes allowed.");
-            return; // Prevent voting after the match is completed
+            console.log("Votação concluida.");
+            return; // para a votacao apos concluir
         }
 
         try {
@@ -146,9 +149,9 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             if (nextIndex < recommendations.length) {
                 setCurrentMovie(recommendations[nextIndex]);
             } else if (currentPage < totalPages) {
-                loadMoreMovies(); // Fetch the next page if available
+                loadMoreMovies();
             } else {
-                setCurrentMovie(null); // No more movies to vote on
+                setCurrentMovie(null);
             }
 
             const response = await fetch(
@@ -186,51 +189,160 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         }
     };
 
-    const fetchIngressoURL = async () => {
-        if (filter === "now_playing" && winner) {
+    const fetchGroupLatLng = async (
+        groupId: number
+    ): Promise<{ lat: number; lng: number } | null> => {
+        try {
+            const response = await fetch(
+                `${URL_LOCALHOST}/geolocation/${groupId}/midpoint`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                console.log("Failed to fetch group's latitude and longitude.");
+                // throw new Error(
+                //     "Failed to fetch group's latitude and longitude."
+                // );
+            }
+
+            const data = await response.json();
+            return data.midpoint;
+        } catch (error: any) {
+            console.log(
+                "Error fetching group's latitude and longitude:",
+                error.message
+            );
+            return null;
+        }
+    };
+
+    const fetchCityId = async (
+        lat: number,
+        lng: number
+    ): Promise<string | null> => {
+        try {
+            const url = `${URL_LOCALHOST}/ingresso/lat/${lat}/lng/${lng}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch city ID.");
+            }
+
+            const data = await response.json();
+
+            if (Array.isArray(data) && data.length > 0) {
+                return data[0].id;
+            }
+
+            return null;
+        } catch (error: any) {
+            console.error("Error fetching city ID:", error.message);
+            return null;
+        }
+    };
+
+    const fetchIngressoURL = async (groupId: number) => {
+        if (filter === "now_playing" && winner && winner.title) {
             try {
+                setIsIngressoLoading(true);
+                const groupLatLng = await fetchGroupLatLng(groupId);
+
+                if (!groupLatLng) {
+                    throw new Error(
+                        "Não foi possível pegar latitude e longitude."
+                    );
+                }
+
+                const cityId = await fetchCityId(
+                    groupLatLng.lat,
+                    groupLatLng.lng
+                );
+
+                if (!cityId) {
+                    throw new Error("Não foi possivel pegar ID de cidade.");
+                }
+
                 const response = await fetch(
-                    `${URL_LOCALHOST}/movies/ingressoURL`
+                    `${URL_LOCALHOST}/ingresso/city/${cityId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
                 );
 
                 if (!response.ok) {
-                    throw new Error("Failed to fetch ingresso.com data");
+                    throw new Error("Failed to fetch data from ingresso.com.");
                 }
 
                 const data = await response.json();
+                const items = data.items;
+                // console.log('teste', items)
 
-                // Debug: Log the actual response structure
-                console.log("Ingresso.com API response:", data);
-
-                // Adjust based on the response structure
-                const movies = Array.isArray(data) ? data : data.items;
-
-                if (!movies || !Array.isArray(movies)) {
-                    throw new Error(
-                        "Invalid data structure from ingresso.com API"
-                    );
+                if (!Array.isArray(items)) {
+                    throw new Error("Invalid data from ingresso.com.");
                 }
 
-                // Find the matching movie by title
-                const matchedMovie = data.find(
-                    (movie: any) =>
-                        movie.title.toLowerCase() === winner.title.toLowerCase()
+                const matchedMovie = items.find(
+                    (item) =>
+                        item.title &&
+                        item.title.toLowerCase().trim() ===
+                            winner.title.toLowerCase().trim()
                 );
 
                 if (matchedMovie) {
-                    setIngressoURL(
-                        `https://www.ingresso.com/filme/${matchedMovie.urlKey}?city=rio-de-janeiro&partnership=3213asd12eqsdad&ing_source=api&ing_medium=link-filme&ing_campaign=3213asd12eqsdad&ing_content=${matchedMovie.urlKey}`
+                    const { siteURL, urlKey } = matchedMovie;
+                    setIngressoURL(siteURL);
+                    // setModalMessageAlert(
+                    //     "Localização com cinemas próximos! Clique em Ingresso para saber mais!"
+                    // );
+                    // setModalTypeAlert("success");
+                    // setModalVisibleAlert(true);
+                    setIngressoText(
+                        "Sua localização possui cinemas próximos! Clique em Ingresso para saber mais!"
                     );
+                    setIngressoTextPadding(0);
                 } else {
-                    setModalMessageAlert(
-                        "Filme não encontrado no ingresso.com para redirecionamento! 🫤"
-                    );
-                    setModalTypeAlert("error");
-                    setModalVisibleAlert(true);
-                    console.log("No matching movie found on ingresso.com");
+                    // setModalMessageAlert(
+                    //     "Filme não encontrado no ingresso.com."
+                    // );
+                    // setModalTypeAlert("alert");
+                    // setModalVisibleAlert(true);
+                    setIngressoText("Filme não encontrado no ingresso.com.");
+                    setIngressoTextPadding(0);
+                    return false;
                 }
-            } catch (error) {
-                console.error("Error fetching ingresso.com data:", error);
+            } catch (error: any) {
+                console.error(
+                    "Error fetching ingresso.com data:",
+                    error.message
+                );
+
+                const fallbackUrlKey = winner?.title
+                    ?.toLowerCase()
+                    .replace(/\s+/g, "-")
+                    .replace(/:/g, "");
+                setIngressoURL(
+                    `https://www.ingresso.com/filme/${
+                        fallbackUrlKey || "unknown"
+                    }?partnership=home`
+                );
+                console.log(fallbackUrlKey);
+                // setModalMessageAlert(
+                //     "Erro calcular sua localização, redirecionando para página padrão do ingresso.com."
+                // );
+                // setModalTypeAlert("alert");
+                // setModalVisibleAlert(true);
+                setIngressoText(
+                    "Erro calcular sua localização, redirecionando para página padrão do ingresso.com."
+                );
+                setIngressoTextPadding(0);
+            } finally {
+                setIsIngressoLoading(false);
             }
         }
     };
@@ -242,33 +354,43 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
 
         onWinnerReceived((winnerData) => {
             console.log("Winner received:", winnerData);
-            setWinner(winnerData); // Set the winner in state for all users
-            setRecommendations([]); // Clear remaining recommendations
+            setWinner(winnerData); // setar o ganhador
+            setRecommendations([]); // apagar recomendações restantes
         });
 
-        setCurrentPage(1); // Reset to page 1 when component mounts
-        setRecommendations([]); // Clear previous recommendations
+        setCurrentPage(1); // resetar para pagina 1
+        setRecommendations([]);
         fetchRecommendations(1);
-        fetchIngressoURL();
+
+        fetchIngressoURL(groupId); // usando group id para pegar usuarios e calcular lat long e dps usar pra pegar cityId e usar no endpoint do ingresso.com
+
+        if (winner) {
+            setShowConfetti(true);
+        }
 
         return () => {
-            leaveGroupRoom(groupId); // Leave the room when navigating away
+            leaveGroupRoom(groupId);
             disconnectWebSocket();
-            disconnectWebSocket(false);
         };
-    }, [movieId, filter, groupId, filter, winner]);
+    }, [movieId, filter, groupId, winner]);
 
     const openMovieDetailsModal = (movie: Movie) => {
         console.log(movie);
-        setSelectedMovie(movie); // Set the selected movie
-        modalizeRef.current?.open(); // Use the ref to open the Modalize modal
+        setSelectedMovie(movie);
+        modalizeRef.current?.open();
     };
 
     if (isLoading) {
         return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" />
-            </View>
+            <ActivityIndicator
+                size="large"
+                color={Colors.dark.tabIconSelected}
+                style={{
+                    flex: 1,
+                    alignContent: "center",
+                    backgroundColor: Colors.dark.background,
+                }}
+            />
         );
     }
 
@@ -277,53 +399,176 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     }
 
     const homePage = () => {
-        navigation.navigate("(tabs)");
+        navigation.reset({
+            index: 0,
+            routes: [{ name: "(tabs)" }],
+        });
     };
+
+    const ingressoRedirect = (url: any) => {
+        Linking.openURL(url);
+        navigation.reset({
+            index: 0,
+            routes: [{ name: "(tabs)" }],
+        });
+    };
+
+    if (isIngressoLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator
+                    size="large"
+                    color={Colors.dark.tabIconSelected}
+                />
+            </View>
+        );
+    }
 
     if (winner) {
         return (
             <View style={styles.container}>
-                <Text style={styles.winnerText}>MATCH ENCONTRADO</Text>
-                {isPosterLoading && (
-                    <ActivityIndicator
-                        style={styles.posterLoader}
-                        size="large"
-                        color={Colors.dark.tabIconSelected}
-                    />
+                {showConfetti && (
+                    <View style={styles.confettiContainer}>
+                        <ConfettiCannon
+                            count={100}
+                            origin={{ x: -10, y: 0 }}
+                            fadeOut={true}
+                            onAnimationEnd={() => setShowConfetti(false)}
+                        />
+                    </View>
                 )}
-                <Image
-                    source={{
-                        uri: `https://image.tmdb.org/t/p/w500${winner.poster_path}`,
-                    }}
-                    onLoadStart={() => setIsPosterLoading(true)}
-                    onLoad={() => setIsPosterLoading(false)}
-                    style={styles.poster}
-                />
-                <Pressable style={styles.buttonEnd} onPress={() => homePage()}>
-                    <ThemedText type="title" style={{ fontSize: 24 }}>
-                        Finalizar
-                    </ThemedText>
-                </Pressable>
-                {ingressoURL && (
-                    <Pressable
-                        style={styles.buttonIngresso}
-                        onPress={() => {
-                            if (ingressoURL) {
-                                // Open the URL in the user's browser
-                                Linking.openURL(ingressoURL);
-                            }
-                        }}
-                    >
-                        <ThemedText type="title" style={{ fontSize: 18 }}>
-                            Comprar Ingresso
-                        </ThemedText>
-                    </Pressable>
+                {winner && (
+                    <>
+                        {isPosterLoading && (
+                            <ActivityIndicator
+                                style={styles.posterLoader}
+                                size="large"
+                                color={Colors.dark.tabIconSelected}
+                            />
+                        )}
+                        <View
+                            style={{
+                                borderWidth: 2,
+                                borderColor: Colors.dark.tabIconSelected,
+                                borderRadius: 10,
+                                height: 614,
+                            }}
+                        >
+                            <ImageBackground
+                                borderRadius={10}
+                                source={{
+                                    uri: `https://image.tmdb.org/t/p/w500${winner.poster_path}`,
+                                }}
+                                onLoadStart={() => setIsPosterLoading(true)}
+                                onLoad={() => setIsPosterLoading(false)}
+                                style={[styles.poster, styles.winnerPoster]}
+                            >
+                                <Text style={styles.winnerText}>
+                                    <Text style={{ color: "white" }}>
+                                        It's a{" "}
+                                    </Text>
+                                    Match!
+                                </Text>
+                                <Text style={styles.titleImage}>
+                                    {winner.title}
+                                </Text>
+                                <View
+                                    style={[
+                                        styles.buttonContainer,
+                                        styles.buttonContainer2,
+                                    ]}
+                                >
+                                    <Pressable
+                                        style={[styles.buttonEnd]}
+                                        onPress={() => homePage()}
+                                    >
+                                        <ThemedText
+                                            type="title"
+                                            style={{ fontSize: 18 }}
+                                        >
+                                            Finalizar
+                                        </ThemedText>
+                                    </Pressable>
+                                    {ingressoURL && (
+                                        <Pressable
+                                            style={styles.buttonEnd}
+                                            onPress={() =>
+                                                ingressoRedirect(ingressoURL)
+                                            }
+                                        >
+                                            <ThemedText
+                                                type="title"
+                                                style={{ fontSize: 18 }}
+                                            >
+                                                Ingresso
+                                            </ThemedText>
+                                        </Pressable>
+                                    )}
+                                </View>
+                                <LinearGradient
+                                    colors={[
+                                        "rgba(0,0,0,0.9)",
+                                        "rgba(0,0,0,0)",
+                                    ]}
+                                    start={{ x: 0.5, y: 1 }}
+                                    end={{ x: 0.5, y: 0 }}
+                                    style={styles.innerShadow}
+                                />
+                            </ImageBackground>
+                        </View>
+                        <View style={{ paddingTop: ingressoTextPadding }}>
+                            {ingressoText && (
+                                <Text style={[styles.endText, styles.set]}>
+                                    {ingressoText}
+                                </Text>
+                            )}
+                            <Text> </Text>
+                            <Text style={styles.endText}>
+                                O grupo chegou em um denominador comum e elegeu
+                                o filme
+                                <Text
+                                    style={{
+                                        color: Colors.dark.tabIconSelected,
+                                    }}
+                                >
+                                    {" "}
+                                    {winner.title}{" "}
+                                </Text>
+                                para assistir!
+                            </Text>
+                            <Text> </Text>
+                            <Text style={styles.endText}>
+                                Seu
+                                <Text
+                                    style={{
+                                        color: Colors.dark.tabIconSelected,
+                                    }}
+                                >
+                                    {" "}
+                                    Match{" "}
+                                </Text>
+                                ficará salvo no histórico do grupo.
+                            </Text>
+                        </View>
+                        <AlertModal
+                            type={modalTypeAlert}
+                            message={modalMessageAlert}
+                            visible={modalVisibleAlert}
+                            onClose={() => setModalVisibleAlert(false)}
+                        />
+                    </>
                 )}
-                <AlertModal
-                    type={modalTypeAlert}
-                    message={modalMessageAlert}
-                    visible={modalVisibleAlert}
-                    onClose={() => setModalVisibleAlert(false)}
+            </View>
+        );
+    }
+
+    if (!currentMovie) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator
+                    style={styles.posterLoader}
+                    size="large"
+                    color={Colors.dark.tabIconSelected}
                 />
             </View>
         );
@@ -350,14 +595,65 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                     color={Colors.dark.tabIconSelected}
                 />
             )}
-            <Image
-                source={{
-                    uri: `https://image.tmdb.org/t/p/w500${currentMovie.poster_path}`,
-                }}
-                onLoadStart={() => setIsPosterLoading(true)}
-                onLoad={() => setIsPosterLoading(false)}
-                style={styles.poster}
-            />
+            {currentMovie && (
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: "space-around",
+                        alignItems: "center",
+                    }}
+                >
+                    <ThemedText type="defaultSemiBold" style={styles.titlePage}>
+                        Votação
+                    </ThemedText>
+                    <ImageBackground
+                        imageStyle={{ borderRadius: 10 }}
+                        source={{
+                            uri: `https://image.tmdb.org/t/p/w500${currentMovie.poster_path}`,
+                        }}
+                        onLoadStart={() => setIsPosterLoading(true)}
+                        onLoad={() => setIsPosterLoading(false)}
+                        style={[styles.poster, styles.votePoster]}
+                    >
+                        <Text
+                            style={{
+                                fontWeight: "bold",
+                                fontSize: 28,
+                                color: "white",
+                                padding: 25,
+                                zIndex: 1,
+                                flexWrap: "wrap",
+                                maxWidth: 240,
+                            }}
+                        >
+                            {currentMovie.title}
+                        </Text>
+                        <Text
+                            style={{
+                                fontWeight: "bold",
+                                fontSize: 28,
+                                color: "white",
+                                padding: 25,
+                                zIndex: 1,
+                            }}
+                        >
+                            {(currentMovie.vote_average / 2).toFixed(2)}
+                            {"  "}
+                            <FontAwesome
+                                size={15}
+                                name="star"
+                                style={[styles.modalInfo, styles.modalInfoStar]}
+                            />
+                        </Text>
+                        <LinearGradient
+                            colors={["rgba(0,0,0,0.9)", "rgba(0,0,0,0)"]}
+                            start={{ x: 0.5, y: 1 }}
+                            end={{ x: 0.5, y: 0 }}
+                            style={styles.innerShadow}
+                        />
+                    </ImageBackground>
+                </View>
+            )}
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={styles.button}
@@ -371,7 +667,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.infoButton}
-                    onPress={() => openMovieDetailsModal(currentMovie)} // Open modal on info button press
+                    onPress={() => openMovieDetailsModal(currentMovie)}
                 >
                     <FontAwesome
                         size={20}
@@ -411,7 +707,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                         >
                             Informações do filme
                         </ThemedText>
-                        <View>
+                        <View style={{ marginTop: 20 }}>
                             <View
                                 style={{
                                     flexDirection: "row",
@@ -464,7 +760,13 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: Colors.dark.background,
-        paddingTop: 50,
+    },
+    titlePage: {
+        marginTop: 60,
+        fontSize: 40,
+        color: "white",
+        paddingVertical: 20,
+        backgroundColor: Colors.dark.background,
     },
     loadingContainer: {
         flex: 1,
@@ -473,36 +775,51 @@ const styles = StyleSheet.create({
     },
     poster: {
         width: Dimensions.get("window").width - 20,
-        height: 600,
+        height: 590,
         borderRadius: 10,
         marginBottom: 10,
         elevation: 10,
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+        flexDirection: "column",
+    },
+    votePoster: {
+        flexDirection: "row",
+    },
+    titleImage: {
+        position: "absolute",
+        bottom: 70,
+        fontWeight: "bold",
+        fontSize: 28,
+        color: "white",
+        padding: 25,
+        zIndex: 1,
+        flexWrap: "wrap",
+        minWidth: Dimensions.get("window").width - 20,
+        textAlign: "center",
+    },
+    winnerPoster: {
+        height: 610,
     },
     buttonEnd: {
+        width: 130,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: Colors.dark.tabIconSelected,
-        padding: 12,
+        backgroundColor: Colors.dark.background,
+        padding: 8,
         borderRadius: 8,
-        elevation: 10,
-        width: Dimensions.get("window").width - 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: "#fff",
-        marginBottom: 10,
-    },
-    description: {
-        fontSize: 16,
-        color: "#ccc",
-        textAlign: "center",
-        marginBottom: 20,
+        zIndex: 1,
     },
     buttonContainer: {
+        height: 100,
+        marginBottom: 20,
         flexDirection: "row",
         justifyContent: "space-around",
+        alignItems: "center",
         width: "100%",
+    },
+    buttonContainer2: {
+        marginBottom: 0,
     },
     button: {
         width: 70,
@@ -512,7 +829,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: Colors.dark.tabIconSelected,
-        marginTop: 20,
     },
     infoButton: {
         width: 40,
@@ -520,55 +836,36 @@ const styles = StyleSheet.create({
         elevation: 5,
         opacity: 0.8,
         borderRadius: 75,
-        marginTop: 35,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: Colors.dark.text,
     },
-    buttonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
     winnerText: {
-        backgroundColor: Colors.dark.tabIconSelected,
-        width: Dimensions.get("window").width,
+        backgroundColor: Colors.dark.background,
+        width: Dimensions.get("window").width - 20,
         flexWrap: "wrap",
         textAlign: "center",
         fontSize: 36,
-        color: Colors.dark.text,
+        color: Colors.dark.tabIconSelected,
         fontFamily: "CoinyRegular",
         marginBottom: 40,
         marginTop: 20,
     },
-    buttonIngresso: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: Colors.dark.tabIconSelected,
-        padding: 10,
-        borderRadius: 8,
-        elevation: 10,
-        marginHorizontal: 5,
-    },
-    winnerImage: {
-        width: 300,
-        height: 450,
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    winnerTitle: {
-        fontSize: 36,
-        fontFamily: "CoinyRegular",
-    },
-    noMoviesContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    noMoviesText: {
+    endText: {
         fontSize: 18,
-        color: "#fff",
+        color: "white",
+        fontWeight: "500",
+        textAlign: "center",
+        paddingHorizontal: 10,
+    },
+    set: {
+        width: Dimensions.get("window").width - 20,
+        borderColor: Colors.dark.input,
+        padding: 8,
+        borderRadius: 8,
+        borderWidth: 1,
+        alignSelf: "center",
+        marginTop: 10,
     },
     modalContent: {
         padding: 20,
@@ -609,6 +906,19 @@ const styles = StyleSheet.create({
         top: "50%",
         zIndex: 1,
         color: Colors.dark.tabIconSelected,
+    },
+    confettiContainer: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 111,
+        pointerEvents: "none",
+    },
+    innerShadow: {
+        ...StyleSheet.absoluteFillObject, // Fill the entire image
+        borderRadius: 10, // Match the borderRadius of the ImageBackground
     },
 });
 

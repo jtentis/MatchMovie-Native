@@ -66,7 +66,7 @@ interface FlatRate {
 
 const MovieDetailsScreen = () => {
     const route = useRoute<DetailsScreenRouteProp>();
-    const { movieId } = route.params; //581734, 414906, 157336, 389, 240, 278, 155
+    const { movieId } = route.params; //581734, 414906, 157336, 389, 240, 278, 155 ids para teste
     const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(true);
     const [movieWatchProviders, setWatchProvider] =
@@ -286,18 +286,6 @@ const MovieDetailsScreen = () => {
             ? { uri: `https://image.tmdb.org/t/p/w500${path}` }
             : require("@/assets/images/no-image.png")
     );
-
-    // const platforms: any = {
-    //     "Max": require("@/assets/images/max.png"),
-    //     "Max Amazon Channel": require("@/assets/images/max.png"),
-    //     "Netflix": require("@/assets/images/netflix.png"),
-    //     "Amazon Prime Video": require("@/assets/images/prime.png"),
-    //     "Claro tv+": require("@/assets/images/claro-tv.png"),
-    //     "Globoplay": require("@/assets/images/globoplay.png"),
-    //     "Disney Plus": require("@/assets/images/disneyplus.png"),
-    // };
-
-    // console.log(route.params);
 
     return (
         <>
