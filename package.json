@@ -56,6 +56,7 @@
     "react-native-gesture-handler": "~2.16.1",
     "react-native-image-picker": "^7.2.3",
     "react-native-inset-shadow": "^1.0.3",
+    "react-native-linear-gradient": "^2.8.3",
     "react-native-modalize": "^2.1.1",
     "react-native-neomorph-shadows": "^0.0.8",
     "react-native-reanimated": "~3.10.1",

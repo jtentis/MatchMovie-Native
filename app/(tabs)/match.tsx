@@ -173,18 +173,20 @@ export default function MatchScreen() {
 
             const newGroup = await response.json();
             setGroups((prevGroups) => {
-                const groupExists = prevGroups.some((g) => g.id === newGroup.id);
+                const groupExists = prevGroups.some(
+                    (g) => g.id === newGroup.id
+                );
                 if (!groupExists) {
                     return [...prevGroups, newGroup];
                 }
                 return prevGroups;
             });
-            
+
             // setModalType("success");
             // setModalMessage("Grupo criado com sucesso!");
             // setModalVisible(true);
             setGroupName("");
-            navigation.navigate("groups", { groupId: newGroup.id })
+            navigation.navigate("groups", { groupId: newGroup.id });
         } catch (error) {
             console.error("Error creating group:", error);
             setModalType("error");
@@ -195,18 +197,20 @@ export default function MatchScreen() {
         }
     };
 
-    if (isLoading && !refreshing) {
+    if (isLoading) {
         return (
-            <View style={{}}>
-                <ActivityIndicator
-                    size="large"
-                    color={Colors.dark.tabIconSelected}
-                    style={{flex:1, alignContent:'center', backgroundColor:Colors.dark.background}}
-                />
-            </View>
+            <ActivityIndicator
+                size="large"
+                color={Colors.dark.tabIconSelected}
+                style={{
+                    flex: 1,
+                    alignContent: "center",
+                    backgroundColor: Colors.dark.background,
+                }}
+            />
         );
     }
-
+    
     return (
         <SafeAreaView style={[styles.container, { flexDirection: "column" }]}>
             <View
@@ -234,19 +238,19 @@ export default function MatchScreen() {
                 }}
             >
                 {groups.length === 0 ? (
-                <Text style={styles.noGroupsMessage}>
-                    Você não está em nenhum grupo.
-                </Text>
-            ) : (
-                <FlatList
-                    data={groups}
-                    renderItem={({ item }) => renderGroup(item, navigation)} // Pass navigation
-                    keyExtractor={(item) => item.id.toString()}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.listContainer}
-                />
-            )}
+                    <Text style={styles.noGroupsMessage}>
+                        Você não está em nenhum grupo.
+                    </Text>
+                ) : (
+                    <FlatList
+                        data={groups}
+                        renderItem={({ item }) => renderGroup(item, navigation)} // Pass navigation
+                        keyExtractor={(item) => item.id.toString()}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.listContainer}
+                    />
+                )}
             </SafeAreaView>
             <View
                 style={{
@@ -316,7 +320,7 @@ const styles = StyleSheet.create({
         height: 260,
         elevation: 10,
         borderWidth: 2,
-        borderColor: Colors.dark.input
+        borderColor: Colors.dark.input,
     },
     listContainer: {
         backgroundColor: Colors.dark.background,
@@ -330,7 +334,7 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
     },
     input: {
-        width: Dimensions.get('screen').width - 40,
+        width: Dimensions.get("screen").width - 40,
         height: 50,
         backgroundColor: Colors.dark.input,
         borderColor: Colors.dark.tabIconSelected,
@@ -367,8 +371,8 @@ const styles = StyleSheet.create({
         color: Colors.dark.text,
         alignSelf: "flex-start",
         fontWeight: "500",
-        flexWrap:'wrap',
-        maxWidth: 170
+        flexWrap: "wrap",
+        maxWidth: 170,
     },
     noGroupsMessage: {
         width: 350,
@@ -377,8 +381,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderWidth: 1,
         padding: 20,
-        color: 'gray',
-        textAlign: 'center',
-        marginLeft: 20
+        color: "gray",
+        textAlign: "center",
+        marginLeft: 20,
     },
 });
