@@ -1,50 +1,152 @@
-# Welcome to your Expo app 👋
+# Match Movie - Aplicativo Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Visão Geral
+O aplicativo mobile do **Match Movie** foi desenvolvido utilizando **React Native**, proporcionando uma experiência fluida tanto para Android. Ele consome a API REST do backend para obter informações e recomendações de filmes.
 
-## Get started
+## Tecnologias Utilizadas
+- **React Native**
+- **Expo** (para facilitar o desenvolvimento)
+- **React Navigation** (para navegação entre telas)
+- **Axios e Fetch** (para comunicação com a API)
+- **Context API** (para gerenciamento de estado global)
+- **Expo Secure Store** (para armazenamento local de preferências do usuário e chaves de acesso)
 
-1. Install dependencies
+## Funcionalidades do App
+- **Cadastro/Login** (com autenticação JWT)
+- **Busca de Filmes** (integração com a API para pesquisa de títulos)
+- **Sistema de Favoritos** (salvar filmes preferidos do usuário)
+- **Sistema de Assistidos** (salvar filmes já assistidos do usuário)
+- **Criação de grupos** (criação de grupos de usuários)
+- **Match** (votação de filmes em grupo)
+- **Recomendações Personalizadas** (baseadas nas avaliações do usuário)
+- **OpenCage API** (calculo de proximidade de usuários do grupo baseado no CEP)
+- **Ingresso.com API** (redirecionamento para o site do ingresso.com)
 
-   ```bash
-   npm install
-   ```
+## Consumo da API
+O aplicativo faz requisições ao backend utilizando **Axios** e **fetch()**, garantindo comunicação eficiente com a API. Foi construída um API própria que se comunica com APIs externas e banco de dados: [MatchMovie API](https://github.com/jtentis/MatchMovie-API)
 
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+## Estrutura de Pastas
+```
+MatchMovie-Native/
+┣ .expo/
+┃ ┣ types/
+┃ ┃ ┗ router.d.ts
+┃ ┣ web/
+┃ ┃ ┗ cache/
+┃ ┣ devices.json
+┃ ┗ README.md
+┣ .idea/
+┃ ┣ .gitignore
+┃ ┣ MatchMovie.iml
+┃ ┣ material_theme_project_new.xml
+┃ ┣ misc.xml
+┃ ┣ modules.xml
+┃ ┗ vcs.xml
+┣ app/
+┃ ┣ (auths)/
+┃ ┃ ┣ Login.tsx
+┃ ┃ ┣ register.tsx
+┃ ┃ ┗ _layout.tsx
+┃ ┣ (tabs)/
+┃ ┃ ┣ index.tsx
+┃ ┃ ┣ match.tsx
+┃ ┃ ┣ profile.tsx
+┃ ┃ ┗ _layout.tsx
+┃ ┣ contexts/
+┃ ┃ ┗ AuthContext.tsx
+┃ ┣ services/
+┃ ┃ ┗ websocket.ts
+┃ ┣ +html.tsx
+┃ ┣ +not-found.tsx
+┃ ┣ details.tsx
+┃ ┣ groups.tsx
+┃ ┣ history.tsx
+┃ ┣ match_voting.tsx
+┃ ┗ _layout.tsx
+┣ assets/
+┃ ┣ fonts/
+┃ ┃ ┣ Coiny-Regular.ttf
+┃ ┃ ┗ SpaceMono-Regular.ttf
+┃ ┗ images/
+┃   ┣ group_background.png
+┃   ┣ icon.png
+┃   ┣ No-Image-Placeholder.png
+┃   ┣ no-image.png
+┃   ┗ place-holder-movies.png
+┣ components/
+┃ ┣ navigation/
+┃ ┃ ┗ TabBarIcon.tsx
+┃ ┣ __tests__/
+┃ ┃ ┣ __snapshots__/
+┃ ┃ ┗ ThemedText-test.tsx
+┃ ┣ AddUserBottomSheet.tsx
+┃ ┣ ChangeGroupImageBottomSheet.tsx
+┃ ┣ MatchLogo.tsx
+┃ ┣ ModalAlert.tsx
+┃ ┣ ModalAlertConfirm.tsx
+┃ ┣ ModalAlertTiny.tsx
+┃ ┣ MovieSelectionBottomSheet.tsx
+┃ ┣ SplashScreen.tsx
+┃ ┣ ThemedText.tsx
+┃ ┗ ThemedView.tsx
+┣ constants/
+┃ ┣ Colors.ts
+┃ ┣ Fonts.ts
+┃ ┗ Url.ts
+┣ expo-secure-store/
+┣ hooks/
+┃ ┣ useColorScheme.ts
+┃ ┣ useColorScheme.web.ts
+┃ ┗ useThemeColor.ts
+┣ scripts/
+┃ ┗ reset-project.js
+┣ .env
+┣ .eslintrc.js
+┣ .gitignore
+┣ app.json
+┣ babel.config.js
+┣ expo-env.d.ts
+┣ package-lock.json
+┣ package.json
+┣ README.md
+┗ tsconfig.json
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+# Telas
+<div class="corpo" align="center"> 
+<h3>Telas de início</h3>
 
-## Learn more
+<img src="./markdown/splash.jpg" width="200" height="444"/>
+<img src="./markdown/login.jpg" width="200" height="444"/>
+<img src="./markdown/registro.jpg" width="200" height="444"/>
 
-To learn more about developing your project with Expo, look at the following resources:
+<h3>Telas principais</h3>
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+<img src="./markdown/catalogo.jpg" width="200" height="444"/>
+<img src="./markdown/detalhes.jpg" width="200" height="444"/>
+<img src="./markdown/grupos.jpg" width="200" height="444"/>
+<img src="./markdown/perfil.jpg" width="200" height="444"/>
 
-## Join the community
+<h3>Telas grupo e modals</h3> 
 
-Join our community of developers creating universal apps.
+<img src="./markdown/grupo.jpg" width="200" height="444"/>
+<img src="./markdown/modal_add_grupo.jpg" width="200" height="444"/>
+<img src="./markdown/modal_edit_grupo.jpg" width="200" height="444"/>
+<img src="./markdown/modal_filme_grupo.jpg" width="200" height="444"/>
+<img src="./markdown/historico.jpg" width="200" height="444"/>
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+<h3>Telas de votação e match</h3>
+
+<img src="./markdown/votacao.jpg" width="200" height="444"/>
+<img src="./markdown/modal_info_votacao.jpg" width="200" height="444"/>
+<img src="./markdown/match_normal.jpg" width="200" height="444"/>
+<img src="./markdown/match_cartaz.jpg" width="200" height="444"/>
+
+</div>
+
+## Conclusão
+O aplicativo **Match Movie** é a solução ideal para grupos de pessoas que querem decidir qual filme irão assistir, marcar seus favoritos e quais já foram assistidos.
+
+## Artigo
+Em breve...
+

@@ -264,7 +264,17 @@ export default function ProfileScreen() {
     };
 
     if (isLoading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
+        return (
+            <ActivityIndicator
+                size="large"
+                color={Colors.dark.tabIconSelected}
+                style={{
+                    flex: 1,
+                    alignContent: "center",
+                    backgroundColor: Colors.dark.background,
+                }}
+            />
+        );
     }
 
     if (!fontsLoaded) {
@@ -353,13 +363,13 @@ export default function ProfileScreen() {
             </View>
             <View
                 style={{
-                    width: Dimensions.get('screen').width - 28,
+                    width: Dimensions.get("screen").width - 28,
                     height: 160,
                     backgroundColor: Colors.dark.background,
                     justifyContent: "space-around",
                     alignItems: "center",
                     flexDirection: "row",
-                    gap: 5
+                    gap: 5,
                 }}
             >
                 <Pressable style={styles.markAsBox}>
@@ -502,7 +512,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
     input: {
-        width: Dimensions.get('screen').width - 28,
+        width: Dimensions.get("screen").width - 28,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -518,7 +528,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: "#ccc",
         borderWidth: 1,
-        borderColor: Colors.dark.tabIconSelected
+        borderColor: Colors.dark.tabIconSelected,
     },
     buttonText: {
         color: "white",
@@ -526,7 +536,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     inputHalf: {
-        width: Dimensions.get('screen').width / 2.2,
+        width: Dimensions.get("screen").width / 2.2,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -538,7 +548,7 @@ const styles = StyleSheet.create({
     button: {
         justifyContent: "center",
         alignItems: "center",
-        width: Dimensions.get('screen').width / 2.21,
+        width: Dimensions.get("screen").width / 2.21,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
@@ -548,7 +558,7 @@ const styles = StyleSheet.create({
     button2: {
         justifyContent: "center",
         alignItems: "center",
-        width: Dimensions.get('screen').width / 2.22,
+        width: Dimensions.get("screen").width / 2.22,
         height: 50,
         backgroundColor: Colors.dark.background,
         padding: 0,
