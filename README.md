@@ -1,4 +1,11 @@
-# Match Movie - Aplicativo Mobile
+<div class="corpo" align="center"> 
+
+<img src="./markdown/logo_md.png" width="450px" height="200px">
+
+![GitHub language count](https://img.shields.io/github/languages/count/jtentis/MatchMovie-Native?color=D46162)
+![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/y/jtentis/MatchMovie-Native?color=D46162)
+
+</div>
 
 ## Visão Geral
 O aplicativo mobile do **Match Movie** foi desenvolvido utilizando **React Native**, proporcionando uma experiência fluida tanto para Android. Ele consome a API REST do backend para obter informações e recomendações de filmes.
