@@ -10,6 +10,8 @@
 ## Visão Geral
 O aplicativo mobile do **Match Movie** foi desenvolvido utilizando **React Native**, proporcionando uma experiência fluida tanto para Android. Ele consome a API REST do backend para obter informações e recomendações de filmes.
 
+### [Clique aqui para ver o vídeo explicativo](https://youtu.be/dh0EnSvD5Pk?si=vvcsZ87uXuSQr3F2)
+
 ## Tecnologias Utilizadas
 - **React Native**
 - **Expo** (para facilitar o desenvolvimento)
