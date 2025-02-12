@@ -27,7 +27,7 @@ O aplicativo mobile do **Match Movie** foi desenvolvido utilizando **React Nativ
 - **Sistema de Assistidos** (salvar filmes já assistidos do usuário)
 - **Criação de grupos** (criação de grupos de usuários)
 - **Match** (votação de filmes em grupo)
-- **Recomendações Personalizadas** (baseadas nas avaliações do usuário)
+- **Recomendações Personalizadas** (baseadas em outro filme escolhido pelo usuário)
 - **OpenCage API** (calculo de proximidade de usuários do grupo baseado no CEP)
 - **Ingresso.com API** (redirecionamento para o site do ingresso.com)
 
