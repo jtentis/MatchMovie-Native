@@ -291,7 +291,13 @@ export default function MatchScreen() {
                             type={"defaultSemiBold"}
                             style={{ fontSize: Fonts.dark.buttonText }}
                         >
-                            {isCreating ? "Criando..." : "Criar"}
+                            {isCreating ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={{ color: "#fff", fontSize: 16 }}>
+                                    Criar
+                                </Text>
+                            )}
                         </ThemedText>
                     </Pressable>
                     <AlertModal

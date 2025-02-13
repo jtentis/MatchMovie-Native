@@ -8,6 +8,7 @@ import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
 import {
+    ActivityIndicator,
     KeyboardType,
     ScrollView,
     StyleSheet,
@@ -22,6 +23,7 @@ const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 
 const RegisterScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
+    const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
@@ -138,6 +140,7 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         }
 
         try {
+            setLoading(true);
             const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/users`, {
                 method: "POST",
                 headers: {
@@ -145,6 +148,7 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                 },
                 body: JSON.stringify(dataToSend),
             });
+
             console.log(dataToSend);
 
             if (response.ok) {
@@ -156,16 +160,22 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                 }, 500);
             } else {
                 const errorData = await response.json();
-                setModalType("error");
-                setModalMessage("Registro falhou");
-                setModalVisible(true);
                 console.log(errorData);
+
+                if (errorData.message) {
+                    setModalMessage(errorData.message);
+                }
+
+                setModalType("error");
+                setModalVisible(true);
             }
         } catch (error) {
             console.error("Erro ao cadastrar usuário.", error);
             setModalMessage("Erro ao cadastrar usuário.");
             setModalType("error");
             setModalVisible(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -270,12 +280,21 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                         </View>
                     ))}
                     {}
-                    <Pressable style={styles.button} onPress={handleRegister}>
+                    <Pressable
+                        style={styles.button}
+                        onPress={handleRegister}
+                    >
                         <ThemedText
                             type="defaultSemiBold"
                             style={styles.buttonText}
                         >
-                            Registrar
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={{ color: "#fff", fontSize: 16 }}>
+                                    Registrar
+                                </Text>
+                            )}
                         </ThemedText>
                     </Pressable>
                     <AlertModal

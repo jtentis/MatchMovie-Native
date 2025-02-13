@@ -7,7 +7,7 @@ import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
-import { Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -21,6 +21,7 @@ type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 //TODO: CONSERTAR COMPORTAMENTO DA DIV DOS BOTOES DE LOGIN COM O TECLADO
 
 const LoginScreen = () => {
+    const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
@@ -54,6 +55,7 @@ const LoginScreen = () => {
             setModalVisible(true);
         } else {
             try {
+                setLoading(true)
                 await login(email, password);
                 console.log("Login feito com sucesso!");
 
@@ -66,6 +68,8 @@ const LoginScreen = () => {
                 setModalType("error");
                 setModalMessage(`Email ou senha incorretos.`);
                 setModalVisible(true);
+            } finally {
+                setLoading(false)
             }
         }
     };
@@ -167,7 +171,13 @@ const LoginScreen = () => {
                             type={"defaultSemiBold"}
                             style={{ fontSize: 16 }}
                         >
-                            Login
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={{ color: "#fff", fontSize: 16 }}>
+                                    Login
+                                </Text>
+                            )}
                         </ThemedText>
                     </Pressable>
                     <AlertModal
@@ -251,7 +261,7 @@ const styles = StyleSheet.create({
         color: "white",
         alignSelf: "center",
         justifyContent: "center",
-        width: Dimensions.get('screen').width / 2,
+        width: Dimensions.get("screen").width / 2,
         textAlign: "center",
         backgroundColor: Colors.dark.background,
         fontFamily: "CoinyRegular",

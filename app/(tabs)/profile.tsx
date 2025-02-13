@@ -42,6 +42,7 @@ export default function ProfileScreen() {
     const [modalMessage, setModalMessage] = useState<string>("");
     const [name, setName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
     const [userUpdate, setUserUpdate] = useState(false);
     const [username, setUsername] = useState("");
     const [second_name, setSecond_name] = useState("");
@@ -180,6 +181,7 @@ export default function ProfileScreen() {
     };
 
     const handleLogout = async () => {
+        setIsExiting(true);
         try {
             await logout();
             console.log("User logged out.");
@@ -188,10 +190,13 @@ export default function ProfileScreen() {
                 routes: [{ name: "(auths)" }],
             });
         } catch (error) {
+            setIsExiting(false);
             console.error("Logout error:", error);
             setModalType("error");
             setModalMessage("Erro ao deslogar, tente novamente!");
             setModalVisible(true);
+        } finally {
+            setIsExiting(false);
         }
     };
 
@@ -487,7 +492,13 @@ export default function ProfileScreen() {
                         type="defaultSemiBold"
                         style={{ color: "white" }}
                     >
-                        {isSaving ? "Salvando..." : "Salvar perfil"}
+                        {isSaving ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: "#fff", fontSize: 16 }}>
+                                Salvar perfil
+                            </Text>
+                        )}
                     </ThemedText>
                 </Pressable>
                 <Pressable style={styles.button2} onPress={handleLogout}>
@@ -495,7 +506,13 @@ export default function ProfileScreen() {
                         type="defaultSemiBold"
                         style={{ color: "white" }}
                     >
-                        Sair
+                       {isExiting ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: "#fff", fontSize: 16 }}>
+                                Sair
+                            </Text>
+                        )}
                     </ThemedText>
                 </Pressable>
                 <AlertModal
