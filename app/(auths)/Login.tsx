@@ -7,13 +7,21 @@ import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
-import { ActivityIndicator, Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+    ActivityIndicator,
+    Dimensions,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+} from "react-native";
 import { Icon } from "../../components/MatchLogo";
 import { useAuth } from "../contexts/AuthContext";
 
 type RootStackParamList = {
     register: undefined;
     "(tabs)": { screen: string };
+    RequestPasswordReset: undefined;
 };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -46,15 +54,6 @@ const LoginScreen = () => {
     };
 
     const handleLogin = async () => {
-
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-        if (!emailRegex.test(email)) {
-            setModalMessage("Endereço de email inválido.");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
         console.log("clicado");
         if (!email.trim() || !password.trim()) {
             setModalType("alert");
@@ -63,8 +62,16 @@ const LoginScreen = () => {
             );
             setModalVisible(true);
         } else {
+            const emailRegex =
+                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+            if (!emailRegex.test(email)) {
+                setModalMessage("Endereço de email inválido.");
+                setModalType("error");
+                setModalVisible(true);
+                return;
+            }
             try {
-                setLoading(true)
+                setLoading(true);
                 await login(email, password);
                 console.log("Login feito com sucesso!");
 
@@ -78,7 +85,7 @@ const LoginScreen = () => {
                 setModalMessage(`Email ou senha incorretos.`);
                 setModalVisible(true);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
         }
     };
@@ -165,6 +172,20 @@ const LoginScreen = () => {
                         onPress={toggleShowPassword}
                     />
                 </View>
+                <Pressable
+                    onPress={() => navigation.navigate("RequestPasswordReset")}
+                    style={styles.forgotPassword}
+                >
+                    <ThemedText
+                        type="defaultSemiBold"
+                        style={{
+                            fontSize: 14,
+                            color: Colors.light.tabIconSelected,
+                        }}
+                    >
+                        Esqueceu a senha?
+                    </ThemedText>
+                </Pressable>
                 <View
                     style={{
                         flex: 1 / 2,
@@ -221,6 +242,10 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
         gap: 5,
     },
+    forgotPassword: {
+        alignSelf: "flex-end",
+        marginVertical: 10,
+    },
     icon: {
         position: "absolute",
         right: 0,
@@ -236,7 +261,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     input: {
-        width: Dimensions.get('window').width -30,
+        width: Dimensions.get("window").width - 30,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -247,7 +272,7 @@ const styles = StyleSheet.create({
     buttonLogin: {
         justifyContent: "center",
         alignItems: "center",
-        width: Dimensions.get('window').width -30,
+        width: Dimensions.get("window").width - 30,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
@@ -258,7 +283,7 @@ const styles = StyleSheet.create({
     buttonRegister: {
         justifyContent: "center",
         alignItems: "center",
-        width: Dimensions.get('window').width -30,
+        width: Dimensions.get("window").width - 30,
         height: 50,
         backgroundColor: Colors.dark.background,
         padding: 0,

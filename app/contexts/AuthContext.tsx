@@ -19,8 +19,6 @@ interface AuthContextData {
     showModal: (message: string) => void;
 }
 
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -63,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         try {
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/auth/login`,
+                `${URL_LOCALHOST}/auth/login`,
                 {
                     method: "POST",
                     headers: {

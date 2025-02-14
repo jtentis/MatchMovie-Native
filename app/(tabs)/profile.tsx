@@ -129,6 +129,13 @@ export default function ProfileScreen() {
             return;
         }
 
+        if (username.trim() && username.trim().length < 4) {
+            setModalType("alert");
+            setModalMessage("O nome de usuário deve ter pelo menos 4 caracteres.");
+            setModalVisible(true);
+            return;
+        }
+
         setIsSaving(true);
 
         try {
