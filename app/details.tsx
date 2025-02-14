@@ -16,9 +16,6 @@ import {
 import { ThemedText } from "../components/ThemedText";
 import { useAuth } from "./contexts/AuthContext";
 
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST
-
 type RootStackParamList = {
     details: { movieId: number };
 };
@@ -83,14 +80,14 @@ const MovieDetailsScreen = () => {
         const fetchMovieDetails = async () => {
             try {
                 const responseMovieDetails = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/details`
+                    `${URL_LOCALHOST}/movies/${movieId}/details`
                 );
                 console.log("filme clicado", movieId);
                 const dataMovieDetails: MovieDetails =
                     await responseMovieDetails.json();
                 setMovieDetails(dataMovieDetails);
                 const responseWatchProviders = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/movies/${movieId}/watch_providers`,
+                    `${URL_LOCALHOST}/movies/${movieId}/watch_providers`,
                 );
                 const dataWatchProviders: WatchProvider =
                     await responseWatchProviders.json();
@@ -106,7 +103,7 @@ const MovieDetailsScreen = () => {
         const fetchFavoriteState = async () => {
             try {
                 const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/favorites/isFavorite/${userId}/${movieId}`,{
+                    `${URL_LOCALHOST}/favorites/isFavorite/${userId}/${movieId}`,{
                         headers: {
                             Authorization: `Bearer ${authToken}`,
                         },
@@ -123,7 +120,7 @@ const MovieDetailsScreen = () => {
         const fetchWatchedState = async () => {
             try {
                 const response = await fetch(
-                    `${EXPO_PUBLIC_BASE_NGROK}/watched/isWatched/${userId}/${movieId}`,{
+                    `${URL_LOCALHOST}/watched/isWatched/${userId}/${movieId}`,{
                         headers: {
                             Authorization: `Bearer ${authToken}`,
                         },
@@ -146,7 +143,7 @@ const MovieDetailsScreen = () => {
         setIsLoadingFavorite(true);
         try {
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/favorites`,
+                `${URL_LOCALHOST}/favorites`,
                 {
                     method: "POST",
                     headers: {
@@ -181,7 +178,7 @@ const MovieDetailsScreen = () => {
     const toggleWatched = async () => {
         setIsLoadingWatched(true);
         try {
-            const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/watched`, {
+            const response = await fetch(`${URL_LOCALHOST}/watched`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

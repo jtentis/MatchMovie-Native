@@ -40,8 +40,6 @@ type RootStackParamList = {
 
 type GroupsNavigationProp = StackNavigationProp<RootStackParamList>;
 
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-
 //TODO: metade da tela fica travada apos criar grupo e voltar. nao sei por diabos isso ta acontecendo.
 export default function MatchScreen() {
     const navigation = useNavigation<GroupsNavigationProp>();
@@ -61,7 +59,7 @@ export default function MatchScreen() {
         try {
             setIsLoading(true);
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}/groups`,
+                `${URL_LOCALHOST}/users/${userId}/groups`,
                 {
                     headers: {
                         Authorization: `Bearer ${authToken}`,

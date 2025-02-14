@@ -24,14 +24,12 @@ import {
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const POPULAR_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/popular`;
-const NOW_PLAYING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/now_playing`;
-const TOP_RATED_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/top_rated`;
-const UPCOMING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/upcoming`;
-const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
-const MOVIE_POSTER_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies`;
+const POPULAR_MOVIES_URL_API = `${URL_LOCALHOST}/movies/popular`;
+const NOW_PLAYING_MOVIES_URL_API = `${URL_LOCALHOST}/movies/now_playing`;
+const TOP_RATED_MOVIES_URL_API = `${URL_LOCALHOST}/movies/top_rated`;
+const UPCOMING_MOVIES_URL_API = `${URL_LOCALHOST}/movies/upcoming`;
+const SEARCH_MOVIES_URL_API = `${URL_LOCALHOST}/movies/search`;
+const MOVIE_POSTER_URL_API = `${URL_LOCALHOST}/movies`;
 
 interface Movie {
     id: number;

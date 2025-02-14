@@ -29,8 +29,7 @@ type MovieSelectionModalProps = {
     onMovieSelect: (movie: Movie) => void; // Callback to pass the selected movie
 };
 
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
+const SEARCH_MOVIES_URL_API = `${URL_LOCALHOST}/movies/search`;
 
 const MovieSelectionModal = React.forwardRef<
     Modalize,

@@ -1,4 +1,5 @@
 import CustomInput from "@/components/CustomInput";
+import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
@@ -16,9 +17,6 @@ import {
     View,
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
-
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 
 const RegisterScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
@@ -49,91 +47,75 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
     const handleRegister = async () => {
         const { conf_password, ...dataToSend } = formData;
 
-        if (
-            !formData.name ||
-            !formData.second_name ||
-            !formData.email ||
-            !formData.password ||
-            !formData.conf_password ||
-            !formData.cpf ||
-            !formData.location
-        ) {
-            setModalMessage("Todos os campos devem ser preenchidos!");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
-        if (
-            typeof formData.name !== "string" ||
-            typeof formData.second_name !== "string"
-        ) {
-            setModalMessage("Nome e sobrenome não devem conter números.");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-        if (!emailRegex.test(formData.email)) {
-            setModalMessage("Endereço de email inválido.");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            setModalMessage("Senha devem conter no mínimo 6 dígitos!");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
-        if (formData.password !== conf_password) {
-            setModalMessage("Senhas não coincidem!");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
 
         const validateCPF = (cpf: string): boolean => {
             cpf = cpf.replace(/[^\d]+/g, "");
 
-            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
-                return false;
-            }
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
 
             let sum = 0;
             let remainder;
 
-            for (let i = 0; i < 9; i++) {
+            for (let i = 0; i < 9; i++)
                 sum += parseInt(cpf.charAt(i)) * (10 - i);
-            }
             remainder = (sum * 10) % 11;
-            if (remainder === 10 || remainder === 11) {
-                remainder = 0;
-            }
-            if (remainder !== parseInt(cpf.charAt(9))) {
-                return false;
-            }
+            if (remainder >= 10) remainder = 0;
+            if (remainder !== parseInt(cpf.charAt(9))) return false;
 
             sum = 0;
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 10; i++)
                 sum += parseInt(cpf.charAt(i)) * (11 - i);
-            }
             remainder = (sum * 10) % 11;
-            if (remainder === 10 || remainder === 11) {
-                remainder = 0;
-            }
-            if (remainder !== parseInt(cpf.charAt(10))) {
-                return false;
-            }
-
-            return true;
+            if (remainder >= 10) remainder = 0;
+            return remainder === parseInt(cpf.charAt(10));
         };
+        
+        const validationRules = [
+            {
+                condition:
+                    !formData.name ||
+                    !formData.second_name ||
+                    !formData.user ||
+                    !formData.email ||
+                    !formData.password ||
+                    !formData.conf_password ||
+                    !formData.cpf ||
+                    !formData.location,
+                message: "Todos os campos devem ser preenchidos!",
+            },
+            {
+                condition:
+                    typeof formData.name !== "string" ||
+                    typeof formData.second_name !== "string",
+                message: "Nome e sobrenome não devem conter números.",
+            },
+            {
+                condition: !emailRegex.test(formData.email),
+                message: "Endereço de email inválido.",
+            },
+            {
+                condition: formData.password.length < 6,
+                message: "Senha deve conter no mínimo 6 dígitos!",
+            },
+            {
+                condition: formData.user.length < 4,
+                message: "O nome de usuário deve conter no mínimo 4 dígitos!",
+            },
+            {
+                condition: formData.password !== conf_password,
+                message: "Senhas não coincidem!",
+            },
+            {
+                condition: !validateCPF(formData.cpf),
+                message: "CPF inválido!",
+            },
+        ];
+        
+        const failedValidation = validationRules.find((rule) => rule.condition);
 
-        if (!validateCPF(formData.cpf)) {
-            setModalMessage("CPF inválido!");
+        if (failedValidation) {
+            setModalMessage(failedValidation.message);
             setModalType("error");
             setModalVisible(true);
             return;
@@ -141,7 +123,7 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
 
         try {
             setLoading(true);
-            const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/users`, {
+            const response = await fetch(`${URL_LOCALHOST}/users`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -302,6 +284,12 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                     </Pressable>
                 </View>
             </ScrollView>
+            <AlertModal
+                type={modalType}
+                visible={modalVisible}
+                message={modalMessage}
+                onClose={() => setModalVisible(false)}
+            />
         </>
     );
 };
@@ -353,6 +341,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 8,
         marginVertical: 40,
-    }
+    },
 });
 export default RegisterScreen;

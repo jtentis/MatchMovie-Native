@@ -28,9 +28,6 @@ type RootStackParamList = {
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-
 export default function ProfileScreen() {
     const [profilePicture, setProfilePicture] = useState<string | null>(null);
     const defaultImage = require("../../assets/images/no-image.png");
@@ -70,7 +67,7 @@ export default function ProfileScreen() {
         try {
             console.log("Pegando dados do usuário: ", userId);
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`,
+                `${URL_LOCALHOST}/users/${userId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${authToken}`,
@@ -141,7 +138,7 @@ export default function ProfileScreen() {
             if (second_name.trim())
                 updatedFields.second_name = second_name.trim();
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`,
+                `${URL_LOCALHOST}/users/${userId}`,
                 {
                     method: "PATCH",
                     headers: {
@@ -240,7 +237,7 @@ export default function ProfileScreen() {
     const uploadProfilePicture = async (base64Image: string) => {
         try {
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}/upload-profile-picture`,
+                `${URL_LOCALHOST}/users/${userId}/upload-profile-picture`,
                 {
                     method: "POST",
                     headers: {
