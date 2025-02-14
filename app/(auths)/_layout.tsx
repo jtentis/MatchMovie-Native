@@ -8,12 +8,18 @@ export default function RootLayoutAuths({ navigation }: { navigation: any }) {
     navigation = useNavigation();
 
     useEffect(() => {
-        const handleDeepLink = async ({ url }: {url: string}) => {
+        const handleDeepLink = async ({ url }: { url: string }) => {
             if (!url) return;
             const { queryParams } = Linking.parse(url);
             if (queryParams?.token) {
-                navigation.navigate("ResetPassword", {
-                    token: queryParams.token,
+                navigation.reset({
+                    index: 0,
+                    routes: [
+                        {
+                            name: "ResetPassword",
+                            params: { token: queryParams.token },
+                        },
+                    ],
                 });
             }
         };

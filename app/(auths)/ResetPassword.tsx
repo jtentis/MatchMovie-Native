@@ -65,11 +65,22 @@ const ResetPassword = ({ navigation }: { navigation: any }) => {
             );
 
             const data = await response.json();
-            if (response.ok) {
+            if (response.status == 201) {
+                console.log(response);
                 setModalType("success");
                 setModalMessage(data.message);
                 setModalVisible(true);
-                router.replace("/(auths)/Login");
+                setTimeout(() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [
+                            {
+                                name: "(tabs)",
+                                screen: "Login",
+                            },
+                        ],
+                    });
+                }, 1000);
             } else {
                 setModalType("error");
                 setModalMessage(data.message);
