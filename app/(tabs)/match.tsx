@@ -70,6 +70,7 @@ export default function MatchScreen() {
             );
 
             if (!response.ok) {
+                console.log(response)
                 throw new Error("Failed to fetch groups");
             }
 

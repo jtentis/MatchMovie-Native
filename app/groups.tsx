@@ -336,23 +336,22 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
             setModalMessage("Ocorreu um erro ao iniciar o match!");
             setModalVisible(true);
         } finally {
-            setIsStarting(false); // Garante que o estado volte ao normal após o processo
+            setIsStarting(false);
+            setIsLoading(false);
         }
     };
 
     if (isLoading) {
-        return <Text>Loading...</Text>;
-    }
-
-    if (isLoading) {
-        return <Text>Loading...</Text>;
-    }
-
-    if (isLoading) {
         return (
-            <View style={{}}>
-                <ActivityIndicator size="large" />
-            </View>
+            <ActivityIndicator
+                size="large"
+                color={Colors.dark.tabIconSelected}
+                style={{
+                    flex: 1,
+                    alignContent: "center",
+                    backgroundColor: Colors.dark.background,
+                }}
+            />
         );
     }
 

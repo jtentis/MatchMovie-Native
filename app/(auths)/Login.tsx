@@ -1,7 +1,7 @@
 import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
@@ -46,6 +46,15 @@ const LoginScreen = () => {
     };
 
     const handleLogin = async () => {
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        if (!emailRegex.test(email)) {
+            setModalMessage("Endereço de email inválido.");
+            setModalType("error");
+            setModalVisible(true);
+            return;
+        }
+
         console.log("clicado");
         if (!email.trim() || !password.trim()) {
             setModalType("alert");
@@ -148,8 +157,8 @@ const LoginScreen = () => {
                         onChangeText={setPassword}
                         secureTextEntry={!showPassword}
                     ></TextInput>
-                    <MaterialCommunityIcons
-                        name={showPassword ? "eye" : "eye-off"}
+                    <MaterialIcons
+                        name={showPassword ? "visibility" : "visibility-off"}
                         size={24}
                         color="#aaa"
                         style={styles.icon}
@@ -227,7 +236,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     input: {
-        width: 360,
+        width: Dimensions.get('window').width -30,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -238,7 +247,7 @@ const styles = StyleSheet.create({
     buttonLogin: {
         justifyContent: "center",
         alignItems: "center",
-        width: 360,
+        width: Dimensions.get('window').width -30,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
@@ -249,7 +258,7 @@ const styles = StyleSheet.create({
     buttonRegister: {
         justifyContent: "center",
         alignItems: "center",
-        width: 360,
+        width: Dimensions.get('window').width -30,
         height: 50,
         backgroundColor: Colors.dark.background,
         padding: 0,

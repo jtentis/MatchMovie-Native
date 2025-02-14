@@ -30,10 +30,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
     const [modalBigVisible, setModalBigVisible] = useState(false);
-    const [modalBigType, setModalBigType] = useState<"error" | "success" | "alert">(
-        "alert"
-    );
-    const [modalBigMessage, setModalBigMessage] = useState<string>("")
+    const [modalBigType, setModalBigType] = useState<
+        "error" | "success" | "alert"
+    >("alert");
+    const [modalBigMessage, setModalBigMessage] = useState<string>("");
 
     const showModal = (message: string) => {
         setModalMessage(message);
@@ -97,7 +97,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const handleTokenExpiration = async () => {
-        alert("Your session has expired. Please log in again.");
+        setModalBigType("error");
+        setModalBigMessage("Sua sessão expirou, efetue o login novamente!");
+        setModalBigVisible(true);
         logout();
     };
 

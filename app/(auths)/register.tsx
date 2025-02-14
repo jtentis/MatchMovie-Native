@@ -1,4 +1,4 @@
-import AlertModal from "@/components/ModalAlert";
+import CustomInput from "@/components/CustomInput";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
@@ -9,11 +9,10 @@ import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
-    KeyboardType,
+    KeyboardTypeOptions,
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     View,
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
@@ -24,6 +23,7 @@ const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
 const RegisterScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
     const [loading, setLoading] = useState(false);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
@@ -183,6 +183,10 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
         return <Text>Carregando fontes...</Text>;
     }
 
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible((prev) => !prev);
+    };
+
     return (
         <>
             <View style={styles.header}>
@@ -209,100 +213,93 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
             </View>
             <ScrollView style={styles.scrollView}>
                 <View style={styles.formContainer}>
-                    {}
                     {[
                         {
                             label: "Nome",
                             field: "name",
                             placeholder: "Digite seu nome",
-                            keyboardType: "default",
+                            icon: "person",
                         },
                         {
                             label: "Sobrenome",
                             field: "second_name",
                             placeholder: "Digite seu sobrenome",
-                            keyboardType: "default",
+                            icon: "person",
                         },
                         {
                             label: "Usuário",
                             field: "user",
                             placeholder: "Digite seu usuário",
-                            keyboardType: "default",
+                            icon: "account-circle",
                         },
                         {
                             label: "E-mail",
                             field: "email",
                             placeholder: "Digite seu e-mail",
-                            keyboardType: "email-adress",
+                            icon: "email",
+                            keyboardType:
+                                "email-address" as KeyboardTypeOptions,
                         },
                         {
                             label: "Senha",
                             field: "password",
                             placeholder: "Digite sua senha",
-                            secureTextEntry: true,
+                            icon: "lock",
+                            isPassword: true,
                         },
                         {
                             label: "Confirmação de Senha",
                             field: "conf_password",
                             placeholder: "Confirme sua senha",
-                            secureTextEntry: true,
+                            icon: "lock-outline",
+                            isPassword: true,
                         },
                         {
                             label: "CPF",
                             field: "cpf",
                             placeholder: "Digite seu CPF",
-                            keyboardType: "numeric",
+                            icon: "badge",
+                            keyboardType: "numeric" as KeyboardTypeOptions,
                         },
                         {
                             label: "Endereço (CEP)",
                             field: "location",
                             placeholder: "Digite seu CEP",
-                            keyboardType: "numeric",
+                            icon: "location-on",
+                            keyboardType: "numeric" as KeyboardTypeOptions,
                         },
-                    ].map(({ label, field, keyboardType, ...inputProps }) => (
-                        <View key={field} style={styles.inputGroup}>
-                            <ThemedText type="default" style={styles.label}>
-                                {label}
-                            </ThemedText>
-                            <TextInput
-                                style={styles.input}
+                    ].map(
+                        ({ label, field, icon, isPassword, ...inputProps }) => (
+                            <CustomInput
+                                key={field}
+                                label={label}
+                                icon={icon}
                                 value={formData[field]}
                                 onChangeText={(value) =>
                                     handleChange(field, value)
                                 }
-                                keyboardType={keyboardType as KeyboardType}
-                                selectionColor={Colors.dark.tabIconSelected}
-                                placeholderTextColor={
-                                    Colors.dark.textPlaceHolder
+                                isPassword={isPassword}
+                                isPasswordVisible={isPasswordVisible}
+                                togglePasswordVisibility={
+                                    isPassword
+                                        ? togglePasswordVisibility
+                                        : undefined
                                 }
                                 {...inputProps}
+                                {...inputProps}
                             />
-                        </View>
-                    ))}
-                    {}
-                    <Pressable
-                        style={styles.button}
-                        onPress={handleRegister}
-                    >
-                        <ThemedText
-                            type="defaultSemiBold"
-                            style={styles.buttonText}
-                        >
-                            {loading ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <Text style={{ color: "#fff", fontSize: 16 }}>
-                                    Registrar
-                                </Text>
-                            )}
-                        </ThemedText>
+                        )
+                    )}
+
+                    <Pressable style={styles.button} onPress={handleRegister}>
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: "#fff", fontSize: 16 }}>
+                                Registrar
+                            </Text>
+                        )}
                     </Pressable>
-                    <AlertModal
-                        type={modalType}
-                        message={modalMessage}
-                        visible={modalVisible}
-                        onClose={() => setModalVisible(false)}
-                    />
                 </View>
             </ScrollView>
         </>
@@ -333,17 +330,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginTop: "10%",
     },
-    inputSmall: {
-        backgroundColor: Colors.dark.input,
-        padding: 15,
-        borderRadius: 8,
-        elevation: 10,
-        color: Colors.dark.text,
-    },
-    size: {
-        width: 240,
-        height: 50,
-    },
     title: {
         fontFamily: "CoinyRegular",
         fontWeight: "400",
@@ -359,31 +345,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingHorizontal: 16,
     },
-    inputGroup: {
-        alignSelf: "stretch",
-        marginVertical: 10,
-    },
-    label: {
-        color: "white",
-        alignSelf: "flex-start",
-        marginBottom: 5,
-    },
-    input: {
-        width: "100%",
-        height: 50,
-        backgroundColor: Colors.dark.input,
-        padding: 15,
-        borderRadius: 8,
-        color: Colors.dark.text,
-    },
-    inputRow: {
-        flexDirection: "row",
-        gap: 10,
-        marginBottom: 10,
-    },
-    inputFlex: {
-        flex: 1,
-    },
     button: {
         width: "100%",
         height: 50,
@@ -392,9 +353,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 8,
         marginVertical: 40,
-    },
-    buttonText: {
-        color: "white",
-    },
+    }
 });
 export default RegisterScreen;

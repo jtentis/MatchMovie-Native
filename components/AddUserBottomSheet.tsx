@@ -3,7 +3,7 @@ import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
 import { URL_LOCALHOST } from "@/constants/Url";
 import React, { forwardRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Modalize } from "react-native-modalize";
 import AlertModal from "./ModalAlert";
 import { ThemedText } from "./ThemedText";
@@ -123,7 +123,7 @@ export const AddUserBottomSheet = forwardRef<Modalize, AddUserBottomSheetProps>(
                             type={"defaultSemiBold"}
                             style={{ fontSize: Fonts.dark.buttonText }}
                         >
-                            {isAdding ? "Adicionando..." : "Adicionar"}
+                            {isAdding ? <ActivityIndicator size="small" color="#fff" /> : "Adicionar"}
                         </ThemedText>
                     </Pressable>
                     <AlertModal
