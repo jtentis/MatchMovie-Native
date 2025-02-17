@@ -25,6 +25,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 type RootStackParamList = {
     "(auths)": { screen: "Login" };
+    user_list: { userId: any; type: "watched" | "favorites" };
 };
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -420,13 +421,13 @@ export default function ProfileScreen() {
                     gap: 5,
                 }}
             >
-                <Pressable style={styles.markAsBox}>
+                <Pressable onPress={() => navigation.navigate("user_list", { userId, type: "favorites" })} style={styles.markAsBox}>
                     <ThemedText style={styles.fontMark}>FAVORITOS</ThemedText>
                     <ThemedText style={styles.fontQuant}>
                         {favoriteCountLength}
                     </ThemedText>
                 </Pressable>
-                <Pressable style={styles.markAsBox}>
+                <Pressable onPress={() => navigation.navigate("user_list", { userId, type: "watched" })} style={styles.markAsBox}>
                     <ThemedText style={styles.fontMark}>ASSISTIDOS</ThemedText>
                     <ThemedText style={styles.fontQuant}>
                         {watchedCountLength}
