@@ -74,6 +74,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
     const { authToken, userId } = useAuth();
     const [group, setGroup] = useState<Group | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isStarting, setIsStarting] = useState(false);
     const addUserModalRef = useRef<Modalize>(null);
     const changeImageModalRef = useRef<Modalize>(null);
     const movieSelectionModalRef = useRef<Modalize>(null);
@@ -304,43 +305,53 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
     };
 
     const handleStartMatch = () => {
-        if (!selectedMovie && !selectedFilter) {
-            setModalType("error");
-            setModalMessage("Selecione um filme ou um filtro!");
-            setModalVisible(true);
-            return;
-        }
+        setIsStarting(true); // Indica que o processo está iniciando
 
-        // passando o groupId para tela de votação
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [
-                    {
-                        name: "match_voting",
-                        params: {
-                            groupId,
-                            filter: selectedFilter || null,
+        try {
+            if (!selectedMovie && !selectedFilter) {
+                setModalType("error");
+                setModalMessage("Selecione um filme ou um filtro!");
+                setModalVisible(true);
+                return;
+            }
+
+            // Passando o groupId para tela de votação
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [
+                        {
+                            name: "match_voting",
+                            params: {
+                                groupId,
+                                filter: selectedFilter || null,
+                            },
                         },
-                    },
-                ],
-            })
-        );
+                    ],
+                })
+            );
+        } catch (error) {
+            console.error("Erro ao iniciar o match:", error);
+            setModalType("error");
+            setModalMessage("Ocorreu um erro ao iniciar o match!");
+            setModalVisible(true);
+        } finally {
+            setIsStarting(false);
+            setIsLoading(false);
+        }
     };
 
     if (isLoading) {
-        return <Text>Loading...</Text>;
-    }
-
-    if (isLoading) {
-        return <Text>Loading...</Text>;
-    }
-
-    if (isLoading) {
         return (
-            <View style={{}}>
-                <ActivityIndicator size="large" />
-            </View>
+            <ActivityIndicator
+                size="large"
+                color={Colors.dark.tabIconSelected}
+                style={{
+                    flex: 1,
+                    alignContent: "center",
+                    backgroundColor: Colors.dark.background,
+                }}
+            />
         );
     }
 
@@ -526,9 +537,13 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         style={styles.buttonMatch}
                         onPress={() => handleStartMatch()}
                     >
-                        <ThemedText type="title" style={{ fontSize: 18 }}>
-                            Iniciar Match
-                        </ThemedText>
+                        {isStarting ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: "#fff", fontSize: 16 }}>
+                                Iniciar Match
+                            </Text>
+                        )}
                     </Pressable>
                     <Pressable
                         onPress={() =>

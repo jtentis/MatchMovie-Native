@@ -1,4 +1,5 @@
 import AlertModal from "@/components/ModalAlert";
+import ConfirmModal from "@/components/ModalAlertConfirm";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
@@ -28,9 +29,6 @@ type RootStackParamList = {
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-
 export default function ProfileScreen() {
     const [profilePicture, setProfilePicture] = useState<string | null>(null);
     const defaultImage = require("../../assets/images/no-image.png");
@@ -42,6 +40,7 @@ export default function ProfileScreen() {
     const [modalMessage, setModalMessage] = useState<string>("");
     const [name, setName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
     const [userUpdate, setUserUpdate] = useState(false);
     const [username, setUsername] = useState("");
     const [second_name, setSecond_name] = useState("");
@@ -53,11 +52,10 @@ export default function ProfileScreen() {
         CoinyRegular: require("../../assets/fonts/Coiny-Regular.ttf"),
     });
     const [refreshing, setRefreshing] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const [modalText, setModalText] = useState<string>("");
+    const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
     const fetchUserData = async () => {
-        console.log("Token", authToken);
+        // console.log("Token", authToken);
 
         if (!userId) {
             console.log("Sem ID");
@@ -68,14 +66,11 @@ export default function ProfileScreen() {
 
         try {
             console.log("Pegando dados do usuário: ", userId);
-            const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                }
-            );
+            const response = await fetch(`${URL_LOCALHOST}/users/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
             console.log("Status:", response.status);
 
             if (!response.ok) {
@@ -131,6 +126,15 @@ export default function ProfileScreen() {
             return;
         }
 
+        if (username.trim() && username.trim().length < 4) {
+            setModalType("alert");
+            setModalMessage(
+                "O nome de usuário deve ter pelo menos 4 caracteres."
+            );
+            setModalVisible(true);
+            return;
+        }
+
         setIsSaving(true);
 
         try {
@@ -139,17 +143,14 @@ export default function ProfileScreen() {
             if (username.trim()) updatedFields.user = username.trim();
             if (second_name.trim())
                 updatedFields.second_name = second_name.trim();
-            const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                    body: JSON.stringify(updatedFields),
-                }
-            );
+            const response = await fetch(`${URL_LOCALHOST}/users/${userId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify(updatedFields),
+            });
 
             console.log("Response Status:", response.status);
 
@@ -179,7 +180,35 @@ export default function ProfileScreen() {
         }
     };
 
+    const handleDeleteUser = async () => {
+        try {
+            const response = await fetch(`${URL_LOCALHOST}/users/${userId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${authToken}`, // Pass the token
+                },
+            });
+
+            if (!response.ok) {
+                console.log(response);
+                throw new Error("Failed to delete user");
+            }
+            await logout();
+
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "(auths)" }],
+            });
+        } catch (error) {
+            console.error("Erro ao deletar usuário:", error);
+            setModalType("error");
+            setModalMessage("Erro ao deletar usuário!");
+            setModalVisible(true);
+        }
+    };
+
     const handleLogout = async () => {
+        setIsExiting(true);
         try {
             await logout();
             console.log("User logged out.");
@@ -188,10 +217,13 @@ export default function ProfileScreen() {
                 routes: [{ name: "(auths)" }],
             });
         } catch (error) {
+            setIsExiting(false);
             console.error("Logout error:", error);
             setModalType("error");
             setModalMessage("Erro ao deslogar, tente novamente!");
             setModalVisible(true);
+        } finally {
+            setIsExiting(false);
         }
     };
 
@@ -235,7 +267,7 @@ export default function ProfileScreen() {
     const uploadProfilePicture = async (base64Image: string) => {
         try {
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/users/${userId}/upload-profile-picture`,
+                `${URL_LOCALHOST}/users/${userId}/upload-profile-picture`,
                 {
                     method: "POST",
                     headers: {
@@ -334,12 +366,28 @@ export default function ProfileScreen() {
                     style={{
                         backgroundColor: "transparent",
                         position: "absolute",
-                        right: 30,
-                        top: 25,
-                        borderRadius: 100,
+                        right: 10,
+                        top: 10,
+                        padding: 20,
                     }}
                 >
-                    <FontAwesome size={22} name="pencil" color={"#FFFFFF"} />
+                    <FontAwesome size={25} name="pencil" color={"#FFFFFF"} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setConfirmDeleteVisible(true)}
+                    style={{
+                        backgroundColor: "transparent",
+                        position: "absolute",
+                        right: 10,
+                        top: 80,
+                        padding: 20,
+                    }}
+                >
+                    <FontAwesome
+                        size={25}
+                        name="trash"
+                        color={Colors.dark.tabIconSelected}
+                    />
                 </TouchableOpacity>
             </View>
             <View
@@ -487,7 +535,13 @@ export default function ProfileScreen() {
                         type="defaultSemiBold"
                         style={{ color: "white" }}
                     >
-                        {isSaving ? "Salvando..." : "Salvar perfil"}
+                        {isSaving ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: "#fff", fontSize: 16 }}>
+                                Salvar perfil
+                            </Text>
+                        )}
                     </ThemedText>
                 </Pressable>
                 <Pressable style={styles.button2} onPress={handleLogout}>
@@ -495,7 +549,13 @@ export default function ProfileScreen() {
                         type="defaultSemiBold"
                         style={{ color: "white" }}
                     >
-                        Sair
+                        {isExiting ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: "#fff", fontSize: 16 }}>
+                                Sair
+                            </Text>
+                        )}
                     </ThemedText>
                 </Pressable>
                 <AlertModal
@@ -504,7 +564,13 @@ export default function ProfileScreen() {
                     visible={modalVisible}
                     onClose={() => setModalVisible(false)}
                 />
-                {/* {showModal && <TinyModal text={modalText} />} */}
+                <ConfirmModal
+                    type="alert"
+                    visible={confirmDeleteVisible}
+                    onConfirm={handleDeleteUser}
+                    onCancel={() => setConfirmDeleteVisible(false)}
+                    message="Tem certeza que deseja excluir seu perfil?"
+                />
             </View>
         </ScrollView>
     );

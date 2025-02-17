@@ -1,3 +1,4 @@
+import CustomInput from "@/components/CustomInput";
 import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
@@ -8,20 +9,19 @@ import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
 import {
-    KeyboardType,
+    ActivityIndicator,
+    KeyboardTypeOptions,
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     View,
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-
 const RegisterScreen = ({ navigation }: { navigation: any }) => {
     navigation = useNavigation();
+    const [loading, setLoading] = useState(false);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
@@ -47,104 +47,90 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
     const handleRegister = async () => {
         const { conf_password, ...dataToSend } = formData;
 
-        if (
-            !formData.name ||
-            !formData.second_name ||
-            !formData.email ||
-            !formData.password ||
-            !formData.conf_password ||
-            !formData.cpf ||
-            !formData.location
-        ) {
-            setModalMessage("Todos os campos devem ser preenchidos!");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
-        if (
-            typeof formData.name !== "string" ||
-            typeof formData.second_name !== "string"
-        ) {
-            setModalMessage("Nome e sobrenome não devem conter números.");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-        if (!emailRegex.test(formData.email)) {
-            setModalMessage("Endereço de email inválido.");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            setModalMessage("Senha devem conter no mínimo 6 dígitos!");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
-
-        if (formData.password !== conf_password) {
-            setModalMessage("Senhas não coincidem!");
-            setModalType("error");
-            setModalVisible(true);
-            return;
-        }
 
         const validateCPF = (cpf: string): boolean => {
             cpf = cpf.replace(/[^\d]+/g, "");
 
-            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
-                return false;
-            }
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
 
             let sum = 0;
             let remainder;
 
-            for (let i = 0; i < 9; i++) {
+            for (let i = 0; i < 9; i++)
                 sum += parseInt(cpf.charAt(i)) * (10 - i);
-            }
             remainder = (sum * 10) % 11;
-            if (remainder === 10 || remainder === 11) {
-                remainder = 0;
-            }
-            if (remainder !== parseInt(cpf.charAt(9))) {
-                return false;
-            }
+            if (remainder >= 10) remainder = 0;
+            if (remainder !== parseInt(cpf.charAt(9))) return false;
 
             sum = 0;
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 10; i++)
                 sum += parseInt(cpf.charAt(i)) * (11 - i);
-            }
             remainder = (sum * 10) % 11;
-            if (remainder === 10 || remainder === 11) {
-                remainder = 0;
-            }
-            if (remainder !== parseInt(cpf.charAt(10))) {
-                return false;
-            }
-
-            return true;
+            if (remainder >= 10) remainder = 0;
+            return remainder === parseInt(cpf.charAt(10));
         };
+        
+        const validationRules = [
+            {
+                condition:
+                    !formData.name ||
+                    !formData.second_name ||
+                    !formData.user ||
+                    !formData.email ||
+                    !formData.password ||
+                    !formData.conf_password ||
+                    !formData.cpf ||
+                    !formData.location,
+                message: "Todos os campos devem ser preenchidos!",
+            },
+            {
+                condition:
+                    typeof formData.name !== "string" ||
+                    typeof formData.second_name !== "string",
+                message: "Nome e sobrenome não devem conter números.",
+            },
+            {
+                condition: !emailRegex.test(formData.email),
+                message: "Endereço de email inválido.",
+            },
+            {
+                condition: formData.password.length < 6,
+                message: "Senha deve conter no mínimo 6 dígitos!",
+            },
+            {
+                condition: formData.user.length < 4,
+                message: "O nome de usuário deve conter no mínimo 4 dígitos!",
+            },
+            {
+                condition: formData.password !== conf_password,
+                message: "Senhas não coincidem!",
+            },
+            {
+                condition: !validateCPF(formData.cpf),
+                message: "CPF inválido!",
+            },
+        ];
+        
+        const failedValidation = validationRules.find((rule) => rule.condition);
 
-        if (!validateCPF(formData.cpf)) {
-            setModalMessage("CPF inválido!");
+        if (failedValidation) {
+            setModalMessage(failedValidation.message);
             setModalType("error");
             setModalVisible(true);
             return;
         }
 
         try {
-            const response = await fetch(`${EXPO_PUBLIC_BASE_NGROK}/users`, {
+            setLoading(true);
+            const response = await fetch(`${URL_LOCALHOST}/users`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(dataToSend),
             });
+
             console.log(dataToSend);
 
             if (response.ok) {
@@ -156,22 +142,32 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                 }, 500);
             } else {
                 const errorData = await response.json();
-                setModalType("error");
-                setModalMessage("Registro falhou");
-                setModalVisible(true);
                 console.log(errorData);
+
+                if (errorData.message) {
+                    setModalMessage(errorData.message);
+                }
+
+                setModalType("error");
+                setModalVisible(true);
             }
         } catch (error) {
             console.error("Erro ao cadastrar usuário.", error);
             setModalMessage("Erro ao cadastrar usuário.");
             setModalType("error");
             setModalVisible(true);
+        } finally {
+            setLoading(false);
         }
     };
 
     if (!fontsLoaded) {
         return <Text>Carregando fontes...</Text>;
     }
+
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible((prev) => !prev);
+    };
 
     return (
         <>
@@ -199,93 +195,101 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
             </View>
             <ScrollView style={styles.scrollView}>
                 <View style={styles.formContainer}>
-                    {}
                     {[
                         {
                             label: "Nome",
                             field: "name",
                             placeholder: "Digite seu nome",
-                            keyboardType: "default",
+                            icon: "person",
                         },
                         {
                             label: "Sobrenome",
                             field: "second_name",
                             placeholder: "Digite seu sobrenome",
-                            keyboardType: "default",
+                            icon: "person",
                         },
                         {
                             label: "Usuário",
                             field: "user",
                             placeholder: "Digite seu usuário",
-                            keyboardType: "default",
+                            icon: "account-circle",
                         },
                         {
                             label: "E-mail",
                             field: "email",
                             placeholder: "Digite seu e-mail",
-                            keyboardType: "email-adress",
+                            icon: "email",
+                            keyboardType:
+                                "email-address" as KeyboardTypeOptions,
                         },
                         {
                             label: "Senha",
                             field: "password",
                             placeholder: "Digite sua senha",
-                            secureTextEntry: true,
+                            icon: "lock",
+                            isPassword: true,
                         },
                         {
                             label: "Confirmação de Senha",
                             field: "conf_password",
                             placeholder: "Confirme sua senha",
-                            secureTextEntry: true,
+                            icon: "lock-outline",
+                            isPassword: true,
                         },
                         {
                             label: "CPF",
                             field: "cpf",
                             placeholder: "Digite seu CPF",
-                            keyboardType: "numeric",
+                            icon: "badge",
+                            keyboardType: "numeric" as KeyboardTypeOptions,
                         },
                         {
                             label: "Endereço (CEP)",
                             field: "location",
                             placeholder: "Digite seu CEP",
-                            keyboardType: "numeric",
+                            icon: "location-on",
+                            keyboardType: "numeric" as KeyboardTypeOptions,
                         },
-                    ].map(({ label, field, keyboardType, ...inputProps }) => (
-                        <View key={field} style={styles.inputGroup}>
-                            <ThemedText type="default" style={styles.label}>
-                                {label}
-                            </ThemedText>
-                            <TextInput
-                                style={styles.input}
+                    ].map(
+                        ({ label, field, icon, isPassword, ...inputProps }) => (
+                            <CustomInput
+                                key={field}
+                                label={label}
+                                icon={icon}
                                 value={formData[field]}
                                 onChangeText={(value) =>
                                     handleChange(field, value)
                                 }
-                                keyboardType={keyboardType as KeyboardType}
-                                selectionColor={Colors.dark.tabIconSelected}
-                                placeholderTextColor={
-                                    Colors.dark.textPlaceHolder
+                                isPassword={isPassword}
+                                isPasswordVisible={isPasswordVisible}
+                                togglePasswordVisibility={
+                                    isPassword
+                                        ? togglePasswordVisibility
+                                        : undefined
                                 }
                                 {...inputProps}
+                                {...inputProps}
                             />
-                        </View>
-                    ))}
-                    {}
+                        )
+                    )}
+
                     <Pressable style={styles.button} onPress={handleRegister}>
-                        <ThemedText
-                            type="defaultSemiBold"
-                            style={styles.buttonText}
-                        >
-                            Registrar
-                        </ThemedText>
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: "#fff", fontSize: 16 }}>
+                                Registrar
+                            </Text>
+                        )}
                     </Pressable>
-                    <AlertModal
-                        type={modalType}
-                        message={modalMessage}
-                        visible={modalVisible}
-                        onClose={() => setModalVisible(false)}
-                    />
                 </View>
             </ScrollView>
+            <AlertModal
+                type={modalType}
+                visible={modalVisible}
+                message={modalMessage}
+                onClose={() => setModalVisible(false)}
+            />
         </>
     );
 };
@@ -314,17 +318,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginTop: "10%",
     },
-    inputSmall: {
-        backgroundColor: Colors.dark.input,
-        padding: 15,
-        borderRadius: 8,
-        elevation: 10,
-        color: Colors.dark.text,
-    },
-    size: {
-        width: 240,
-        height: 50,
-    },
     title: {
         fontFamily: "CoinyRegular",
         fontWeight: "400",
@@ -340,31 +333,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingHorizontal: 16,
     },
-    inputGroup: {
-        alignSelf: "stretch",
-        marginVertical: 10,
-    },
-    label: {
-        color: "white",
-        alignSelf: "flex-start",
-        marginBottom: 5,
-    },
-    input: {
-        width: "100%",
-        height: 50,
-        backgroundColor: Colors.dark.input,
-        padding: 15,
-        borderRadius: 8,
-        color: Colors.dark.text,
-    },
-    inputRow: {
-        flexDirection: "row",
-        gap: 10,
-        marginBottom: 10,
-    },
-    inputFlex: {
-        flex: 1,
-    },
     button: {
         width: "100%",
         height: 50,
@@ -373,9 +341,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 8,
         marginVertical: 40,
-    },
-    buttonText: {
-        color: "white",
     },
 });
 export default RegisterScreen;

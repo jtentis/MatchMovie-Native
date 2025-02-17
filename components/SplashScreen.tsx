@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
 import { useFonts } from "expo-font";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { Icon } from "./MatchLogo";
 
 const SplashScreenLogo = () => {
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     appName: {
         marginTop: 20,
         fontSize: 56,
-        width: 150,
+        maxWidth: Dimensions.get('window').width / 1.7,
         textAlign: 'center',
         flexWrap:'wrap',
         color: "white",

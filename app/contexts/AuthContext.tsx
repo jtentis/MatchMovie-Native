@@ -19,8 +19,6 @@ interface AuthContextData {
     showModal: (message: string) => void;
 }
 
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
 const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -30,10 +28,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
     const [modalBigVisible, setModalBigVisible] = useState(false);
-    const [modalBigType, setModalBigType] = useState<"error" | "success" | "alert">(
-        "alert"
-    );
-    const [modalBigMessage, setModalBigMessage] = useState<string>("")
+    const [modalBigType, setModalBigType] = useState<
+        "error" | "success" | "alert"
+    >("alert");
+    const [modalBigMessage, setModalBigMessage] = useState<string>("");
 
     const showModal = (message: string) => {
         setModalMessage(message);
@@ -63,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         try {
             const response = await fetch(
-                `${EXPO_PUBLIC_BASE_NGROK}/auth/login`,
+                `${URL_LOCALHOST}/auth/login`,
                 {
                     method: "POST",
                     headers: {
@@ -97,7 +95,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const handleTokenExpiration = async () => {
-        alert("Your session has expired. Please log in again.");
+        setModalBigType("error");
+        setModalBigMessage("Sua sessão expirou, efetue o login novamente!");
+        setModalBigVisible(true);
         logout();
     };
 

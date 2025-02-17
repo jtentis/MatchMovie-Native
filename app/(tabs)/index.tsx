@@ -1,3 +1,4 @@
+import TinyModal from "@/components/ModalAlertTiny";
 import { Colors } from "@/constants/Colors";
 import { URL_LOCALHOST } from "@/constants/Url";
 import { FontAwesome } from "@expo/vector-icons";
@@ -23,15 +24,12 @@ import {
 } from "react-native";
 import { Icon } from "../../components/MatchLogo";
 
-const EXPO_PUBLIC_BASE_NGROK = URL_LOCALHOST;
-// const EXPO_PUBLIC_BASE_NGROK = process.env.EXPO_PUBLIC_BASE_NGROK;
-const POPULAR_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/popular`;
-const NOW_PLAYING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/now_playing`;
-const TOP_RATED_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/top_rated`;
-const UPCOMING_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/upcoming`;
-const SEARCH_MOVIES_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies/search`;
-const MOVIE_POSTER_URL_API = `${EXPO_PUBLIC_BASE_NGROK}/movies`;
-
+const POPULAR_MOVIES_URL_API = `${URL_LOCALHOST}/movies/popular`;
+const NOW_PLAYING_MOVIES_URL_API = `${URL_LOCALHOST}/movies/now_playing`;
+const TOP_RATED_MOVIES_URL_API = `${URL_LOCALHOST}/movies/top_rated`;
+const UPCOMING_MOVIES_URL_API = `${URL_LOCALHOST}/movies/upcoming`;
+const SEARCH_MOVIES_URL_API = `${URL_LOCALHOST}/movies/search`;
+const MOVIE_POSTER_URL_API = `${URL_LOCALHOST}/movies`;
 
 interface Movie {
     id: number;
@@ -73,6 +71,7 @@ const HomeScreen = () => {
     }, []);
 
     const screenWidth = Dimensions.get("window").width;
+    const [searching, isSearching] = useState(false);
     const [filterIndex, setFilterIndex] = useState(0);
     const underlineWidth = screenWidth / 4;
     const [filterLayouts, setFilterLayouts] = useState<any[]>([]);
@@ -82,6 +81,8 @@ const HomeScreen = () => {
     const [filter, setFilter] = useState<string>("popular");
     const [page, setPage] = useState<number>(1);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalText, setModalText] = useState("");
     const [posterCache, setPosterCache] = useState<{
         [id: string]: string | null;
     }>({});
@@ -122,18 +123,31 @@ const HomeScreen = () => {
         }
     };
 
-    const searchMovies = () => {
-        if (!query.trim()) return;
-
+    const searchMovies = async () => {
+        isSearching(true);
+    
+        if (!query.trim()) {
+            isSearching(false);
+            return;
+        }
+    
         setFilter("search");
         setPage(1);
-
+    
         const url = `${SEARCH_MOVIES_URL_API}?search=${query}&page=1`;
-        fetchMovies(url);
-        listRef.current?.scrollToOffset({ animated: true, offset: 0 });
-
-        Keyboard.dismiss();
+    
+        try {
+            await fetchMovies(url);
+            listRef.current?.scrollToOffset({ animated: true, offset: 0 });
+            Keyboard.dismiss();
+        } catch (error) {
+            setModalText("Erro ao procurar filmes.");
+            setModalVisible(true);
+        } finally {
+            isSearching(false);
+        }
     };
+    
 
     const listRef = useRef<FlatList>(null);
     const applyFilter = (index: number) => {
@@ -197,12 +211,10 @@ const HomeScreen = () => {
 
     useEffect(() => {
         const fetchPosters = async () => {
-
             const newPosters: { [id: number]: string | null } = {};
 
             await Promise.all(
                 movies.map(async (movie) => {
-
                     if (posterCache[movie.id]) {
                         newPosters[movie.id] = posterCache[movie.id];
                         return;
@@ -216,7 +228,6 @@ const HomeScreen = () => {
                         : "";
 
                     try {
-                        
                         const response = await fetch(
                             `${MOVIE_POSTER_URL_API}${formattedPosterPath}/poster`
                         );
@@ -314,7 +325,15 @@ const HomeScreen = () => {
                         selectionColor={Colors.dark.tabIconSelected}
                     />
                     <Pressable style={styles.button} onPress={searchMovies}>
-                        <FontAwesome name={'search'} size={16} color={'white'}></FontAwesome>
+                        {searching ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <FontAwesome
+                                name={"search"}
+                                size={16}
+                                color={"white"}
+                            ></FontAwesome>
+                        )}
                     </Pressable>
                 </View>
             </View>
@@ -330,7 +349,11 @@ const HomeScreen = () => {
                             key={filterType}
                             onLayout={(event) => onFilterLayout(event, index)}
                             onPress={() => applyFilter(index)}
-                            style={{flex: 1/4, paddingBottom: 10, paddingTop: 8,}}
+                            style={{
+                                flex: 1 / 4,
+                                paddingBottom: 10,
+                                paddingTop: 8,
+                            }}
                         >
                             <Text style={getFilterButtonStyle(filterType)}>
                                 {filterTranslations[filterType].replace(
@@ -375,7 +398,7 @@ const HomeScreen = () => {
                     }
                 />
             </SafeAreaView>
-            {/* {showModal && <TinyModal text={modalText} />} */}
+            {modalVisible && <TinyModal text={modalText} />}
         </>
     );
 };
@@ -405,7 +428,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
     },
     input: {
-        width: Dimensions.get('screen').width - 155,
+        width: Dimensions.get("screen").width - 155,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,

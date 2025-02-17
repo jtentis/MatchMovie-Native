@@ -225,8 +225,14 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         lng: number
     ): Promise<string | null> => {
         try {
-            const url = `${URL_LOCALHOST}/ingresso/lat/${lat}/lng/${lng}`;
-            const response = await fetch(url);
+            const response = await fetch(
+                `${URL_LOCALHOST}/ingresso/lat/${lat}/lng/${lng}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                }
+            );
 
             if (!response.ok) {
                 throw new Error("Failed to fetch city ID.");

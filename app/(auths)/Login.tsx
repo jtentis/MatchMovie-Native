@@ -1,19 +1,28 @@
 import AlertModal from "@/components/ModalAlert";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
 import { useNavigation } from "expo-router";
 import { Pressable } from "expo-router/build/views/Pressable";
 import React, { useState } from "react";
-import { Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+    ActivityIndicator,
+    Dimensions,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+} from "react-native";
 import { Icon } from "../../components/MatchLogo";
 import { useAuth } from "../contexts/AuthContext";
 
 type RootStackParamList = {
     register: undefined;
     "(tabs)": { screen: string };
+    RequestPasswordReset: undefined;
+    ResetPassword: undefined;
 };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -21,6 +30,7 @@ type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 //TODO: CONSERTAR COMPORTAMENTO DA DIV DOS BOTOES DE LOGIN COM O TECLADO
 
 const LoginScreen = () => {
+    const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"error" | "success" | "alert">(
         "alert"
@@ -53,7 +63,16 @@ const LoginScreen = () => {
             );
             setModalVisible(true);
         } else {
+            const emailRegex =
+                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+            if (!emailRegex.test(email)) {
+                setModalMessage("Endereço de email inválido.");
+                setModalType("error");
+                setModalVisible(true);
+                return;
+            }
             try {
+                setLoading(true);
                 await login(email, password);
                 console.log("Login feito com sucesso!");
 
@@ -66,6 +85,8 @@ const LoginScreen = () => {
                 setModalType("error");
                 setModalMessage(`Email ou senha incorretos.`);
                 setModalVisible(true);
+            } finally {
+                setLoading(false);
             }
         }
     };
@@ -144,14 +165,28 @@ const LoginScreen = () => {
                         onChangeText={setPassword}
                         secureTextEntry={!showPassword}
                     ></TextInput>
-                    <MaterialCommunityIcons
-                        name={showPassword ? "eye" : "eye-off"}
+                    <MaterialIcons
+                        name={showPassword ? "visibility" : "visibility-off"}
                         size={24}
                         color="#aaa"
                         style={styles.icon}
                         onPress={toggleShowPassword}
                     />
                 </View>
+                <Pressable
+                    onPress={() => navigation.navigate("ResetPassword")}
+                    style={styles.forgotPassword}
+                >
+                    <ThemedText
+                        type="defaultSemiBold"
+                        style={{
+                            fontSize: 14,
+                            color: Colors.light.tabIconSelected,
+                        }}
+                    >
+                        Esqueceu a senha?
+                    </ThemedText>
+                </Pressable>
                 <View
                     style={{
                         flex: 1 / 2,
@@ -167,7 +202,13 @@ const LoginScreen = () => {
                             type={"defaultSemiBold"}
                             style={{ fontSize: 16 }}
                         >
-                            Login
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={{ color: "#fff", fontSize: 16 }}>
+                                    Login
+                                </Text>
+                            )}
                         </ThemedText>
                     </Pressable>
                     <AlertModal
@@ -202,6 +243,10 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
         gap: 5,
     },
+    forgotPassword: {
+        alignSelf: "flex-end",
+        marginVertical: 10,
+    },
     icon: {
         position: "absolute",
         right: 0,
@@ -217,7 +262,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     input: {
-        width: 360,
+        width: Dimensions.get("window").width - 30,
         height: 50,
         backgroundColor: Colors.dark.input,
         padding: 15,
@@ -228,7 +273,7 @@ const styles = StyleSheet.create({
     buttonLogin: {
         justifyContent: "center",
         alignItems: "center",
-        width: 360,
+        width: Dimensions.get("window").width - 30,
         height: 50,
         backgroundColor: Colors.dark.tabIconSelected,
         padding: 0,
@@ -239,7 +284,7 @@ const styles = StyleSheet.create({
     buttonRegister: {
         justifyContent: "center",
         alignItems: "center",
-        width: 360,
+        width: Dimensions.get("window").width - 30,
         height: 50,
         backgroundColor: Colors.dark.background,
         padding: 0,
@@ -251,7 +296,7 @@ const styles = StyleSheet.create({
         color: "white",
         alignSelf: "center",
         justifyContent: "center",
-        width: Dimensions.get('screen').width / 2,
+        width: Dimensions.get("screen").width / 2,
         textAlign: "center",
         backgroundColor: Colors.dark.background,
         fontFamily: "CoinyRegular",
