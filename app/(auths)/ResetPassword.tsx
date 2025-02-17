@@ -109,6 +109,9 @@ const ResetPassword = ({ navigation }: { navigation: any }) => {
                     height={150}
                     fill={Colors.dark.tabIconSelected}
                 />
+                <ThemedText type="title" style={styles.textLogo}>
+                    Recuperação de senha
+                </ThemedText>
             </View>
 
             <View>
@@ -139,11 +142,11 @@ const ResetPassword = ({ navigation }: { navigation: any }) => {
                     </Pressable>
                 </View>
 
-                <ThemedText style={styles.text}>Confirmar senha</ThemedText>
+                <ThemedText style={styles.text}>Confirmar nova senha</ThemedText>
                 <View style={styles.passwordContainer}>
                     <TextInput
                         style={styles.input}
-                        placeholder="Confirme sua senha"
+                        placeholder="Confirme sua nova senha"
                         selectionColor={Colors.dark.tabIconSelected}
                         placeholderTextColor={Colors.dark.textPlaceHolder}
                         secureTextEntry={!passwordVisible}
@@ -175,7 +178,7 @@ const ResetPassword = ({ navigation }: { navigation: any }) => {
                             <ActivityIndicator size="small" color="#fff" />
                         ) : (
                             <Text style={{ color: "#fff", fontSize: 16 }}>
-                                Enviar
+                                Atualizar senha
                             </Text>
                         )}
                     </ThemedText>
@@ -241,6 +244,17 @@ const styles = StyleSheet.create({
     },
     icon: {
         padding: 10,
+    },
+    textLogo: {
+        color: "white",
+        alignSelf: "center",
+        justifyContent: "center",
+        width: Dimensions.get("screen").width / 1.5,
+        textAlign: "center",
+        backgroundColor: Colors.dark.background,
+        fontFamily: "CoinyRegular",
+        fontWeight: 400,
+        fontSize: 46,
     },
 });
 

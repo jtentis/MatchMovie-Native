@@ -89,6 +89,9 @@ const RequestPasswordReset = ({ navigation }: { navigation: any }) => {
                     height={150}
                     fill={Colors.dark.tabIconSelected}
                 />
+                <ThemedText type="title" style={styles.textLogo}>
+                    Recuperação de senha
+                </ThemedText>
             </View>
             <View>
                 <ThemedText style={styles.text}>
@@ -96,7 +99,7 @@ const RequestPasswordReset = ({ navigation }: { navigation: any }) => {
                 </ThemedText>
                 <TextInput
                     style={styles.input}
-                    placeholder="Escreva seu email"
+                    placeholder="Digite seu email"
                     value={email}
                     selectionColor={Colors.dark.tabIconSelected}
                     placeholderTextColor={Colors.dark.textPlaceHolder}
@@ -137,6 +140,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.dark.background,
     },
     backButton: {
+        position:'absolute',
+        top: 70,
         width: 50,
         height: 50,
         alignItems: "center",
@@ -172,11 +177,11 @@ const styles = StyleSheet.create({
         color: "white",
         alignSelf: "center",
         justifyContent: "center",
-        width: Dimensions.get("screen").width - 40,
+        width: Dimensions.get("screen").width / 1.5,
         textAlign: "center",
         fontFamily: "CoinyRegular",
         fontWeight: 400,
-        fontSize: 32,
+        fontSize: 46,
         marginTop: 20,
     },
 });

@@ -129,6 +129,11 @@ MatchMovie-Native/
 <img src="./markdown/login.jpg" width="200" height="444"/>
 <img src="./markdown/registro.jpg" width="200" height="444"/>
 
+<h3>Telas de recuperação de senha</h3>
+
+<img src="./markdown/rec_senha.jpg" width="200" height="444"/>
+<img src="./markdown/rec_senha2.jpg" width="200" height="444"/>
+
 <h3>Telas principais</h3>
 
 <img src="./markdown/catalogo.jpg" width="200" height="444"/>
