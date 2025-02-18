@@ -8,260 +8,254 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useRef, useState } from "react";
 import ContentLoader, { Rect } from "react-content-loader/native";
 import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    Image,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    TouchableWithoutFeedback,
-    View,
+  Dimensions,
+  FlatList,
+  Image,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface Movie {
-    id: number;
-    poster_path: string | null | any;
+  id: number;
+  poster_path: string | null | any;
 }
 
 type RootStackParamList = {
-    UserListsScreen: { userId: number; type: "watched" | "favorites" };
-    details: { movieId: number };
+  UserListsScreen: { userId: number; type: "watched" | "favorites" };
+  details: { movieId: number };
 };
 
 type ScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 const MOVIE_POSTER_URL_API = `${URL_LOCALHOST}/movies`;
 
 const UserListsScreen: React.FC = () => {
-    const navigation = useNavigation<ScreenNavigationProp>();
-    const route = useRoute();
-    const { userId, type } = route.params as {
-        userId: number;
-        type: "watched" | "favorites";
+  const navigation = useNavigation<ScreenNavigationProp>();
+  const route = useRoute();
+  const { userId, type } = route.params as {
+    userId: number;
+    type: "watched" | "favorites";
+  };
+  const [isMoviesLoading, setIsMoviesLoading] = useState(true);
+  const { authToken } = useAuth();
+  const [movies, setMovies] = useState<any[]>([]);
+  const [posters, setPosters] = useState<{ [id: number]: string | null }>({});
+  const listRef = useRef<FlatList<any>>(null);
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setIsMoviesLoading(true);
+      try {
+        const response = await fetch(`${URL_LOCALHOST}/${type}/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        const data = await response.json();
+        setMovies(data);
+      } catch (error) {
+        console.error("Error fetching movies:", error);
+      } finally {
+        setIsMoviesLoading(false);
+      }
     };
-    const { authToken } = useAuth();
-    const [movies, setMovies] = useState<any[]>([]);
-    const [posters, setPosters] = useState<{ [id: number]: string | null }>({});
-    const [posterCache, setPosterCache] = useState<{
-        [id: number]: string | null;
-    }>({});
-    const [isLoading, setIsLoading] = useState(true);
-    const listRef = useRef<FlatList<any>>(null);
 
-    useEffect(() => {
-        const fetchMovies = async () => {
-            try {
-                const response = await fetch(
-                    `${URL_LOCALHOST}/${type}/${userId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${authToken}`,
-                        },
-                    }
-                );
-                const data = await response.json();
-                setMovies(data);
-            } catch (error) {
-                console.error("Error fetching movies:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    fetchMovies();
+  }, [userId, type]);
 
-        fetchMovies();
-    }, [userId, type]);
+  useEffect(() => {
+    const loadPosters = async () => {
+      if (movies.length === 0) {
+        return;
+      }
 
-    useEffect(() => {
-        const fetchPosters = async () => {
-            const newPosters: { [id: number]: string | null } = {};
+      const newPosters: { [id: number]: string | null } = {};
 
-            await Promise.all(
-                movies.map(async (movie) => {
-                    if (posterCache[movie.id]) {
-                        newPosters[movie.id] = posterCache[movie.id];
-                        return;
-                    }
+      movies.forEach((movie) => {
+        newPosters[movie.id] = movie.poster_path
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : null;
+      });
 
-                    if (!movie.poster_path) {
-                        newPosters[movie.id] = null;
-                        return;
-                    }
-
-                    const formattedPosterPath = movie.poster_path.replace(
-                        /^\//,
-                        ""
-                    );
-
-                    try {
-                        const response = await fetch(
-                            `${MOVIE_POSTER_URL_API}/${formattedPosterPath}/poster`
-                        );
-
-                        if (response.ok) {
-                            console.log(response);
-                            const base64Image = await response.text();
-                            newPosters[movie.id] = base64Image;
-                        } else {
-                            newPosters[movie.id] = null;
-                        }
-                    } catch (error) {
-                        console.error(
-                            "Error fetching poster:",
-                            movie.id,
-                            error
-                        );
-                        newPosters[movie.id] = null;
-                    }
-                })
-            );
-
-            setPosterCache((prevCache) => ({ ...prevCache, ...newPosters }));
-            setPosters(newPosters);
-        };
-
-        if (movies.length > 0) {
-            fetchPosters();
-        }
-    }, [movies]);
-
-    const renderMovie = ({ item }: { item: Movie }) => {
-        const posterUrl = posters[item.id];
-
-        if (!posterUrl) {
-            return (
-                <ContentLoader
-                    speed={1}
-                    width={Dimensions.get("window").width / 2}
-                    height={(Dimensions.get("window").width / 2) * 1.5}
-                    viewBox="0 0 200 300"
-                    backgroundColor="#ccc"
-                    foregroundColor="#ddd"
-                >
-                    <Rect x="0" y="0" width="200" height="300" />
-                </ContentLoader>
-            );
-        }
-
-        return (
-            <TouchableWithoutFeedback
-                onPress={() =>
-                    navigation.navigate("details", { movieId: item.id })
-                }
-            >
-                <View key={item.id} style={styles.gridItem}>
-                    <Image
-                        source={{ uri: `data:image/jpeg;base64,${posterUrl}` }}
-                        style={styles.posterImage}
-                    />
-                </View>
-            </TouchableWithoutFeedback>
-        );
+      setPosters(newPosters);
     };
+
+    loadPosters();
+  }, [movies]);
+
+  const renderMovie = ({ item }: { item: Movie }) => {
+    const posterUrl = posters[item.id];
+
+    if (!posterUrl) {
+      return (
+        <View style={styles.gridItem}>
+          <ContentLoader
+            speed={1}
+            width={Dimensions.get("window").width / 2}
+            height={(Dimensions.get("window").width / 2) * 1.5}
+            viewBox="0 0 200 300"
+            backgroundColor="#ccc"
+            foregroundColor="#ddd"
+          >
+            <Rect x="0" y="0" width="200" height="300" />
+          </ContentLoader>
+        </View>
+      );
+    }
 
     return (
-        <View style={{width: '100%', height: '100%', backgroundColor: Colors.dark.background}}>
-            <View style={styles.title}>
-                <ThemedText style={{fontSize: 32, padding: 15, fontFamily:'CoinyRegular'}}>
-                    {type === "watched"
-                        ? "Filmes assistidos"
-                        : "Filmes favoritos"}
-                </ThemedText>
-                <Pressable
-                    onPress={() => navigation.goBack()}
-                    style={styles.backButton}
-                >
-                    <View>
-                        <FontAwesome
-                            size={30}
-                            name="chevron-left"
-                            color={Colors.dark.text}
-                        />
-                    </View>
-                </Pressable>
-            </View>
-            <SafeAreaView style={styles.container}>
-            {isLoading ? (
-                <ActivityIndicator size="large" color={Colors.dark.tabIconSelected} />
-            ) : movies.length === 0 ? ( // ✅ Check if there are no movies
-                <View style={styles.emptyContainer}>
-                    <ThemedText style={styles.emptyText}>
-                        {type === "watched"
-                            ? "Você ainda não marcou nenhum filme como assistido."
-                            : "Você ainda não favoritou nenhum filme."}
-                    </ThemedText>
-                </View>
-            ) : (
-                <FlatList
-                    style={{ backgroundColor: Colors.dark.background }}
-                    ref={listRef}
-                    data={movies}
-                    renderItem={renderMovie}
-                    keyExtractor={(item) => (item?.id ? item.id.toString() : Math.random().toString())}
-                    numColumns={2}
-                    initialNumToRender={10}
-                    maxToRenderPerBatch={10}
-                    removeClippedSubviews={true}
-                    windowSize={5}
-                />
-            )}
-        </SafeAreaView>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("details", { movieId: item.id })}
+      >
+        <View style={styles.gridItem}>
+          <Image
+            source={{
+              uri: posterUrl,
+            }}
+            style={styles.poster}
+          />
         </View>
+      </TouchableOpacity>
     );
+  };
+
+  const renderLoader = () => (
+    <View style={styles.gridItem}>
+      <ContentLoader
+        speed={1}
+        width={Dimensions.get("window").width / 2}
+        height={(Dimensions.get("window").width / 2) * 1.5}
+        viewBox="0 0 200 300"
+        backgroundColor="#ccc"
+        foregroundColor="#ddd"
+      >
+        <Rect x="0" y="0" width="200" height="300" />
+      </ContentLoader>
+    </View>
+  );
+
+  return (
+    <View
+      style={{
+        width: "100%",
+        height: "100%",
+        backgroundColor: Colors.dark.background,
+      }}
+    >
+      <View style={styles.title}>
+        <ThemedText
+          style={{
+            fontSize: 32,
+            padding: 15,
+            fontFamily: "CoinyRegular",
+          }}
+        >
+          {type === "watched" ? "Filmes assistidos" : "Filmes favoritos"}
+        </ThemedText>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <View>
+            <FontAwesome
+              size={30}
+              name="chevron-left"
+              color={Colors.dark.text}
+            />
+          </View>
+        </Pressable>
+      </View>
+      <SafeAreaView style={styles.container}>
+        {isMoviesLoading ? (
+          <FlatList
+            style={{ backgroundColor: Colors.dark.background }}
+            ref={listRef}
+            data={Array(6).fill({})}
+            renderItem={renderLoader}
+            keyExtractor={(_, index) => `loader-${index}`}
+            numColumns={2}
+          />
+        ) : movies.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <ThemedText style={styles.emptyText}>
+              {type === "watched"
+                ? "Você ainda não marcou nenhum filme como assistido."
+                : "Você ainda não favoritou nenhum filme."}
+            </ThemedText>
+          </View>
+        ) : (
+          <FlatList
+            style={{ backgroundColor: Colors.dark.background }}
+            ref={listRef}
+            data={movies}
+            renderItem={renderMovie}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={2}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            removeClippedSubviews={true}
+            windowSize={5}
+          />
+        )}
+      </SafeAreaView>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    title: {
-        flex: 1.5,
-        flexDirection:'row',
-        alignItems: "flex-end",
-        justifyContent: "flex-end",
-        backgroundColor: Colors.dark.background,
-    },
-    backButton: {
-        width: 55,
-        height: 55,
-        alignItems: "center",
-        justifyContent: "center",
-        position: "absolute",
-        top: 60,
-        left: 0,
-        backgroundColor: Colors.dark.tabIconSelected,
-        borderTopRightRadius: 8,
-        borderBottomRightRadius: 8,
-    },
-    container: {
-        flex: 10,
-        padding: 0,
-        marginTop: 15,
-        backgroundColor: Colors.dark.background,
-        alignItems:'center'
-    },
-    gridItem: {
-        flex: 1,
-        margin: 5,
-        borderRadius: 10,
-        overflow: "hidden",
-        alignItems: "center",
-    },
-    posterImage: {
-        width: Dimensions.get("window").width / 2.2,
-        height: (Dimensions.get("window").width / 2.2) * 1.5,
-        borderRadius: 10,
-    },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        alignContent:'center',
-        width: Dimensions.get('window').width - 90,
-        backgroundColor: Colors.dark.background,
-    },
-    emptyText: {
-        fontSize: 16,
-        color: Colors.dark.text,
-        textAlign: "center",
-        opacity: .5
-    },
+  title: {
+    flex: 1.5,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "flex-end",
+    backgroundColor: Colors.dark.background,
+  },
+  backButton: {
+    width: 55,
+    height: 55,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    top: 60,
+    left: 0,
+    backgroundColor: Colors.dark.tabIconSelected,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  container: {
+    flex: 10,
+    padding: 0,
+    marginTop: 25,
+    backgroundColor: Colors.dark.background,
+    alignItems: "flex-start",
+  },
+  gridItem: {
+    flex: 1,
+    overflow: "hidden",
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  poster: {
+    width: Dimensions.get("window").width / 2,
+    height: (Dimensions.get("window").width / 2) * 1.5,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    width: Dimensions.get("window").width - 90,
+    backgroundColor: Colors.dark.background,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: Colors.dark.text,
+    textAlign: "center",
+    opacity: 0.5,
+  },
 });
 
 export default UserListsScreen;
