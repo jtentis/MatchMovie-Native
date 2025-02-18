@@ -12,4 +12,4 @@ const isDev = __DEV__ || !process.env.EXPO_PUBLIC_EAS_BUILD_PROFILE;
 // console.log("🛠 __DEV__ value:", __DEV__);
 // console.log("✅ Using API URL:", isDev ? LOCAL_DEV_URL : PROD_URL);
 
-export const URL_LOCALHOST = LOCAL_DEV_URL;
+export const URL_LOCALHOST = PROD_URL;

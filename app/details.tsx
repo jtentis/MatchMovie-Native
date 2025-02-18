@@ -82,7 +82,7 @@ const MovieDetailsScreen = () => {
                 const responseMovieDetails = await fetch(
                     `${URL_LOCALHOST}/movies/${movieId}/details`
                 );
-                console.log("filme clicado", movieId);
+                // console.log("filme clicado", movieId);
                 const dataMovieDetails: MovieDetails =
                     await responseMovieDetails.json();
                 setMovieDetails(dataMovieDetails);
@@ -110,7 +110,7 @@ const MovieDetailsScreen = () => {
                     }
                 );
                 const data = await response.json();
-                console.log("Estado de favorito recebido:", data);
+                // console.log("Estado de favorito recebido:", data);
                 setIsFavorited(data.isFavorited);
             } catch (error) {
                 console.error("Erro ao verificar favorito:", error);
@@ -127,7 +127,7 @@ const MovieDetailsScreen = () => {
                     }
                 );
                 const data = await response.json();
-                console.log("Estado de visto recebido:", data);
+                // console.log("Estado de visto recebido:", data);
                 setIsWatched(data.isWatched);
             } catch (error) {
                 console.error("Erro ao verificar visto:", error);
@@ -156,7 +156,7 @@ const MovieDetailsScreen = () => {
                     }),
                 }
             );
-            //   console.log('var',typeof(userId),typeof(movieId))
+            // console.log('var',typeof(userId),typeof(movieId))
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(
@@ -166,7 +166,7 @@ const MovieDetailsScreen = () => {
             }
 
             const data = await response.json();
-            console.log(data.message);
+            // console.log(data.message);
             setIsFavorited((prev) => !prev);
         } catch (error) {
             console.error("Erro ao favoritar/desfavoritar filme:", error);
@@ -189,7 +189,7 @@ const MovieDetailsScreen = () => {
                     movieId: movieId,
                 }),
             });
-            //   console.log('var',typeof(userId),typeof(movieId))
+            // console.log('var',typeof(userId),typeof(movieId))
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(
@@ -199,7 +199,7 @@ const MovieDetailsScreen = () => {
             }
 
             const data = await response.json();
-            console.log(data.message);
+            // console.log(data.message);
             setIsWatched((prev) => !prev);
         } catch (error) {
             console.error("Erro ao favoritar/desfavoritar filme:", error);

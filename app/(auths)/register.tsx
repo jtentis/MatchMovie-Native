@@ -131,7 +131,7 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                 body: JSON.stringify(dataToSend),
             });
 
-            console.log(dataToSend);
+            // console.log(dataToSend);
 
             if (response.ok) {
                 setModalMessage("Usuário criado com sucesso!");
@@ -142,7 +142,7 @@ const RegisterScreen = ({ navigation }: { navigation: any }) => {
                 }, 500);
             } else {
                 const errorData = await response.json();
-                console.log(errorData);
+                // console.log(errorData);
 
                 if (errorData.message) {
                     setModalMessage(errorData.message);

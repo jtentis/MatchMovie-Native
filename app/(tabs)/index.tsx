@@ -63,7 +63,7 @@ const HomeScreen = () => {
                     index: 0,
                     routes: [{ name: "(auths)" }],
                 });
-                console.log("nao ta logado", token);
+                // console.log("nao ta logado", token);
             }
         };
 
@@ -107,7 +107,7 @@ const HomeScreen = () => {
 
         try {
             const response = await fetch(url);
-            console.log(`Fetching from URL: ${url}`);
+            // console.log(`Fetching from URL: ${url}`);
             if (!response.ok)
                 throw new Error(`Failed to fetch: ${response.status}`);
 

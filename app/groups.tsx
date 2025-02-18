@@ -235,7 +235,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                 }
                 const data: Group = await response.json();
                 setGroup(data);
-                console.log(data.movieId);
+                // console.log(data.movieId);
                 if (data.movieId) {
                     const movieResponse = await fetch(
                         `${URL_LOCALHOST}/movies/${data.movieId}/details`
@@ -249,7 +249,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
                         if (poster_path) {
                             setSelectedMovie({ poster_path: poster_path });
                         }
-                        console.log(movieData.poster_path);
+                        // console.log(movieData.poster_path);
                     } else {
                         console.error("Failed to fetch movie details");
                     }
@@ -271,7 +271,7 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
 
         onGroupUpdate((data) => {
             if (data.groupId === groupId) {
-                console.log("WebSocket: Group update received");
+                // console.log("WebSocket: Group update received");
                 setGroup((prevGroup) => {
                     if (!prevGroup) return prevGroup;
                     return {
@@ -283,14 +283,14 @@ const GroupsScreen = ({ navigation }: { navigation: any }) => {
         });
 
         const handleGroupDeleted = (data: any) => {
-            console.log(`Group deleted: ${data.groupId}`);
+            // console.log(`Group deleted: ${data.groupId}`);
             navigation.goBack(); // atualizar e retornar todos os usuários que estao dentro da pagina do grupo
         };
 
         onGroupDeleted(handleGroupDeleted);
 
-        console.log("Selected Filter Updated:", selectedFilter);
-        console.log("Selected Movie:", selectedMovie);
+        // console.log("Selected Filter Updated:", selectedFilter);
+        // console.log("Selected Movie:", selectedMovie);
         return () => {
             disconnectWebSocket(false);
             leaveGroupRoom(groupId);

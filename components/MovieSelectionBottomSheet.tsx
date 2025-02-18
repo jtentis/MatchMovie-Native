@@ -75,7 +75,7 @@ const MovieSelectionModal = React.forwardRef<
 
     const handleMovieSelect = async (movie: Movie) => {
         try {
-            console.log("teste", authToken, groupId);
+            // console.log("teste", authToken, groupId);
             // Send movieId to the database
             const response = await fetch(`${URL_LOCALHOST}/groups/${groupId}`, {
                 method: "PATCH",

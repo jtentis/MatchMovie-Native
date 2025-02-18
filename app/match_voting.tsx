@@ -92,11 +92,8 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             } else if (groupId) {
                 endpoint = `${URL_LOCALHOST}/match/${groupId}/recommendations?page=${page}`;
             } else {
-                console.log("endpoint", endpoint);
                 throw new Error("Neither movieId nor filter is provided.");
             }
-
-            console.log("Fetching recommendations from endpoint:", endpoint);
 
             const response = await fetch(endpoint, {
                 headers: {
@@ -136,8 +133,7 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
 
     const handleVote = async (liked: boolean) => {
         if (winner) {
-            console.log("Votação concluida.");
-            return; // para a votacao apos concluir
+            return;
         }
 
         try {
@@ -172,7 +168,6 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             );
 
             if (!response.ok) {
-                console.log(response);
                 throw new Error("Failed to vote for movie");
             }
 
@@ -203,19 +198,14 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
             );
 
             if (!response.ok) {
-                console.log("Failed to fetch group's latitude and longitude.");
-                // throw new Error(
-                //     "Failed to fetch group's latitude and longitude."
-                // );
+                throw new Error(
+                    "Failed to fetch group's latitude and longitude."
+                );
             }
 
             const data = await response.json();
             return data.midpoint;
         } catch (error: any) {
-            console.log(
-                "Error fetching group's latitude and longitude:",
-                error.message
-            );
             return null;
         }
     };
@@ -337,7 +327,6 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
                         fallbackUrlKey || "unknown"
                     }?partnership=home`
                 );
-                console.log(fallbackUrlKey);
                 // setModalMessageAlert(
                 //     "Erro calcular sua localização, redirecionando para página padrão do ingresso.com."
                 // );
@@ -359,7 +348,6 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
         joinGroupRoom(groupId);
 
         onWinnerReceived((winnerData) => {
-            console.log("Winner received:", winnerData);
             setWinner(winnerData); // setar o ganhador
             setRecommendations([]); // apagar recomendações restantes
         });
@@ -381,7 +369,6 @@ const MatchVotingScreen = ({ navigation }: { navigation: any }) => {
     }, [movieId, filter, groupId, winner]);
 
     const openMovieDetailsModal = (movie: Movie) => {
-        console.log(movie);
         setSelectedMovie(movie);
         modalizeRef.current?.open();
     };
