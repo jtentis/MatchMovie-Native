@@ -5,11 +5,11 @@ let socket: Socket | any = null;
 
 export const connectWebSocket = (userId: any): Socket => {
   if (!socket) {
-    console.log('Initializing WebSocket connection...');
+    // console.log('Initializing WebSocket connection...');
     socket = io(URL_LOCALHOST);
 
     socket.on('connect', () => {
-      console.log('WebSocket connected:', socket?.id);
+      // console.log('WebSocket connected:', socket?.id);
       socket.emit('joinRoom', `user_${userId}`);
     });
 
@@ -18,10 +18,10 @@ export const connectWebSocket = (userId: any): Socket => {
     });
 
     socket.on('disconnect', () => {
-      console.log('WebSocket disconnected.');
+      // console.log('WebSocket disconnected.');
     });
   } else if (!socket.connected) {
-    console.log('Reconnecting WebSocket...');
+    // console.log('Reconnecting WebSocket...');
     socket.connect();
   }
 
@@ -35,7 +35,7 @@ export const onGroupUpdate = (callback: (data: any) => void): void => {
   }
 
   socket.on('groupUpdated', (data: any) => {
-    console.log('Group updated event received:', data);
+    // console.log('Group updated event received:', data);
     callback(data);
   });
 };
@@ -43,10 +43,10 @@ export const onGroupUpdate = (callback: (data: any) => void): void => {
 export const disconnectWebSocket = (forceDisconnect = true): void => {
   if (socket && forceDisconnect) {
     socket.disconnect();
-    console.log('WebSocket disconnected.');
+    // console.log('WebSocket disconnected.');
     socket = null;
   } else {
-    console.log('WebSocket connection preserved.', socket?.id);
+    // console.log('WebSocket connection preserved.', socket?.id);
   }
 };
 
@@ -65,7 +65,7 @@ export const onGroupCreated = (callback: (group: any) => void): void => {
   }
 
   socket.on('groupCreated', (group: any) => {
-    console.log('New group created:', group);
+    // console.log('New group created:', group);
     callback(group);
   });
 };
@@ -81,7 +81,7 @@ export const onWinnerReceived = (callback: (winnerData: any) => void): void => {
 export const joinGroupRoom = (groupId: number): void => {
   if (socket) {
     socket.emit('joinGroupRoom', groupId);
-    console.log(`Joined group room: group_${groupId}`);
+    // console.log(`Joined group room: group_${groupId}`);
   } else {
     console.error('WebSocket connection is not established. joinGroupRoom');
   }
@@ -90,6 +90,6 @@ export const joinGroupRoom = (groupId: number): void => {
 export const leaveGroupRoom = (groupId: number, retryCount = 0): void => {
   if (socket && socket.connected) {
     socket.emit('leaveGroupRoom', groupId);
-    console.log(`Left group room: group_${groupId}`);
+    // console.log(`Left group room: group_${groupId}`);
   }
 };

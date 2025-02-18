@@ -25,6 +25,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 type RootStackParamList = {
     "(auths)": { screen: "Login" };
+    user_list: { userId: any; type: "watched" | "favorites" };
 };
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -58,20 +59,19 @@ export default function ProfileScreen() {
         // console.log("Token", authToken);
 
         if (!userId) {
-            console.log("Sem ID");
             setError("Sem ID");
             setIsLoading(false);
             return;
         }
 
         try {
-            console.log("Pegando dados do usuário: ", userId);
+            // console.log("Pegando dados do usuário: ", userId);
             const response = await fetch(`${URL_LOCALHOST}/users/${userId}`, {
                 headers: {
                     Authorization: `Bearer ${authToken}`,
                 },
             });
-            console.log("Status:", response.status);
+            // console.log("Status:", response.status);
 
             if (!response.ok) {
                 if (response.status === 401) {
@@ -88,8 +88,6 @@ export default function ProfileScreen() {
             setUser(data);
             setProfilePicture(data.profilePicture);
 
-            // console.log("Dados do usuário:", data);
-            if (data.profilePicture) console.log("imagem aqui!");
         } catch (err) {
             console.error("Erro:", err);
             setError("Erro.");
@@ -107,7 +105,6 @@ export default function ProfileScreen() {
 
     const onRefresh = () => {
         if (isRefreshing) {
-            console.log("Already refreshing, skipping...");
             return;
         }
 
@@ -152,11 +149,8 @@ export default function ProfileScreen() {
                 body: JSON.stringify(updatedFields),
             });
 
-            console.log("Response Status:", response.status);
-
             if (!response.ok) {
                 const errorData = await response.json();
-                console.log("Error Response:", errorData);
                 throw new Error(
                     errorData.message || "Falha ao salvar o perfil."
                 );
@@ -190,7 +184,6 @@ export default function ProfileScreen() {
             });
 
             if (!response.ok) {
-                console.log(response);
                 throw new Error("Failed to delete user");
             }
             await logout();
@@ -211,7 +204,6 @@ export default function ProfileScreen() {
         setIsExiting(true);
         try {
             await logout();
-            console.log("User logged out.");
             navigation.reset({
                 index: 0,
                 routes: [{ name: "(auths)" }],
@@ -420,13 +412,13 @@ export default function ProfileScreen() {
                     gap: 5,
                 }}
             >
-                <Pressable style={styles.markAsBox}>
+                <Pressable onPress={() => navigation.navigate("user_list", { userId, type: "favorites" })} style={styles.markAsBox}>
                     <ThemedText style={styles.fontMark}>FAVORITOS</ThemedText>
                     <ThemedText style={styles.fontQuant}>
                         {favoriteCountLength}
                     </ThemedText>
                 </Pressable>
-                <Pressable style={styles.markAsBox}>
+                <Pressable onPress={() => navigation.navigate("user_list", { userId, type: "watched" })} style={styles.markAsBox}>
                     <ThemedText style={styles.fontMark}>ASSISTIDOS</ThemedText>
                     <ThemedText style={styles.fontQuant}>
                         {watchedCountLength}

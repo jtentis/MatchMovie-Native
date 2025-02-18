@@ -68,7 +68,7 @@ export default function MatchScreen() {
             );
 
             if (!response.ok) {
-                console.log(response)
+                // console.log(response)
                 throw new Error("Failed to fetch groups");
             }
 
@@ -85,7 +85,7 @@ export default function MatchScreen() {
 
     useEffect(() => {
         if (!authToken || !userId) {
-            console.log("Usuário esta deslogado. Desconsiderando websockets.");
+            // console.log("Usuário esta deslogado. Desconsiderando websockets.");
             return;
         }
 
@@ -98,7 +98,7 @@ export default function MatchScreen() {
         });
 
         const handleGroupDeleted = (data: any) => {
-            console.log(`Group deleted: ${data.groupId}`);
+            // console.log(`Group deleted: ${data.groupId}`);
             setGroups((prevGroups) =>
                 prevGroups.filter((group) => group.id !== data.groupId)
             ); // atualizar o grupo deletado para todos os usuarios
@@ -131,7 +131,7 @@ export default function MatchScreen() {
     };
 
     const createGroup = async () => {
-        console.log(groups.map((group) => group.id));
+        // console.log(groups.map((group) => group.id));
         if (!groupName.trim()) {
             setModalType("error");
             setModalMessage("Não pode estar vazio!");
@@ -141,10 +141,6 @@ export default function MatchScreen() {
 
         try {
             setIsCreating(true);
-            console.log("Payload:", {
-                name: groupName,
-                userIds: [userId],
-            });
 
             if (!userId) {
                 setModalType("error");
@@ -166,7 +162,7 @@ export default function MatchScreen() {
             });
 
             if (!response.ok) {
-                console.log(response);
+                // console.log(response);
                 throw new Error("Failed to create group");
             }
 

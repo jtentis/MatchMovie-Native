@@ -66,7 +66,7 @@ const ResetPassword = ({ navigation }: { navigation: any }) => {
 
             const data = await response.json();
             if (response.status == 201) {
-                console.log(response);
+                // console.log(response);
                 setModalType("success");
                 setModalMessage(data.message);
                 setModalVisible(true);
