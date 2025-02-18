@@ -140,6 +140,8 @@ MatchMovie-Native/
 <img src="./markdown/detalhes.jpg" width="200" height="444"/>
 <img src="./markdown/grupos.jpg" width="200" height="444"/>
 <img src="./markdown/perfil.jpg" width="200" height="444"/>
+<img src="./markdown/lista_favoritos.jpg" width="200" height="444"/>
+<img src="./markdown/lista_assistidos.jpg" width="200" height="444"/>
 
 <h3>Telas grupo e modals</h3> 
 

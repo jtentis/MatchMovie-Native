@@ -55,7 +55,7 @@ const LoginScreen = () => {
     };
 
     const handleLogin = async () => {
-        console.log("clicado");
+        // console.log("clicado");
         if (!email.trim() || !password.trim()) {
             setModalType("alert");
             setModalMessage(
@@ -74,7 +74,7 @@ const LoginScreen = () => {
             try {
                 setLoading(true);
                 await login(email, password);
-                console.log("Login feito com sucesso!");
+                // console.log("Login feito com sucesso!");
 
                 navigation.reset({
                     index: 0,

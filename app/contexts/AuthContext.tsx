@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setAuthToken(accessToken);
                 setUserId(userId.toString());
             } else if (response.status == 404) {
-                console.log(response);
+                // console.log(response);
                 throw new Error("Erro de login. API não conectada!");
             } else {
                 throw new Error("Erro de login. Verifique suas credenciais!");
