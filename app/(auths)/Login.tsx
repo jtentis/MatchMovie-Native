@@ -22,7 +22,6 @@ type RootStackParamList = {
     register: undefined;
     "(tabs)": { screen: string };
     RequestPasswordReset: undefined;
-    ResetPassword: undefined;
 };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -174,7 +173,7 @@ const LoginScreen = () => {
                     />
                 </View>
                 <Pressable
-                    onPress={() => navigation.navigate("ResetPassword")}
+                    onPress={() => navigation.navigate("RequestPasswordReset")}
                     style={styles.forgotPassword}
                 >
                     <ThemedText

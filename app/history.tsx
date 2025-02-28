@@ -126,6 +126,9 @@ const HistoryScreen = ({ navigation }: { navigation: any }) => {
             );
             setIsConfirmVisible(false);
             setSelectedMatchId(null);
+            setModalMessage("Match deletado com sucesso!");
+            setModalType("success");
+            setModalVisible(true);
         } catch (error) {
             console.error("Error deleting match:", error);
         }

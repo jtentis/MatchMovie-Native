@@ -406,7 +406,7 @@ export default function ProfileScreen() {
                     width: Dimensions.get("screen").width - 28,
                     height: 160,
                     backgroundColor: Colors.dark.background,
-                    justifyContent: "space-around",
+                    justifyContent: "space-between",
                     alignItems: "center",
                     flexDirection: "row",
                     gap: 5,
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
     markAsBox: {
         marginTop: 20,
         paddingVertical: 25,
-        paddingHorizontal: 40,
+        paddingHorizontal: Dimensions.get('screen').width / 12,
         borderWidth: 1,
         borderColor: Colors.dark.tabIconSelected,
         borderRadius: 5,

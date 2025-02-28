@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
         color: "white",
         alignSelf: "center",
         justifyContent: "center",
-        width: Dimensions.get("screen").width / 1.5,
+        width: Dimensions.get("screen").width / 1.2,
         textAlign: "center",
         fontFamily: "CoinyRegular",
         fontWeight: 400,
